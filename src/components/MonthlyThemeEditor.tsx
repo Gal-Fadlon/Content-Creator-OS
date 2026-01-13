@@ -16,6 +16,7 @@ export function MonthlyThemeEditor() {
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
+      inputRef.current.select();
     }
   }, [isEditing]);
   
@@ -47,7 +48,7 @@ export function MonthlyThemeEditor() {
   
   return (
     <div className="flex items-center justify-center gap-3 text-sm">
-      <span className="text-gold font-medium">נושא חודשי</span>
+      <span className="text-sand font-medium">נושא חודשי</span>
       <span className="text-muted-foreground">|</span>
       
       {isEditing ? (
@@ -58,32 +59,37 @@ export function MonthlyThemeEditor() {
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="bg-transparent border-b border-gold/50 focus:border-gold outline-none px-1 py-0.5 text-foreground min-w-[200px]"
+            className={cn(
+              'bg-transparent border-b-2 border-sand/50 focus:border-sand outline-none px-2 py-1',
+              'handwritten text-xl text-luxury-purple min-w-[200px]'
+            )}
             placeholder="הזן נושא חודשי..."
           />
           <button
             onClick={handleSave}
-            className="p-1 hover:bg-gold/10 rounded-full text-gold transition-colors"
+            className="p-1.5 hover:bg-sand/20 rounded-full text-status-published transition-colors"
           >
             <Check className="h-4 w-4" />
           </button>
           <button
             onClick={handleCancel}
-            className="p-1 hover:bg-destructive/10 rounded-full text-muted-foreground transition-colors"
+            className="p-1.5 hover:bg-muted/50 rounded-full text-muted-foreground transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
       ) : (
         <div className="flex items-center gap-2 group">
-          <span className="text-foreground/80">{selectedClient.monthlyTheme || 'לא הוגדר'}</span>
+          <span className="handwritten text-xl text-luxury-purple">
+            {selectedClient.monthlyTheme || 'לא הוגדר'}
+          </span>
           {isAdmin && (
             <button
               onClick={() => setIsEditing(true)}
               className={cn(
                 'p-1 rounded-full transition-all',
                 'opacity-0 group-hover:opacity-100',
-                'hover:bg-gold/10 text-gold/60 hover:text-gold'
+                'hover:bg-sand/20 text-sand/60 hover:text-sand'
               )}
               title="ערוך נושא חודשי"
             >

@@ -8,9 +8,9 @@ interface ContentBadgeProps {
 }
 
 const typeStyles: Record<ContentType, string> = {
-  reel: 'bg-content-reel text-white',
-  story: 'bg-content-story text-white',
-  post: 'bg-content-post text-white',
+  reel: 'bg-luxury-purple text-white',
+  story: 'bg-sand text-foreground',
+  post: 'bg-earth text-white',
 };
 
 const typeLabels: Record<ContentType, string> = {
@@ -40,8 +40,8 @@ interface StatusBadgeProps {
 
 const statusStyles: Record<ContentStatus, string> = {
   draft: 'bg-muted text-muted-foreground',
-  pending: 'bg-status-pending text-foreground',
-  approved: 'bg-status-approved text-white',
+  pending: 'bg-sand text-foreground font-semibold',
+  approved: 'bg-luxury-purple text-white',
   published: 'bg-status-published text-white',
 };
 
