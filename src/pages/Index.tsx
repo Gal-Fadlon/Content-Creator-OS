@@ -45,9 +45,9 @@ function DashboardContent() {
       {/* Sticker Overlay - renders placed stickers */}
       <StickerOverlay containerRef={calendarContainerRef} />
       
-      {/* Top fixed title bar */}
-      <div className="gradient-header text-header-foreground py-4 text-center shadow-soft relative z-10">
-        <h1 className="text-xl font-display tracking-wide">ניהול ואסטרטגיית תוכן</h1>
+      {/* Top fixed brand header - RZ Digital Agency */}
+      <div className="gradient-header text-header-foreground py-5 text-center shadow-soft relative z-10">
+        <h1 className="font-brand text-2xl tracking-[0.2em]">rz digital agency</h1>
       </div>
       
       {/* Header */}

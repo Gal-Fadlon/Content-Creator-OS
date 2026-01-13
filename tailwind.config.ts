@@ -17,6 +17,7 @@ export default {
         sans: ['Assistant', 'Heebo', 'Rubik', 'sans-serif'],
         display: ['Playfair Display', 'serif'],
         body: ['Assistant', 'Heebo', 'sans-serif'],
+        brand: ['Ivyora Display', 'Playfair Display', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
