@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Heebo', 'Rubik', 'sans-serif'],
+        sans: ['Assistant', 'Heebo', 'Rubik', 'sans-serif'],
         display: ['Playfair Display', 'serif'],
+        body: ['Assistant', 'Heebo', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -52,8 +53,8 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         // Boutique luxury palette
-        luxury: {
-          purple: "hsl(var(--luxury-purple))",
+        royal: {
+          blue: "hsl(var(--royal-blue))",
         },
         burgundy: "hsl(var(--burgundy))",
         sand: {

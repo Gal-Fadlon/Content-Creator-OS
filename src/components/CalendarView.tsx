@@ -73,7 +73,7 @@ export function CalendarView() {
           {selectedClient && selectedClient.monthlyTheme && (
             <div className="mt-4">
               <span className="text-sm text-muted-foreground">נושא חודשי</span>
-              <p className="handwritten text-2xl text-luxury-purple mt-1">
+              <p className="handwritten text-2xl text-royal-blue mt-1">
                 {selectedClient.monthlyTheme}
               </p>
             </div>
@@ -101,12 +101,12 @@ export function CalendarView() {
                   'min-h-[90px] md:min-h-[110px] p-2 rounded-xl border transition-all text-right',
                   'bg-card/50 border-border/30 hover:border-sand hover:bg-sand/5',
                   !day.isCurrentMonth && 'opacity-30',
-                  day.date.toDateString() === new Date().toDateString() && 'ring-2 ring-luxury-purple/30 border-luxury-purple/50'
+                  day.date.toDateString() === new Date().toDateString() && 'ring-2 ring-royal-blue/30 border-royal-blue/50'
                 )}
               >
                 <span className={cn(
                   'text-sm font-medium inline-flex items-center justify-center w-6 h-6 rounded-full',
-                  day.date.toDateString() === new Date().toDateString() && 'bg-luxury-purple text-white'
+                  day.date.toDateString() === new Date().toDateString() && 'bg-royal-blue text-white'
                 )}>
                   {day.date.getDate()}
                 </span>
@@ -136,7 +136,7 @@ export function CalendarView() {
                       className={cn(
                         'text-[10px] px-2 py-0.5 rounded-full truncate cursor-pointer transition-transform hover:scale-105',
                         event.color === 'red' && 'bg-burgundy text-white',
-                        event.color === 'blue' && 'bg-luxury-purple text-white',
+                        event.color === 'blue' && 'bg-royal-blue text-white',
                         event.color === 'beige' && 'bg-sand text-foreground',
                         event.color === 'brown' && 'bg-earth text-white',
                         event.color === 'black' && 'bg-foreground text-background'

@@ -15,16 +15,16 @@ const DEFAULT_BACKDROPS = [
   { id: 'linen', name: 'פשתן', url: 'https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=1920&q=80', color: '' },
 ];
 
-interface BackdropManagerProps {
-  currentBackdrop: string;
-  onBackdropChange: (backdrop: string) => void;
-}
+const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
-export function BackdropManager({ currentBackdrop, onBackdropChange }: BackdropManagerProps) {
-  const { userRole } = useApp();
+export function BackdropManager() {
+  const { userRole, currentMonth, getCurrentMonthState, setMonthlyBackdrop } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [customUrl, setCustomUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const monthState = getCurrentMonthState();
+  const currentBackdrop = monthState.backdrop;
 
   if (userRole !== 'admin') return null;
 
@@ -32,18 +32,21 @@ export function BackdropManager({ currentBackdrop, onBackdropChange }: BackdropM
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      onBackdropChange(url);
+      setMonthlyBackdrop(url);
       setIsOpen(false);
     }
   };
 
   const handleCustomUrl = () => {
     if (customUrl.trim()) {
-      onBackdropChange(customUrl.trim());
+      setMonthlyBackdrop(customUrl.trim());
       setCustomUrl('');
       setIsOpen(false);
     }
   };
+  
+  const monthName = MONTHS_HE[currentMonth.getMonth()];
+  const year = currentMonth.getFullYear();
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -59,7 +62,12 @@ export function BackdropManager({ currentBackdrop, onBackdropChange }: BackdropM
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">בחירת רקע חודשי</DialogTitle>
+          <DialogTitle className="font-display text-xl">
+            בחירת רקע ל{monthName} {year}
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            הרקע נשמר רק לחודש הנוכחי ולא משפיע על חודשים אחרים
+          </p>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -69,13 +77,13 @@ export function BackdropManager({ currentBackdrop, onBackdropChange }: BackdropM
               <button
                 key={backdrop.id}
                 onClick={() => {
-                  onBackdropChange(backdrop.url);
+                  setMonthlyBackdrop(backdrop.url);
                   setIsOpen(false);
                 }}
                 className={cn(
                   'relative aspect-video rounded-lg overflow-hidden border-2 transition-all',
                   currentBackdrop === backdrop.url 
-                    ? 'border-primary ring-2 ring-primary/20' 
+                    ? 'border-royal-blue ring-2 ring-royal-blue/20' 
                     : 'border-border hover:border-sand'
                 )}
               >
@@ -92,7 +100,7 @@ export function BackdropManager({ currentBackdrop, onBackdropChange }: BackdropM
                   {backdrop.name}
                 </span>
                 {currentBackdrop === backdrop.url && (
-                  <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5">
+                  <div className="absolute top-1 right-1 bg-royal-blue text-white rounded-full p-0.5">
                     <Check className="h-3 w-3" />
                   </div>
                 )}
@@ -143,7 +151,7 @@ export function BackdropManager({ currentBackdrop, onBackdropChange }: BackdropM
               variant="ghost"
               size="sm"
               onClick={() => {
-                onBackdropChange('');
+                setMonthlyBackdrop('');
                 setIsOpen(false);
               }}
               className="w-full text-muted-foreground"

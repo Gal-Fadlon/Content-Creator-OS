@@ -1,6 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { User, UserRole, Client, ContentItem, EventItem, Notification, ContentFilters, CalendarView, EventRequest } from '@/types/content';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { User, UserRole, Client, ContentItem, EventItem, Notification, ContentFilters, CalendarView, EventRequest, MonthlyState, PlacedSticker, CustomSticker } from '@/types/content';
 import { mockUsers, mockClients, mockContentItems, mockEvents, mockNotifications } from '@/data/mockData';
+
+// Helper to generate month key
+const getMonthKey = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
 
 interface AppState {
   // User & Role
@@ -40,6 +45,14 @@ interface AppState {
   currentMonth: Date;
   setCurrentMonth: (date: Date) => void;
   
+  // Monthly State (per-month backdrop and stickers)
+  monthlyStates: Record<string, MonthlyState>;
+  getCurrentMonthState: () => MonthlyState;
+  setMonthlyBackdrop: (backdrop: string) => void;
+  setMonthlyStickers: (stickers: PlacedSticker[]) => void;
+  addCustomSticker: (sticker: Omit<CustomSticker, 'id' | 'createdAt'>) => void;
+  removeCustomSticker: (id: string) => void;
+  
   // Notifications
   notifications: Notification[];
   markNotificationRead: (id: string) => void;
@@ -77,6 +90,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [calendarView, setCalendarView] = useState<CalendarView>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 0, 1)); // January 2026
   
+  // Monthly States - separate state per month
+  const [monthlyStates, setMonthlyStates] = useState<Record<string, MonthlyState>>({});
+  
   // Notifications
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -95,6 +111,82 @@ export function AppProvider({ children }: { children: ReactNode }) {
       )
     );
   };
+  
+  // Get current month state
+  const getCurrentMonthState = useCallback((): MonthlyState => {
+    const monthKey = getMonthKey(currentMonth);
+    return monthlyStates[monthKey] || {
+      monthKey,
+      backdrop: '',
+      stickers: [],
+      customStickerBank: [],
+    };
+  }, [currentMonth, monthlyStates]);
+  
+  // Set monthly backdrop (only for current month)
+  const setMonthlyBackdrop = useCallback((backdrop: string) => {
+    const monthKey = getMonthKey(currentMonth);
+    setMonthlyStates(prev => ({
+      ...prev,
+      [monthKey]: {
+        ...prev[monthKey],
+        monthKey,
+        backdrop,
+        stickers: prev[monthKey]?.stickers || [],
+        customStickerBank: prev[monthKey]?.customStickerBank || [],
+      },
+    }));
+  }, [currentMonth]);
+  
+  // Set monthly stickers (only for current month)
+  const setMonthlyStickers = useCallback((stickers: PlacedSticker[]) => {
+    const monthKey = getMonthKey(currentMonth);
+    setMonthlyStates(prev => ({
+      ...prev,
+      [monthKey]: {
+        ...prev[monthKey],
+        monthKey,
+        backdrop: prev[monthKey]?.backdrop || '',
+        stickers,
+        customStickerBank: prev[monthKey]?.customStickerBank || [],
+      },
+    }));
+  }, [currentMonth]);
+  
+  // Add custom sticker to bank
+  const addCustomSticker = useCallback((sticker: Omit<CustomSticker, 'id' | 'createdAt'>) => {
+    const monthKey = getMonthKey(currentMonth);
+    const newSticker: CustomSticker = {
+      ...sticker,
+      id: `custom-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    setMonthlyStates(prev => ({
+      ...prev,
+      [monthKey]: {
+        ...prev[monthKey],
+        monthKey,
+        backdrop: prev[monthKey]?.backdrop || '',
+        stickers: prev[monthKey]?.stickers || [],
+        customStickerBank: [...(prev[monthKey]?.customStickerBank || []), newSticker],
+      },
+    }));
+  }, [currentMonth]);
+  
+  // Remove custom sticker from bank
+  const removeCustomSticker = useCallback((id: string) => {
+    const monthKey = getMonthKey(currentMonth);
+    setMonthlyStates(prev => ({
+      ...prev,
+      [monthKey]: {
+        ...prev[monthKey],
+        monthKey,
+        backdrop: prev[monthKey]?.backdrop || '',
+        stickers: prev[monthKey]?.stickers || [],
+        customStickerBank: (prev[monthKey]?.customStickerBank || []).filter(s => s.id !== id),
+      },
+    }));
+  }, [currentMonth]);
   
   // Content CRUD
   const addContentItem = (item: Omit<ContentItem, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -233,6 +325,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCalendarView,
     currentMonth,
     setCurrentMonth,
+    monthlyStates,
+    getCurrentMonthState,
+    setMonthlyBackdrop,
+    setMonthlyStickers,
+    addCustomSticker,
+    removeCustomSticker,
     notifications,
     markNotificationRead,
     unreadCount,

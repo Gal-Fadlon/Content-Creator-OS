@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { CalendarView } from '@/components/CalendarView';
 import { AssetModal } from '@/components/AssetModal';
@@ -14,38 +14,23 @@ import { BackdropManager } from '@/components/BackdropManager';
 import { Button } from '@/components/ui/button';
 import { Grid3X3, Calendar, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 type ViewMode = 'calendar' | 'grid';
-
-interface PlacedSticker {
-  id: string;
-  icon: React.ElementType;
-  color: string;
-  label: string;
-  visibleId: string;
-  x: number;
-  y: number;
-  rotation: number;
-  scale: number;
-}
 
 function DashboardContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showEventRequestModal, setShowEventRequestModal] = useState(false);
-  const [monthlyBackdrop, setMonthlyBackdrop] = useState('');
-  const [placedStickers, setPlacedStickers] = useState<PlacedSticker[]>([]);
   const calendarContainerRef = useRef<HTMLDivElement>(null);
-  const { userRole, clients, selectedClientId } = useApp();
+  const { userRole, clients, selectedClientId, getCurrentMonthState } = useApp();
   
   const selectedClient = clients.find(c => c.id === selectedClientId);
-  
-  const removeSticker = (id: string) => {
-    setPlacedStickers(prev => prev.filter(s => s.visibleId !== id));
-  };
+  const monthState = getCurrentMonthState();
+  const monthlyBackdrop = monthState.backdrop;
   
   return (
     <div className="min-h-screen relative">
-      {/* Dynamic Monthly Backdrop */}
+      {/* Dynamic Monthly Backdrop - unique per month */}
       {monthlyBackdrop && (
         <div 
           className="backdrop-overlay"
@@ -55,10 +40,10 @@ function DashboardContent() {
       {!monthlyBackdrop && <div className="backdrop-overlay bg-background" />}
       
       {/* Sticker Bank for Admin */}
-      <StickerBank 
-        placedStickers={placedStickers}
-        setPlacedStickers={setPlacedStickers}
-      />
+      <StickerBank />
+      
+      {/* Sticker Overlay - renders placed stickers */}
+      <StickerOverlay containerRef={calendarContainerRef} />
       
       {/* Top fixed title bar */}
       <div className="gradient-header text-header-foreground py-4 text-center shadow-soft relative z-10">
@@ -76,7 +61,7 @@ function DashboardContent() {
               </h2>
               {userRole === 'admin' && <ClientSelector />}
               {userRole === 'client' && selectedClient && (
-                <span className="text-muted-foreground text-sm">
+                <span className="text-muted-foreground text-sm font-body">
                   {selectedClient.name}
                 </span>
               )}
@@ -85,12 +70,7 @@ function DashboardContent() {
             {/* Left side - Actions */}
             <div className="flex items-center gap-3">
               {/* Backdrop Manager (Admin only) */}
-              {userRole === 'admin' && (
-                <BackdropManager 
-                  currentBackdrop={monthlyBackdrop}
-                  onBackdropChange={setMonthlyBackdrop}
-                />
-              )}
+              {userRole === 'admin' && <BackdropManager />}
               
               {/* View Toggle */}
               <div className="flex items-center gap-1 bg-card rounded-xl p-1 shadow-card border border-border/50">
@@ -99,7 +79,7 @@ function DashboardContent() {
                   size="sm"
                   onClick={() => setViewMode('calendar')}
                   className={cn(
-                    'h-9 px-4 rounded-lg',
+                    'h-9 px-4 rounded-lg font-body',
                     viewMode === 'calendar' && 'bg-sand/20 text-earth shadow-sm'
                   )}
                 >
@@ -111,7 +91,7 @@ function DashboardContent() {
                   size="sm"
                   onClick={() => setViewMode('grid')}
                   className={cn(
-                    'h-9 px-4 rounded-lg',
+                    'h-9 px-4 rounded-lg font-body',
                     viewMode === 'grid' && 'bg-sand/20 text-earth shadow-sm'
                   )}
                 >
@@ -126,7 +106,7 @@ function DashboardContent() {
               {/* Client: Request new event button */}
               {userRole === 'client' && (
                 <Button 
-                  className="gap-2 gradient-gold text-foreground shadow-soft border border-sand/30"
+                  className="gap-2 gradient-gold text-foreground shadow-soft border border-sand/30 font-body"
                   onClick={() => setShowEventRequestModal(true)}
                 >
                   <Plus className="h-4 w-4" />
@@ -150,13 +130,6 @@ function DashboardContent() {
       
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 relative" ref={calendarContainerRef}>
-        {/* Sticker Overlay */}
-        <StickerOverlay 
-          stickers={placedStickers}
-          onRemove={removeSticker}
-          containerRef={calendarContainerRef}
-        />
-        
         {viewMode === 'calendar' ? (
           <CalendarView />
         ) : (

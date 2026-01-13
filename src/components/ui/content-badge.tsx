@@ -1,4 +1,6 @@
 import { cn } from '@/lib/utils';
+
+// Updated to use Royal Blue instead of Luxury Purple
 import { ContentType, ContentStatus } from '@/types/content';
 
 interface ContentBadgeProps {
