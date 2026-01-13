@@ -7,13 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Copy, Download, Upload, Check } from 'lucide-react';
+import { X, Copy, Download, Upload, Check, FileImage } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export function AssetModal() {
-  const { selectedItemId, setSelectedItemId, selectedDate, setSelectedDate, userRole, updateContentItem, addContentItem, addEvent } = useApp();
+  const { selectedItemId, setSelectedItemId, selectedDate, setSelectedDate, userRole, updateContentItem, addContentItem, addEvent, selectedClientId } = useApp();
   const item = useCalendarItem(selectedItemId);
   const { toast } = useToast();
   
@@ -21,9 +21,13 @@ export function AssetModal() {
   const [contentType, setContentType] = useState<ContentType>('reel');
   const [status, setStatus] = useState<ContentStatus>('draft');
   const [caption, setCaption] = useState('');
+  const [creativeDescription, setCreativeDescription] = useState('');
   const [eventTitle, setEventTitle] = useState('');
   const [eventDescription, setEventDescription] = useState('');
   const [eventColor, setEventColor] = useState<MarkerColor>('black');
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const isOpen = !!selectedItemId || !!selectedDate;
   const isEditing = !!item;
@@ -33,8 +37,11 @@ export function AssetModal() {
     setSelectedItemId(null);
     setSelectedDate(null);
     setCaption('');
+    setCreativeDescription('');
     setEventTitle('');
     setEventDescription('');
+    setMediaFile(null);
+    setMediaPreview(null);
   };
   
   const handleCopyCaption = () => {
@@ -51,6 +58,69 @@ export function AssetModal() {
     }
   };
   
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setMediaFile(file);
+    const url = URL.createObjectURL(file);
+    setMediaPreview(url);
+    
+    toast({ 
+      title: 'קובץ נבחר', 
+      description: file.name 
+    });
+  };
+  
+  const handleSave = () => {
+    if (!selectedClientId) return;
+    
+    if (mode === 'media') {
+      const dateStr = selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
+      
+      if (isEditing && isContentItem(item!)) {
+        updateContentItem(item.id, {
+          status,
+          caption,
+          creativeDescription,
+          mediaUrl: mediaPreview || item.mediaUrl,
+        });
+      } else {
+        addContentItem({
+          clientId: selectedClientId,
+          type: contentType,
+          status,
+          platform: 'instagram',
+          date: dateStr,
+          caption,
+          creativeDescription,
+          mediaUrl: mediaPreview || undefined,
+          mediaType: mediaFile?.type.startsWith('video') ? 'video' : 'image',
+        });
+      }
+      
+      toast({ title: 'נשמר!', description: 'התוכן נשמר בהצלחה' });
+    } else {
+      const dateStr = selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
+      
+      addEvent({
+        clientId: selectedClientId,
+        title: eventTitle,
+        description: eventDescription,
+        date: dateStr,
+        color: eventColor,
+      });
+      
+      toast({ title: 'נשמר!', description: 'האירוע נוסף בהצלחה' });
+    }
+    
+    handleClose();
+  };
+  
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
   };
@@ -59,10 +129,19 @@ export function AssetModal() {
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden">
-        {/* Dark header */}
-        <div className="bg-header text-header-foreground p-4 flex items-center justify-between">
-          <button onClick={handleClose} className="hover:opacity-70">
+      <DialogContent className="max-w-lg p-0 overflow-hidden shadow-soft">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        
+        {/* Dark header with gradient */}
+        <div className="gradient-midnight text-header-foreground p-4 flex items-center justify-between">
+          <button onClick={handleClose} className="hover:opacity-70 transition-opacity">
             <X className="h-5 w-5" />
           </button>
           <DialogTitle className="text-lg font-medium">
@@ -70,21 +149,21 @@ export function AssetModal() {
           </DialogTitle>
         </div>
         
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 gradient-soft">
           {/* Mode toggle - only for new items */}
           {!isEditing && isAdmin && (
             <div className="flex gap-2">
               <Button
                 variant={mode === 'media' ? 'default' : 'outline'}
                 onClick={() => setMode('media')}
-                className="flex-1 rounded-full"
+                className="flex-1 rounded-full shadow-card"
               >
                 תוכן מדיה
               </Button>
               <Button
                 variant={mode === 'event' ? 'default' : 'outline'}
                 onClick={() => setMode('event')}
-                className="flex-1 rounded-full"
+                className="flex-1 rounded-full shadow-card"
               >
                 אירוע / הערה
               </Button>
@@ -102,7 +181,10 @@ export function AssetModal() {
                       key={type}
                       variant={contentType === type ? 'default' : 'outline'}
                       onClick={() => setContentType(type)}
-                      className="flex-1 rounded-full uppercase"
+                      className={cn(
+                        'flex-1 rounded-full uppercase shadow-card',
+                        contentType === type && 'gradient-gold text-midnight'
+                      )}
                     >
                       {type}
                     </Button>
@@ -113,9 +195,12 @@ export function AssetModal() {
               {/* Status selector (admin only) */}
               {isAdmin && (
                 <div className="space-y-2">
-                  <Label>סטטוס עבודה</Label>
-                  <Select value={isEditing && isContentItem(item!) ? item.status : status} onValueChange={(v) => setStatus(v as ContentStatus)}>
-                    <SelectTrigger>
+                  <Label className="text-charcoal font-medium">סטטוס עבודה</Label>
+                  <Select 
+                    value={isEditing && isContentItem(item!) ? item.status : status} 
+                    onValueChange={(v) => setStatus(v as ContentStatus)}
+                  >
+                    <SelectTrigger className="shadow-card">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -130,50 +215,99 @@ export function AssetModal() {
               
               {/* Media preview or upload */}
               {isEditing && isContentItem(item!) && item.mediaUrl ? (
-                <div className="relative rounded-lg overflow-hidden bg-muted aspect-video">
-                  <img src={item.mediaUrl} alt="" className="w-full h-full object-cover" />
+                <div className="relative rounded-lg overflow-hidden bg-muted aspect-video shadow-card">
+                  <img src={mediaPreview || item.mediaUrl} alt="" className="w-full h-full object-cover" />
                   {!isAdmin && (
-                    <Button size="icon" variant="secondary" className="absolute bottom-2 left-2">
+                    <Button size="icon" variant="secondary" className="absolute bottom-2 left-2 shadow-soft">
                       <Download className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {isAdmin && (
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      className="absolute bottom-2 right-2 shadow-soft"
+                      onClick={handleFileClick}
+                    >
+                      <FileImage className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
               ) : isAdmin ? (
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground text-sm">גרור קובץ או לחץ כאן להעלאה</p>
-                </div>
+                <button
+                  onClick={handleFileClick}
+                  className={cn(
+                    'w-full border-2 border-dashed border-gold/40 rounded-lg p-8 text-center',
+                    'hover:border-gold hover:bg-gold/5 transition-all cursor-pointer shadow-card',
+                    mediaPreview && 'border-solid border-gold bg-gold/5'
+                  )}
+                >
+                  {mediaPreview ? (
+                    <div className="space-y-2">
+                      <img src={mediaPreview} alt="" className="w-full h-32 object-cover rounded" />
+                      <p className="text-sm text-gold">לחץ להחלפת הקובץ</p>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 mx-auto text-gold/60 mb-2" />
+                      <p className="text-gold/80 text-sm font-medium">גרור קובץ או לחץ כאן להעלאה</p>
+                    </>
+                  )}
+                </button>
               ) : null}
+              
+              {/* Creative Description - for admin to describe to client */}
+              {isAdmin && (
+                <div className="space-y-2">
+                  <Label className="text-charcoal font-medium">תיאור הקריאייטיב</Label>
+                  <Textarea
+                    value={isEditing && isContentItem(item!) ? item.creativeDescription || '' : creativeDescription}
+                    onChange={(e) => setCreativeDescription(e.target.value)}
+                    placeholder="תיאור פנימי עבור הלקוח (למשל: סרטון אווירה עם מעברים מהירים)"
+                    className="min-h-[60px] shadow-card bg-gold/5 border-gold/20"
+                  />
+                </div>
+              )}
+              
+              {/* Show creative description to client (read-only) */}
+              {!isAdmin && isEditing && isContentItem(item!) && item.creativeDescription && (
+                <div className="space-y-2">
+                  <Label className="text-charcoal font-medium">תיאור הקריאייטיב</Label>
+                  <div className="bg-gold/10 p-3 rounded-lg text-sm border border-gold/20">
+                    {item.creativeDescription}
+                  </div>
+                </div>
+              )}
               
               {/* Caption */}
               {isEditing && isContentItem(item!) ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Button size="sm" variant="ghost" onClick={handleCopyCaption}>
+                    <Button size="sm" variant="ghost" onClick={handleCopyCaption} className="text-gold hover:text-gold hover:bg-gold/10">
                       <Copy className="h-4 w-4 ml-1" />
                       העתק
                     </Button>
-                    <Label>קופי</Label>
+                    <Label className="text-charcoal font-medium">קופי</Label>
                   </div>
-                  <div className="bg-muted p-3 rounded-lg text-sm whitespace-pre-wrap">
+                  <div className="bg-muted p-3 rounded-lg text-sm whitespace-pre-wrap shadow-card">
                     {item.caption}
                   </div>
                 </div>
               ) : isAdmin && (
                 <div className="space-y-2">
-                  <Label>קופי</Label>
+                  <Label className="text-charcoal font-medium">קופי</Label>
                   <Textarea 
                     value={caption} 
                     onChange={(e) => setCaption(e.target.value)} 
                     placeholder="כתבו את הקופי כאן..."
-                    className="min-h-[100px]"
+                    className="min-h-[100px] shadow-card"
                   />
                 </div>
               )}
               
               {/* Client approve button */}
               {!isAdmin && isEditing && isContentItem(item!) && item.status === 'pending' && (
-                <Button onClick={handleApprove} className="w-full" size="lg">
+                <Button onClick={handleApprove} className="w-full gradient-gold text-midnight shadow-soft" size="lg">
                   <Check className="h-4 w-4 ml-2" />
                   אישור תוכן
                 </Button>
@@ -185,37 +319,39 @@ export function AssetModal() {
           {(mode === 'event' || (isEditing && isEventItem(item!))) && (
             <>
               <div className="space-y-2">
-                <Label>כותרת האירוע</Label>
+                <Label className="text-charcoal font-medium">כותרת האירוע</Label>
                 <Input 
                   value={isEditing && isEventItem(item!) ? item.title : eventTitle}
                   onChange={(e) => setEventTitle(e.target.value)}
                   placeholder="למשל: יום צילום בסטודיו"
                   disabled={!isAdmin}
+                  className="shadow-card"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label>תיאור / הערות</Label>
+                <Label className="text-charcoal font-medium">תיאור / הערות</Label>
                 <Textarea 
                   value={isEditing && isEventItem(item!) ? item.description || '' : eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
                   placeholder="פרטים נוספים..."
                   disabled={!isAdmin}
+                  className="shadow-card"
                 />
               </div>
               
               {isAdmin && (
                 <div className="space-y-2">
-                  <Label>צבע מזהה</Label>
+                  <Label className="text-charcoal font-medium">צבע מזהה</Label>
                   <div className="flex gap-2 justify-end">
                     {(['red', 'blue', 'beige', 'brown', 'black'] as MarkerColor[]).map((color) => (
                       <button
                         key={color}
                         onClick={() => setEventColor(color)}
                         className={cn(
-                          'w-10 h-10 rounded-full transition-all',
+                          'w-10 h-10 rounded-full transition-all shadow-card',
                           `bg-marker-${color}`,
-                          eventColor === color && 'ring-2 ring-offset-2 ring-foreground'
+                          eventColor === color && 'ring-2 ring-offset-2 ring-gold'
                         )}
                       />
                     ))}
@@ -227,16 +363,17 @@ export function AssetModal() {
           
           {/* Save button (admin only) */}
           {isAdmin && (
-            <Button className="w-full" size="lg">
+            <Button onClick={handleSave} className="w-full gradient-midnight text-white shadow-soft" size="lg">
               שמור שינויים
             </Button>
           )}
           
-          {/* Request new content button (client only for new) */}
+          {/* Info for client when viewing new date (they should use the + button) */}
           {!isAdmin && !isEditing && (
-            <Button className="w-full" size="lg">
-              בקשת אירוע חדש
-            </Button>
+            <div className="text-center text-muted-foreground py-4">
+              <p>השתמש בכפתור "+" בתפריט העליון</p>
+              <p className="text-sm">כדי לבקש אירוע חדש</p>
+            </div>
           )}
         </div>
       </DialogContent>
