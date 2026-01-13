@@ -4,6 +4,12 @@ import { ContentBadge, StatusBadge } from '@/components/ui/content-badge';
 import { ChevronLeft, ChevronRight, Film, Image, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { ContentItem } from '@/types/content';
 
 const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
@@ -144,24 +150,52 @@ export function CalendarView() {
                       {day.date.getDate()}
                     </span>
                     
-                    {/* Content type icons as overlay */}
+                    {/* Content type icons as overlay with hover tooltip */}
                     {day.content.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {day.content.slice(0, 3).map((item) => (
-                          <div
-                            key={item.id}
-                            onClick={(e) => handleItemClick(item.id, e)}
-                            className={cn(
-                              'cursor-pointer p-1 rounded transition-transform hover:scale-110',
-                              thumbnailUrl ? 'bg-white/90 text-foreground' : 'bg-muted',
-                              item.type === 'reel' && !thumbnailUrl && 'bg-royal-blue/20 text-royal-blue',
-                              item.type === 'story' && !thumbnailUrl && 'bg-sand/30 text-earth',
-                              item.type === 'post' && !thumbnailUrl && 'bg-earth/20 text-earth'
+                          <HoverCard key={item.id} openDelay={200} closeDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <div
+                                onClick={(e) => handleItemClick(item.id, e)}
+                                className={cn(
+                                  'cursor-pointer p-1 rounded transition-transform hover:scale-110',
+                                  thumbnailUrl ? 'bg-white/90 text-foreground' : 'bg-muted',
+                                  item.type === 'reel' && !thumbnailUrl && 'bg-royal-blue/20 text-royal-blue',
+                                  item.type === 'story' && !thumbnailUrl && 'bg-sand/30 text-earth',
+                                  item.type === 'post' && !thumbnailUrl && 'bg-earth/20 text-earth'
+                                )}
+                              >
+                                <ContentTypeIcon type={item.type} />
+                              </div>
+                            </HoverCardTrigger>
+                            {(item.creativeDescription || item.caption) && (
+                              <HoverCardContent 
+                                side="top" 
+                                align="center" 
+                                className="w-64 p-3 text-right bg-card border-border shadow-lg z-50"
+                              >
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <ContentTypeIcon type={item.type} />
+                                    <span>{item.type === 'reel' ? 'רילס' : item.type === 'story' ? 'סטורי' : 'פוסט'}</span>
+                                  </div>
+                                  {item.creativeDescription && (
+                                    <div>
+                                      <p className="text-[10px] text-muted-foreground mb-0.5">תיאור קריאייטיב:</p>
+                                      <p className="text-xs text-foreground leading-relaxed">{item.creativeDescription}</p>
+                                    </div>
+                                  )}
+                                  {item.caption && (
+                                    <div>
+                                      <p className="text-[10px] text-muted-foreground mb-0.5">קופי:</p>
+                                      <p className="text-xs text-foreground leading-relaxed line-clamp-3">{item.caption}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </HoverCardContent>
                             )}
-                            title={item.type === 'reel' ? 'רילס' : item.type === 'story' ? 'סטורי' : 'פוסט'}
-                          >
-                            <ContentTypeIcon type={item.type} />
-                          </div>
+                          </HoverCard>
                         ))}
                         {day.content.length > 3 && (
                           <span className={cn(
