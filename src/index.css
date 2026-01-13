@@ -2,131 +2,133 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Social Media Content OS - Luxury Design System
-   Light gray background, dark brown-black headers, white cards
-   Enhanced with Champagne Gold, Midnight Blue, Slate/Taupe accents
-   Soft UI with subtle gradients and shadows
+/* Content OS - Boutique Moodboard Design System
+   Luxury palette with physical paper card aesthetics
+   RTL Hebrew support with artistic typography
 */
 
 @layer base {
   :root {
-    /* Main background - light gray */
-    --background: 0 0% 82%;
-    --foreground: 30 5% 15%;
+    /* Main background - will be overlaid with monthly backdrop */
+    --background: 0 0% 85%;
+    --foreground: 15 30% 20%;
 
-    /* Card backgrounds - white/off-white */
-    --card: 0 0% 98%;
-    --card-foreground: 30 5% 15%;
+    /* Card backgrounds - cream/paper texture feel */
+    --card: 40 30% 96%;
+    --card-foreground: 15 30% 20%;
 
-    /* Popover - dark header */
-    --popover: 0 0% 98%;
-    --popover-foreground: 30 5% 15%;
+    /* Popover */
+    --popover: 40 30% 98%;
+    --popover-foreground: 15 30% 20%;
 
-    /* Primary - dark brown-black for buttons */
-    --primary: 30 5% 20%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary - earth brown accent #823d22 */
+    --primary: 18 60% 32%;
+    --primary-foreground: 40 30% 96%;
 
-    /* Secondary - light pills/buttons */
-    --secondary: 0 0% 92%;
-    --secondary-foreground: 30 5% 20%;
+    /* Secondary - light cream */
+    --secondary: 40 20% 92%;
+    --secondary-foreground: 15 30% 20%;
 
     /* Muted elements */
-    --muted: 0 0% 88%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 84%;
+    --muted-foreground: 0 0% 40%;
 
-    /* Accent - for highlights */
-    --accent: 0 0% 92%;
-    --accent-foreground: 30 5% 20%;
+    /* Accent - sand gold #c8ad7f */
+    --accent: 38 38% 64%;
+    --accent-foreground: 15 30% 15%;
 
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive - deep burgundy #6b1b00 */
+    --destructive: 16 100% 21%;
+    --destructive-foreground: 40 30% 96%;
 
     /* Borders */
-    --border: 0 0% 78%;
-    --input: 0 0% 85%;
-    --ring: 30 5% 20%;
+    --border: 30 10% 80%;
+    --input: 30 10% 88%;
+    --ring: 18 60% 32%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* LUXURY PALETTE - Champagne Gold, Midnight Blue, Slate/Taupe */
-    --gold: 42 35% 55%;
-    --gold-light: 42 40% 75%;
-    --gold-dark: 42 35% 40%;
-    --midnight: 220 45% 20%;
-    --midnight-light: 220 35% 35%;
-    --slate: 200 10% 45%;
-    --taupe: 30 15% 50%;
-    --charcoal: 210 10% 25%;
+    /* BOUTIQUE LUXURY PALETTE */
+    /* Luxury Purple #902084 */
+    --luxury-purple: 305 65% 35%;
+    /* Deep Burgundy #6b1b00 */
+    --burgundy: 16 100% 21%;
+    /* Sand Gold #c8ad7f */
+    --sand-gold: 38 38% 64%;
+    /* Light Gray #d6d6d6 */
+    --light-gray: 0 0% 84%;
+    /* Cream #f7f5f0 */
+    --cream: 40 30% 96%;
+    /* Earth Brown Accent #823d22 */
+    --earth-brown: 18 60% 32%;
 
-    /* Status colors - enhanced luxury tones */
-    --status-draft: 200 10% 60%;
-    --status-pending: 42 70% 55%;
-    --status-approved: 265 40% 55%;
-    --status-published: 160 45% 45%;
+    /* Status colors - luxury tones */
+    --status-draft: 0 0% 60%;
+    --status-pending: 38 70% 55%;
+    --status-approved: 305 65% 35%;
+    --status-published: 160 45% 40%;
 
-    /* Content type colors - rich deep tones */
-    --content-reel: 350 50% 40%;
-    --content-story: 220 55% 45%;
-    --content-post: 30 50% 45%;
+    /* Content type colors */
+    --content-reel: 305 65% 35%;
+    --content-story: 38 38% 64%;
+    --content-post: 18 60% 32%;
 
     /* Event marker colors */
-    --marker-red: 5 70% 55%;
-    --marker-blue: 220 70% 45%;
-    --marker-beige: 35 40% 70%;
-    --marker-brown: 20 50% 35%;
-    --marker-black: 0 0% 20%;
+    --marker-red: 16 100% 21%;
+    --marker-blue: 305 65% 35%;
+    --marker-beige: 38 38% 70%;
+    --marker-brown: 18 60% 32%;
+    --marker-black: 0 0% 15%;
 
-    /* Header dark style */
-    --header-bg: 220 45% 15%;
-    --header-foreground: 0 0% 98%;
+    /* Header style */
+    --header-bg: 18 60% 25%;
+    --header-foreground: 40 30% 96%;
 
-    /* Shadows & Effects */
-    --shadow-soft: 0 4px 20px -2px hsla(220, 45%, 20%, 0.08);
-    --shadow-card: 0 2px 12px -2px hsla(220, 45%, 20%, 0.05);
-    --shadow-glow: 0 0 20px hsla(42, 35%, 55%, 0.2);
+    /* Shadows & Effects - soft paper shadows */
+    --shadow-soft: 0 8px 32px -4px hsla(18, 60%, 20%, 0.15);
+    --shadow-card: 0 4px 24px -8px hsla(18, 60%, 20%, 0.12);
+    --shadow-paper: 0 12px 48px -12px hsla(18, 60%, 20%, 0.2), 0 4px 16px -4px hsla(18, 60%, 20%, 0.1);
+    --shadow-glow: 0 0 24px hsla(38, 38%, 64%, 0.3);
 
     /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(42, 35%, 55%) 0%, hsl(42, 40%, 75%) 100%);
-    --gradient-midnight: linear-gradient(135deg, hsl(220, 45%, 20%) 0%, hsl(220, 35%, 35%) 100%);
-    --gradient-soft: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(0, 0%, 96%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(38, 38%, 64%) 0%, hsl(38, 45%, 75%) 100%);
+    --gradient-header: linear-gradient(135deg, hsl(18, 60%, 25%) 0%, hsl(18, 50%, 35%) 100%);
+    --gradient-cream: linear-gradient(180deg, hsl(40, 30%, 98%) 0%, hsl(40, 25%, 94%) 100%);
+    --gradient-purple: linear-gradient(135deg, hsl(305, 65%, 35%) 0%, hsl(305, 55%, 45%) 100%);
   }
 
   .dark {
-    --background: 220 20% 8%;
-    --foreground: 0 0% 95%;
+    --background: 15 15% 8%;
+    --foreground: 40 20% 90%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 0 0% 95%;
+    --card: 15 10% 12%;
+    --card-foreground: 40 20% 90%;
 
-    --popover: 220 20% 10%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 15 10% 10%;
+    --popover-foreground: 40 20% 90%;
 
-    --primary: 42 35% 55%;
-    --primary-foreground: 220 20% 8%;
+    --primary: 38 45% 60%;
+    --primary-foreground: 15 15% 8%;
 
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 15 10% 18%;
+    --secondary-foreground: 40 20% 90%;
 
-    --muted: 220 20% 20%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 15 10% 20%;
+    --muted-foreground: 40 10% 60%;
 
-    --accent: 220 20% 18%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 38 38% 55%;
+    --accent-foreground: 15 15% 8%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 95%;
+    --destructive: 16 80% 35%;
+    --destructive-foreground: 40 20% 90%;
 
-    --border: 220 20% 22%;
-    --input: 220 20% 22%;
-    --ring: 42 35% 55%;
+    --border: 15 10% 22%;
+    --input: 15 10% 22%;
+    --ring: 38 45% 60%;
 
-    --gold: 42 40% 60%;
-    --gold-light: 42 45% 70%;
-    --midnight: 220 40% 35%;
-    --slate: 200 15% 55%;
-    --taupe: 30 20% 55%;
-    --charcoal: 210 15% 40%;
+    --luxury-purple: 305 55% 50%;
+    --burgundy: 16 80% 35%;
+    --sand-gold: 38 45% 60%;
   }
 }
 
@@ -164,6 +166,10 @@
     box-shadow: var(--shadow-card);
   }
 
+  .shadow-paper {
+    box-shadow: var(--shadow-paper);
+  }
+
   .shadow-glow-gold {
     box-shadow: var(--shadow-glow);
   }
@@ -172,11 +178,67 @@
     background: var(--gradient-gold);
   }
 
-  .gradient-midnight {
-    background: var(--gradient-midnight);
+  .gradient-header {
+    background: var(--gradient-header);
   }
 
-  .gradient-soft {
-    background: var(--gradient-soft);
+  .gradient-cream {
+    background: var(--gradient-cream);
+  }
+
+  .gradient-purple {
+    background: var(--gradient-purple);
+  }
+
+  /* Paper card effect */
+  .paper-card {
+    background: var(--gradient-cream);
+    box-shadow: var(--shadow-paper);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Sticker effect */
+  .sticker {
+    filter: drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.15));
+    transition: transform 0.2s ease, filter 0.2s ease;
+    cursor: grab;
+  }
+
+  .sticker:hover {
+    transform: scale(1.05) rotate(-2deg);
+    filter: drop-shadow(4px 6px 8px rgba(0, 0, 0, 0.2));
+  }
+
+  .sticker:active {
+    cursor: grabbing;
+  }
+
+  /* Handwritten style for theme */
+  .handwritten {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* Backdrop overlay */
+  .backdrop-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .backdrop-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      hsla(40, 30%, 96%, 0.85) 0%,
+      hsla(40, 30%, 96%, 0.75) 50%,
+      hsla(40, 30%, 96%, 0.9) 100%
+    );
   }
 }

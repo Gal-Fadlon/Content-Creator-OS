@@ -51,19 +51,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Luxury palette
-        gold: {
-          DEFAULT: "hsl(var(--gold))",
-          light: "hsl(var(--gold-light))",
-          dark: "hsl(var(--gold-dark))",
+        // Boutique luxury palette
+        luxury: {
+          purple: "hsl(var(--luxury-purple))",
         },
-        midnight: {
-          DEFAULT: "hsl(var(--midnight))",
-          light: "hsl(var(--midnight-light))",
+        burgundy: "hsl(var(--burgundy))",
+        sand: {
+          DEFAULT: "hsl(var(--sand-gold))",
         },
-        slate: "hsl(var(--slate))",
-        taupe: "hsl(var(--taupe))",
-        charcoal: "hsl(var(--charcoal))",
+        cream: "hsl(var(--cream))",
+        earth: "hsl(var(--earth-brown))",
         // Status colors
         status: {
           draft: "hsl(var(--status-draft))",
