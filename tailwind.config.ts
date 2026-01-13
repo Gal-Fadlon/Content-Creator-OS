@@ -51,6 +51,19 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Luxury palette
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          light: "hsl(var(--gold-light))",
+          dark: "hsl(var(--gold-dark))",
+        },
+        midnight: {
+          DEFAULT: "hsl(var(--midnight))",
+          light: "hsl(var(--midnight-light))",
+        },
+        slate: "hsl(var(--slate))",
+        taupe: "hsl(var(--taupe))",
+        charcoal: "hsl(var(--charcoal))",
         // Status colors
         status: {
           draft: "hsl(var(--status-draft))",

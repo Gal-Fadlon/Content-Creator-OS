@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Social Media Content OS - Design System
-   Based on reference images: Light gray (#D1D1D1), dark brown-black, white
-   Status colors: Yellow (pending), Purple (approved), Brown/Red (content types)
-   All colors in HSL format
+/* Social Media Content OS - Luxury Design System
+   Light gray background, dark brown-black headers, white cards
+   Enhanced with Champagne Gold, Midnight Blue, Slate/Taupe accents
+   Soft UI with subtle gradients and shadows
 */
 
 @layer base {
   :root {
-    /* Main background - light gray like reference */
+    /* Main background - light gray */
     --background: 0 0% 82%;
     --foreground: 30 5% 15%;
 
@@ -18,7 +18,7 @@
     --card: 0 0% 98%;
     --card-foreground: 30 5% 15%;
 
-    /* Popover - dark header like reference */
+    /* Popover - dark header */
     --popover: 0 0% 98%;
     --popover-foreground: 30 5% 15%;
 
@@ -49,16 +49,26 @@
 
     --radius: 0.75rem;
 
-    /* Status colors */
-    --status-draft: 0 0% 70%;
-    --status-pending: 45 80% 70%;
-    --status-approved: 270 50% 70%;
-    --status-published: 142 50% 50%;
+    /* LUXURY PALETTE - Champagne Gold, Midnight Blue, Slate/Taupe */
+    --gold: 42 35% 55%;
+    --gold-light: 42 40% 75%;
+    --gold-dark: 42 35% 40%;
+    --midnight: 220 45% 20%;
+    --midnight-light: 220 35% 35%;
+    --slate: 200 10% 45%;
+    --taupe: 30 15% 50%;
+    --charcoal: 210 10% 25%;
 
-    /* Content type colors - brown/red tones like reference */
-    --content-reel: 10 45% 35%;
-    --content-story: 220 60% 40%;
-    --content-post: 35 60% 50%;
+    /* Status colors - enhanced luxury tones */
+    --status-draft: 200 10% 60%;
+    --status-pending: 42 70% 55%;
+    --status-approved: 265 40% 55%;
+    --status-published: 160 45% 45%;
+
+    /* Content type colors - rich deep tones */
+    --content-reel: 350 50% 40%;
+    --content-story: 220 55% 45%;
+    --content-post: 30 50% 45%;
 
     /* Event marker colors */
     --marker-red: 5 70% 55%;
@@ -68,38 +78,55 @@
     --marker-black: 0 0% 20%;
 
     /* Header dark style */
-    --header-bg: 30 5% 20%;
+    --header-bg: 220 45% 15%;
     --header-foreground: 0 0% 98%;
+
+    /* Shadows & Effects */
+    --shadow-soft: 0 4px 20px -2px hsla(220, 45%, 20%, 0.08);
+    --shadow-card: 0 2px 12px -2px hsla(220, 45%, 20%, 0.05);
+    --shadow-glow: 0 0 20px hsla(42, 35%, 55%, 0.2);
+
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(42, 35%, 55%) 0%, hsl(42, 40%, 75%) 100%);
+    --gradient-midnight: linear-gradient(135deg, hsl(220, 45%, 20%) 0%, hsl(220, 35%, 35%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(0, 0%, 96%) 100%);
   }
 
   .dark {
-    --background: 30 10% 10%;
+    --background: 220 20% 8%;
     --foreground: 0 0% 95%;
 
-    --card: 30 10% 15%;
+    --card: 220 20% 12%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 30 10% 12%;
+    --popover: 220 20% 10%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 0 0% 95%;
-    --primary-foreground: 30 10% 10%;
+    --primary: 42 35% 55%;
+    --primary-foreground: 220 20% 8%;
 
-    --secondary: 30 10% 20%;
+    --secondary: 220 20% 18%;
     --secondary-foreground: 0 0% 95%;
 
-    --muted: 30 10% 25%;
+    --muted: 220 20% 20%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 30 10% 20%;
+    --accent: 220 20% 18%;
     --accent-foreground: 0 0% 95%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 30 10% 25%;
-    --input: 30 10% 25%;
-    --ring: 0 0% 80%;
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
+    --ring: 42 35% 55%;
+
+    --gold: 42 40% 60%;
+    --gold-light: 42 45% 70%;
+    --midnight: 220 40% 35%;
+    --slate: 200 15% 55%;
+    --taupe: 30 20% 55%;
+    --charcoal: 210 15% 40%;
   }
 }
 
@@ -127,5 +154,29 @@
 @layer utilities {
   .text-shadow-sm {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-glow-gold {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .gradient-gold {
+    background: var(--gradient-gold);
+  }
+
+  .gradient-midnight {
+    background: var(--gradient-midnight);
+  }
+
+  .gradient-soft {
+    background: var(--gradient-soft);
   }
 }

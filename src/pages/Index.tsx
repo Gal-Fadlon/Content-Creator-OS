@@ -6,78 +6,38 @@ import { FilterBar } from '@/components/FilterBar';
 import { RoleToggle } from '@/components/RoleToggle';
 import { NotificationBell } from '@/components/NotificationBell';
 import { ClientSelector } from '@/components/ClientSelector';
+import { MonthlyThemeEditor } from '@/components/MonthlyThemeEditor';
+import { InteractiveGridView } from '@/components/InteractiveGridView';
+import { ClientEventRequestModal } from '@/components/ClientEventRequestModal';
 import { Button } from '@/components/ui/button';
 import { Grid3X3, Calendar, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type ViewMode = 'calendar' | 'grid';
 
-function InstagramGridView() {
-  const { contentItems, selectedClientId } = useApp();
-  
-  const clientContent = contentItems
-    .filter(item => item.clientId === selectedClientId && item.status === 'approved')
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  
-  return (
-    <div className="grid grid-cols-3 md:grid-cols-6 gap-1 max-w-4xl mx-auto">
-      {clientContent.map((item) => (
-        <div 
-          key={item.id} 
-          className="aspect-square bg-muted rounded-sm overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-        >
-          {item.mediaUrl ? (
-            item.type === 'reel' ? (
-              <div className="relative w-full h-full">
-                <video 
-                  src={item.mediaUrl} 
-                  className="w-full h-full object-cover"
-                  muted
-                />
-                <div className="absolute bottom-1 left-1 text-white text-xs bg-black/50 px-1 rounded">
-                  ▶
-                </div>
-              </div>
-            ) : (
-              <img 
-                src={item.mediaUrl} 
-                alt={item.caption?.slice(0, 30) || 'Content'} 
-                className="w-full h-full object-cover"
-              />
-            )
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-              אין מדיה
-            </div>
-          )}
-        </div>
-      ))}
-      {clientContent.length === 0 && (
-        <div className="col-span-full text-center py-12 text-muted-foreground">
-          אין תוכן מאושר להצגה
-        </div>
-      )}
-    </div>
-  );
-}
-
 function DashboardContent() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+  const [showEventRequestModal, setShowEventRequestModal] = useState(false);
   const { userRole, clients, selectedClientId } = useApp();
   
   const selectedClient = clients.find(c => c.id === selectedClientId);
   
   return (
     <div className="min-h-screen bg-background">
+      {/* Top fixed title bar */}
+      <div className="gradient-midnight text-header-foreground py-3 text-center shadow-soft">
+        <h1 className="text-lg font-display tracking-wide">ניהול ואסטרטגיית תוכן</h1>
+      </div>
+      
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
+      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border shadow-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Right side - Logo & Client */}
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-display font-bold text-foreground">
+              <h2 className="text-xl font-display font-bold text-foreground">
                 Content OS
-              </h1>
+              </h2>
               {userRole === 'admin' && <ClientSelector />}
               {userRole === 'client' && selectedClient && (
                 <span className="text-muted-foreground text-sm">
@@ -89,7 +49,7 @@ function DashboardContent() {
             {/* Left side - Actions */}
             <div className="flex items-center gap-3">
               {/* View Toggle */}
-              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-1 shadow-card">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -121,7 +81,10 @@ function DashboardContent() {
               
               {/* Client: Request new event button */}
               {userRole === 'client' && (
-                <Button className="gap-2">
+                <Button 
+                  className="gap-2 gradient-gold text-midnight shadow-soft"
+                  onClick={() => setShowEventRequestModal(true)}
+                >
                   <Plus className="h-4 w-4" />
                   בקשת אירוע חדש
                 </Button>
@@ -130,6 +93,11 @@ function DashboardContent() {
           </div>
         </div>
       </header>
+      
+      {/* Monthly Theme */}
+      <div className="container mx-auto px-4 py-3 border-b border-border bg-card/50">
+        <MonthlyThemeEditor />
+      </div>
       
       {/* Filter Bar */}
       <div className="container mx-auto px-4 py-4 border-b border-border">
@@ -141,12 +109,16 @@ function DashboardContent() {
         {viewMode === 'calendar' ? (
           <CalendarView />
         ) : (
-          <InstagramGridView />
+          <InteractiveGridView />
         )}
       </main>
       
-      {/* Asset Modal */}
+      {/* Modals */}
       <AssetModal />
+      <ClientEventRequestModal 
+        open={showEventRequestModal} 
+        onOpenChange={setShowEventRequestModal} 
+      />
     </div>
   );
 }

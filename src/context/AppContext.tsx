@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { User, UserRole, Client, ContentItem, EventItem, Notification, ContentFilters, CalendarView } from '@/types/content';
+import { User, UserRole, Client, ContentItem, EventItem, Notification, ContentFilters, CalendarView, EventRequest } from '@/types/content';
 import { mockUsers, mockClients, mockContentItems, mockEvents, mockNotifications } from '@/data/mockData';
 
 interface AppState {
@@ -12,6 +12,7 @@ interface AppState {
   selectedClientId: string | null;
   setSelectedClientId: (id: string | null) => void;
   clients: Client[];
+  updateClientTheme: (clientId: string, theme: string) => void;
   
   // Content & Events
   contentItems: ContentItem[];
@@ -22,6 +23,12 @@ interface AppState {
   addEvent: (event: Omit<EventItem, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateEvent: (id: string, updates: Partial<EventItem>) => void;
   deleteEvent: (id: string) => void;
+  
+  // Event Requests (from clients)
+  eventRequests: EventRequest[];
+  addEventRequest: (request: Omit<EventRequest, 'id' | 'createdAt'>) => void;
+  approveEventRequest: (id: string) => void;
+  rejectEventRequest: (id: string) => void;
   
   // Filters
   filters: ContentFilters;
@@ -54,11 +61,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   // Client selection
   const [selectedClientId, setSelectedClientId] = useState<string | null>('c1');
-  const [clients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<Client[]>(mockClients);
   
   // Content & Events state
   const [contentItems, setContentItems] = useState<ContentItem[]>(mockContentItems);
   const [events, setEvents] = useState<EventItem[]>(mockEvents);
+  
+  // Event Requests
+  const [eventRequests, setEventRequests] = useState<EventRequest[]>([]);
   
   // Filters
   const [filters, setFilters] = useState<ContentFilters>({});
@@ -74,6 +84,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Modal states
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  
+  // Client theme update
+  const updateClientTheme = (clientId: string, theme: string) => {
+    setClients(prev =>
+      prev.map(client =>
+        client.id === clientId
+          ? { ...client, monthlyTheme: theme }
+          : client
+      )
+    );
+  };
   
   // Content CRUD
   const addContentItem = (item: Omit<ContentItem, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -127,6 +148,56 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setEvents(prev => prev.filter(event => event.id !== id));
   };
   
+  // Event Requests
+  const addEventRequest = (request: Omit<EventRequest, 'id' | 'createdAt'>) => {
+    const now = new Date().toISOString();
+    const newRequest: EventRequest = {
+      ...request,
+      id: `request-${Date.now()}`,
+      createdAt: now,
+    };
+    setEventRequests(prev => [...prev, newRequest]);
+    
+    // Add notification for admin
+    const client = clients.find(c => c.id === request.clientId);
+    const notification: Notification = {
+      id: `notif-${Date.now()}`,
+      type: 'event_request',
+      title: 'בקשה לאירוע חדש',
+      message: `${client?.name || 'לקוח'} ביקש אירוע: ${request.title}`,
+      eventRequestId: newRequest.id,
+      clientId: request.clientId,
+      read: false,
+      createdAt: now,
+    };
+    setNotifications(prev => [notification, ...prev]);
+  };
+  
+  const approveEventRequest = (id: string) => {
+    const request = eventRequests.find(r => r.id === id);
+    if (!request) return;
+    
+    // Create the event
+    addEvent({
+      clientId: request.clientId,
+      title: request.title,
+      description: request.description,
+      date: request.date,
+      color: 'blue',
+    });
+    
+    // Update request status
+    setEventRequests(prev =>
+      prev.map(r => r.id === id ? { ...r, status: 'approved' } : r)
+    );
+  };
+  
+  const rejectEventRequest = (id: string) => {
+    setEventRequests(prev =>
+      prev.map(r => r.id === id ? { ...r, status: 'rejected' } : r)
+    );
+  };
+  
   // Notifications
   const markNotificationRead = (id: string) => {
     setNotifications(prev =>
@@ -143,6 +214,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     selectedClientId,
     setSelectedClientId,
     clients,
+    updateClientTheme,
     contentItems,
     events,
     addContentItem,
@@ -151,6 +223,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addEvent,
     updateEvent,
     deleteEvent,
+    eventRequests,
+    addEventRequest,
+    approveEventRequest,
+    rejectEventRequest,
     filters,
     setFilters,
     calendarView,
