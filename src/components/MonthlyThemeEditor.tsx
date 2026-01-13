@@ -3,15 +3,26 @@ import { useApp } from '@/context/AppContext';
 import { Pencil, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
 export function MonthlyThemeEditor() {
-  const { clients, selectedClientId, userRole, updateClientTheme } = useApp();
-  const selectedClient = clients.find(c => c.id === selectedClientId);
+  const { userRole, currentMonth, getCurrentMonthState, setMonthlyTheme } = useApp();
+  
+  const monthState = getCurrentMonthState();
+  const savedTheme = monthState.theme;
   
   const [isEditing, setIsEditing] = useState(false);
-  const [theme, setTheme] = useState(selectedClient?.monthlyTheme || '');
+  const [theme, setTheme] = useState(savedTheme);
   const inputRef = useRef<HTMLInputElement>(null);
   
   const isAdmin = userRole === 'admin';
+  const monthName = MONTHS_HE[currentMonth.getMonth()];
+  const year = currentMonth.getFullYear();
+  
+  // Update local state when month changes
+  useEffect(() => {
+    setTheme(savedTheme);
+  }, [savedTheme]);
   
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -20,19 +31,15 @@ export function MonthlyThemeEditor() {
     }
   }, [isEditing]);
   
-  useEffect(() => {
-    setTheme(selectedClient?.monthlyTheme || '');
-  }, [selectedClient?.monthlyTheme]);
-  
   const handleSave = () => {
-    if (selectedClientId && theme.trim()) {
-      updateClientTheme(selectedClientId, theme.trim());
+    if (theme.trim()) {
+      setMonthlyTheme(theme.trim());
     }
     setIsEditing(false);
   };
   
   const handleCancel = () => {
-    setTheme(selectedClient?.monthlyTheme || '');
+    setTheme(savedTheme);
     setIsEditing(false);
   };
   
@@ -44,11 +51,9 @@ export function MonthlyThemeEditor() {
     }
   };
   
-  if (!selectedClient) return null;
-  
   return (
     <div className="flex items-center justify-center gap-3 text-sm">
-      <span className="text-sand font-medium">נושא חודשי</span>
+      <span className="text-sand font-medium">נושא חודשי ({monthName} {year})</span>
       <span className="text-muted-foreground">|</span>
       
       {isEditing ? (
@@ -61,7 +66,7 @@ export function MonthlyThemeEditor() {
             onKeyDown={handleKeyDown}
             className={cn(
               'bg-transparent border-b-2 border-sand/50 focus:border-sand outline-none px-2 py-1',
-              'handwritten text-xl text-luxury-purple min-w-[200px]'
+              'handwritten text-xl text-royal-blue min-w-[200px]'
             )}
             placeholder="הזן נושא חודשי..."
           />
@@ -80,8 +85,8 @@ export function MonthlyThemeEditor() {
         </div>
       ) : (
         <div className="flex items-center gap-2 group">
-          <span className="handwritten text-xl text-luxury-purple">
-            {selectedClient.monthlyTheme || 'לא הוגדר'}
+          <span className="handwritten text-xl text-royal-blue">
+            {savedTheme || 'לא הוגדר'}
           </span>
           {isAdmin && (
             <button

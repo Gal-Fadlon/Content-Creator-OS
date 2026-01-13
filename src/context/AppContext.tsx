@@ -45,11 +45,12 @@ interface AppState {
   currentMonth: Date;
   setCurrentMonth: (date: Date) => void;
   
-  // Monthly State (per-month backdrop and stickers)
+  // Monthly State (per-month backdrop, stickers, and theme)
   monthlyStates: Record<string, MonthlyState>;
   getCurrentMonthState: () => MonthlyState;
   setMonthlyBackdrop: (backdrop: string) => void;
   setMonthlyStickers: (stickers: PlacedSticker[]) => void;
+  setMonthlyTheme: (theme: string) => void;
   addCustomSticker: (sticker: Omit<CustomSticker, 'id' | 'createdAt'>) => void;
   removeCustomSticker: (id: string) => void;
   
@@ -101,7 +102,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   
-  // Client theme update
+  // Client theme update (legacy - kept for backward compatibility)
   const updateClientTheme = (clientId: string, theme: string) => {
     setClients(prev =>
       prev.map(client =>
@@ -120,6 +121,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       backdrop: '',
       stickers: [],
       customStickerBank: [],
+      theme: '',
     };
   }, [currentMonth, monthlyStates]);
   
@@ -134,6 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         backdrop,
         stickers: prev[monthKey]?.stickers || [],
         customStickerBank: prev[monthKey]?.customStickerBank || [],
+        theme: prev[monthKey]?.theme || '',
       },
     }));
   }, [currentMonth]);
@@ -149,6 +152,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         backdrop: prev[monthKey]?.backdrop || '',
         stickers,
         customStickerBank: prev[monthKey]?.customStickerBank || [],
+        theme: prev[monthKey]?.theme || '',
+      },
+    }));
+  }, [currentMonth]);
+  
+  // Set monthly theme (only for current month)
+  const setMonthlyTheme = useCallback((theme: string) => {
+    const monthKey = getMonthKey(currentMonth);
+    setMonthlyStates(prev => ({
+      ...prev,
+      [monthKey]: {
+        ...prev[monthKey],
+        monthKey,
+        backdrop: prev[monthKey]?.backdrop || '',
+        stickers: prev[monthKey]?.stickers || [],
+        customStickerBank: prev[monthKey]?.customStickerBank || [],
+        theme,
       },
     }));
   }, [currentMonth]);
@@ -169,6 +189,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         backdrop: prev[monthKey]?.backdrop || '',
         stickers: prev[monthKey]?.stickers || [],
         customStickerBank: [...(prev[monthKey]?.customStickerBank || []), newSticker],
+        theme: prev[monthKey]?.theme || '',
       },
     }));
   }, [currentMonth]);
@@ -184,6 +205,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         backdrop: prev[monthKey]?.backdrop || '',
         stickers: prev[monthKey]?.stickers || [],
         customStickerBank: (prev[monthKey]?.customStickerBank || []).filter(s => s.id !== id),
+        theme: prev[monthKey]?.theme || '',
       },
     }));
   }, [currentMonth]);
@@ -329,6 +351,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     getCurrentMonthState,
     setMonthlyBackdrop,
     setMonthlyStickers,
+    setMonthlyTheme,
     addCustomSticker,
     removeCustomSticker,
     notifications,

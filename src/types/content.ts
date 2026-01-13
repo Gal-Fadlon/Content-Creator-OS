@@ -21,6 +21,10 @@ export interface ContentItem {
   notes?: string;
   technicalInstructions?: string;
   gridOrder?: number; // For drag & drop ordering in grid view
+  // Grid frame controls
+  gridZoom?: number; // 0.5 to 2, default 1
+  gridOffsetX?: number; // percentage offset
+  gridOffsetY?: number; // percentage offset
   createdAt: string;
   updatedAt: string;
 }
@@ -103,7 +107,7 @@ export interface ContentFilters {
 // View types
 export type CalendarView = 'calendar' | 'grid';
 
-// Monthly state for per-month backdrop and stickers
+// Monthly state for per-month backdrop, stickers and theme
 export interface PlacedSticker {
   id: string;
   icon?: string; // For custom stickers this is the image URL
@@ -123,6 +127,7 @@ export interface MonthlyState {
   backdrop: string;
   stickers: PlacedSticker[];
   customStickerBank: CustomSticker[];
+  theme: string; // Monthly theme text - saved per month
 }
 
 export interface CustomSticker {
