@@ -7,13 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Copy, Download, Upload, Check, FileImage } from 'lucide-react';
+import { X, Copy, Download, Upload, Check, FileImage, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export function AssetModal() {
-  const { selectedItemId, setSelectedItemId, selectedDate, setSelectedDate, userRole, updateContentItem, addContentItem, addEvent, selectedClientId } = useApp();
+  const { selectedItemId, setSelectedItemId, selectedDate, setSelectedDate, userRole, updateContentItem, addContentItem, addEvent, updateEvent, deleteContentItem, deleteEvent, selectedClientId } = useApp();
   const item = useCalendarItem(selectedItemId);
   const { toast } = useToast();
   
@@ -33,6 +33,25 @@ export function AssetModal() {
   const isEditing = !!item;
   const isAdmin = userRole === 'admin';
   
+  // Initialize form state when editing an existing item
+  useEffect(() => {
+    if (item) {
+      if (isContentItem(item)) {
+        setMode('media');
+        setContentType(item.type);
+        setStatus(item.status);
+        setCaption(item.caption || '');
+        setCreativeDescription(item.creativeDescription || '');
+        setMediaPreview(item.mediaUrl || null);
+      } else if (isEventItem(item)) {
+        setMode('event');
+        setEventTitle(item.title);
+        setEventDescription(item.description || '');
+        setEventColor(item.color);
+      }
+    }
+  }, [item]);
+  
   const handleClose = () => {
     setSelectedItemId(null);
     setSelectedDate(null);
@@ -42,6 +61,23 @@ export function AssetModal() {
     setEventDescription('');
     setMediaFile(null);
     setMediaPreview(null);
+    setMode('media');
+    setContentType('reel');
+    setStatus('draft');
+    setEventColor('black');
+  };
+  
+  const handleDelete = () => {
+    if (!item) return;
+    
+    if (isContentItem(item)) {
+      deleteContentItem(item.id);
+      toast({ title: 'נמחק!', description: 'התוכן נמחק בהצלחה' });
+    } else if (isEventItem(item)) {
+      deleteEvent(item.id);
+      toast({ title: 'נמחק!', description: 'האירוע נמחק בהצלחה' });
+    }
+    handleClose();
   };
   
   const handleCopyCaption = () => {
@@ -107,15 +143,23 @@ export function AssetModal() {
     } else {
       const dateStr = selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
       
-      addEvent({
-        clientId: selectedClientId,
-        title: eventTitle,
-        description: eventDescription,
-        date: dateStr,
-        color: eventColor,
-      });
+      if (isEditing && isEventItem(item!)) {
+        updateEvent(item.id, {
+          title: eventTitle,
+          description: eventDescription,
+          color: eventColor,
+        });
+      } else {
+        addEvent({
+          clientId: selectedClientId,
+          title: eventTitle,
+          description: eventDescription,
+          date: dateStr,
+          color: eventColor,
+        });
+      }
       
-      toast({ title: 'נשמר!', description: 'האירוע נוסף בהצלחה' });
+      toast({ title: 'נשמר!', description: 'האירוע נשמר בהצלחה' });
     }
     
     handleClose();
@@ -141,9 +185,16 @@ export function AssetModal() {
         
         {/* Dark header with gradient */}
         <div className="gradient-midnight text-header-foreground p-4 flex items-center justify-between">
-          <button onClick={handleClose} className="hover:opacity-70 transition-opacity">
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={handleClose} className="hover:opacity-70 transition-opacity">
+              <X className="h-5 w-5" />
+            </button>
+            {isAdmin && isEditing && (
+              <button onClick={handleDelete} className="hover:opacity-70 transition-opacity text-red-400">
+                <Trash2 className="h-5 w-5" />
+              </button>
+            )}
+          </div>
           <DialogTitle className="text-lg font-medium">
             {formatDate(displayDate)}
           </DialogTitle>
@@ -279,20 +330,32 @@ export function AssetModal() {
                 </div>
               )}
               
-              {/* Caption */}
+              {/* Caption - show current value in edit mode */}
               {isEditing && isContentItem(item!) ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Button size="sm" variant="ghost" onClick={handleCopyCaption} className="text-gold hover:text-gold hover:bg-gold/10">
-                      <Copy className="h-4 w-4 ml-1" />
-                      העתק
-                    </Button>
+                isAdmin ? (
+                  <div className="space-y-2">
                     <Label className="text-charcoal font-medium">קופי</Label>
+                    <Textarea 
+                      value={caption} 
+                      onChange={(e) => setCaption(e.target.value)} 
+                      placeholder="כתבו את הקופי כאן..."
+                      className="min-h-[100px] shadow-card"
+                    />
                   </div>
-                  <div className="bg-muted p-3 rounded-lg text-sm whitespace-pre-wrap shadow-card">
-                    {item.caption}
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Button size="sm" variant="ghost" onClick={handleCopyCaption} className="text-gold hover:text-gold hover:bg-gold/10">
+                        <Copy className="h-4 w-4 ml-1" />
+                        העתק
+                      </Button>
+                      <Label className="text-charcoal font-medium">קופי</Label>
+                    </div>
+                    <div className="bg-muted p-3 rounded-lg text-sm whitespace-pre-wrap shadow-card">
+                      {item.caption}
+                    </div>
                   </div>
-                </div>
+                )
               ) : isAdmin && (
                 <div className="space-y-2">
                   <Label className="text-charcoal font-medium">קופי</Label>
@@ -321,7 +384,7 @@ export function AssetModal() {
               <div className="space-y-2">
                 <Label className="text-charcoal font-medium">כותרת האירוע</Label>
                 <Input 
-                  value={isEditing && isEventItem(item!) ? item.title : eventTitle}
+                  value={eventTitle}
                   onChange={(e) => setEventTitle(e.target.value)}
                   placeholder="למשל: יום צילום בסטודיו"
                   disabled={!isAdmin}
@@ -332,7 +395,7 @@ export function AssetModal() {
               <div className="space-y-2">
                 <Label className="text-charcoal font-medium">תיאור / הערות</Label>
                 <Textarea 
-                  value={isEditing && isEventItem(item!) ? item.description || '' : eventDescription}
+                  value={eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
                   placeholder="פרטים נוספים..."
                   disabled={!isAdmin}

@@ -10,6 +10,7 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { ContentItem } from '@/types/content';
+import { useState } from 'react';
 
 const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
@@ -30,10 +31,14 @@ const ContentTypeIcon = ({ type }: { type: 'post' | 'story' | 'reel' }) => {
 };
 
 export function CalendarView() {
-  const { currentMonth, setCurrentMonth, setSelectedDate, setSelectedItemId, getCurrentMonthState } = useApp();
+  const { currentMonth, setCurrentMonth, setSelectedDate, setSelectedItemId, getCurrentMonthState, updateContentItem, userRole } = useApp();
   const { calendarDays } = useCalendarData();
   
   const monthState = getCurrentMonthState();
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null);
+  
+  const isAdmin = userRole === 'admin';
   
   const goToPreviousMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
@@ -52,10 +57,47 @@ export function CalendarView() {
     setSelectedItemId(itemId);
   };
   
+  // Drag & Drop handlers
+  const handleDragStart = (e: React.DragEvent, itemId: string) => {
+    if (!isAdmin) return;
+    e.stopPropagation();
+    setDraggedItemId(itemId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  
+  const handleDragOver = (e: React.DragEvent, date: Date) => {
+    if (!isAdmin || !draggedItemId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const dateStr = date.toISOString().split('T')[0];
+    setDragOverDate(dateStr);
+  };
+  
+  const handleDragLeave = () => {
+    setDragOverDate(null);
+  };
+  
+  const handleDrop = (e: React.DragEvent, date: Date) => {
+    if (!isAdmin || !draggedItemId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const newDate = date.toISOString().split('T')[0];
+    updateContentItem(draggedItemId, { date: newDate });
+    
+    setDraggedItemId(null);
+    setDragOverDate(null);
+  };
+  
+  const handleDragEnd = () => {
+    setDraggedItemId(null);
+    setDragOverDate(null);
+  };
+  
   return (
     <div className="relative">
-      {/* Paper Card Effect */}
-      <div className="paper-card rounded-2xl overflow-hidden">
+      {/* Paper Card Effect - semi-transparent */}
+      <div className="paper-card rounded-2xl overflow-hidden bg-cream/85 backdrop-blur-sm">
         {/* Header with month display */}
         <div className="text-center py-10 px-6 border-b border-border/30">
           <div className="flex items-center justify-center gap-6 mb-3">
@@ -119,14 +161,18 @@ export function CalendarView() {
               const thumbnailUrl = contentWithMedia?.coverImageUrl || contentWithMedia?.thumbnailUrl || contentWithMedia?.mediaUrl;
               
               return (
-                <button
+                <div
                   key={index}
                   onClick={() => handleDayClick(day.date)}
+                  onDragOver={(e) => handleDragOver(e, day.date)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, day.date)}
                   className={cn(
-                    'min-h-[90px] md:min-h-[110px] p-2 rounded-xl border transition-all text-right relative overflow-hidden',
+                    'min-h-[90px] md:min-h-[110px] p-2 rounded-xl border transition-all text-right relative overflow-hidden cursor-pointer',
                     'border-border/30 hover:border-sand',
                     !day.isCurrentMonth && 'opacity-30',
-                    day.date.toDateString() === new Date().toDateString() && 'ring-2 ring-royal-blue/30 border-royal-blue/50'
+                    day.date.toDateString() === new Date().toDateString() && 'ring-2 ring-royal-blue/30 border-royal-blue/50',
+                    dragOverDate === day.date.toISOString().split('T')[0] && 'ring-2 ring-gold border-gold bg-gold/10'
                   )}
                 >
                   {/* Background image from content */}
@@ -157,13 +203,18 @@ export function CalendarView() {
                           <HoverCard key={item.id} openDelay={200} closeDelay={100}>
                             <HoverCardTrigger asChild>
                               <div
+                                draggable={isAdmin}
+                                onDragStart={(e) => handleDragStart(e, item.id)}
+                                onDragEnd={handleDragEnd}
                                 onClick={(e) => handleItemClick(item.id, e)}
                                 className={cn(
                                   'cursor-pointer p-1 rounded transition-transform hover:scale-110',
                                   thumbnailUrl ? 'bg-white/90 text-foreground' : 'bg-muted',
                                   item.type === 'reel' && !thumbnailUrl && 'bg-royal-blue/20 text-royal-blue',
                                   item.type === 'story' && !thumbnailUrl && 'bg-sand/30 text-earth',
-                                  item.type === 'post' && !thumbnailUrl && 'bg-earth/20 text-earth'
+                                  item.type === 'post' && !thumbnailUrl && 'bg-earth/20 text-earth',
+                                  isAdmin && 'cursor-grab active:cursor-grabbing',
+                                  draggedItemId === item.id && 'opacity-50'
                                 )}
                               >
                                 <ContentTypeIcon type={item.type} />
@@ -238,7 +289,7 @@ export function CalendarView() {
                       </div>
                     )}
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
