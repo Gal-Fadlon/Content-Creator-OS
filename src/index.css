@@ -49,8 +49,8 @@
     --radius: 0.5rem;
 
     /* BOUTIQUE LUXURY PALETTE */
-    /* Luxury Purple #902084 */
-    --luxury-purple: 305 65% 35%;
+    /* Royal Blue #002366 (replacing purple) */
+    --royal-blue: 224 100% 20%;
     /* Deep Burgundy #6b1b00 */
     --burgundy: 16 100% 21%;
     /* Sand Gold #c8ad7f */
@@ -65,17 +65,17 @@
     /* Status colors - luxury tones */
     --status-draft: 0 0% 60%;
     --status-pending: 38 70% 55%;
-    --status-approved: 305 65% 35%;
+    --status-approved: 224 100% 20%;
     --status-published: 160 45% 40%;
 
     /* Content type colors */
-    --content-reel: 305 65% 35%;
+    --content-reel: 224 100% 20%;
     --content-story: 38 38% 64%;
     --content-post: 18 60% 32%;
 
     /* Event marker colors */
     --marker-red: 16 100% 21%;
-    --marker-blue: 305 65% 35%;
+    --marker-blue: 224 100% 20%;
     --marker-beige: 38 38% 70%;
     --marker-brown: 18 60% 32%;
     --marker-black: 0 0% 15%;
@@ -94,7 +94,7 @@
     --gradient-gold: linear-gradient(135deg, hsl(38, 38%, 64%) 0%, hsl(38, 45%, 75%) 100%);
     --gradient-header: linear-gradient(135deg, hsl(18, 60%, 25%) 0%, hsl(18, 50%, 35%) 100%);
     --gradient-cream: linear-gradient(180deg, hsl(40, 30%, 98%) 0%, hsl(40, 25%, 94%) 100%);
-    --gradient-purple: linear-gradient(135deg, hsl(305, 65%, 35%) 0%, hsl(305, 55%, 45%) 100%);
+    --gradient-royal: linear-gradient(135deg, hsl(224, 100%, 20%) 0%, hsl(224, 80%, 30%) 100%);
   }
 
   .dark {
@@ -126,7 +126,7 @@
     --input: 15 10% 22%;
     --ring: 38 45% 60%;
 
-    --luxury-purple: 305 55% 50%;
+    --royal-blue: 224 80% 35%;
     --burgundy: 16 80% 35%;
     --sand-gold: 38 45% 60%;
   }
@@ -143,7 +143,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Heebo', 'Rubik', sans-serif;
+    font-family: 'Assistant', 'Heebo', 'Rubik', sans-serif;
   }
 
   /* RTL specific adjustments */
@@ -186,8 +186,8 @@
     background: var(--gradient-cream);
   }
 
-  .gradient-purple {
-    background: var(--gradient-purple);
+  .gradient-royal {
+    background: var(--gradient-royal);
   }
 
   /* Paper card effect */

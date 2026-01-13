@@ -102,3 +102,32 @@ export interface ContentFilters {
 
 // View types
 export type CalendarView = 'calendar' | 'grid';
+
+// Monthly state for per-month backdrop and stickers
+export interface PlacedSticker {
+  id: string;
+  icon?: string; // For custom stickers this is the image URL
+  iconType?: 'lucide' | 'custom';
+  lucideIcon?: string; // Name of lucide icon
+  color: string;
+  label: string;
+  visibleId: string;
+  x: number;
+  y: number;
+  rotation: number;
+  scale: number;
+}
+
+export interface MonthlyState {
+  monthKey: string; // Format: "YYYY-MM"
+  backdrop: string;
+  stickers: PlacedSticker[];
+  customStickerBank: CustomSticker[];
+}
+
+export interface CustomSticker {
+  id: string;
+  imageUrl: string;
+  label: string;
+  createdAt: string;
+}
