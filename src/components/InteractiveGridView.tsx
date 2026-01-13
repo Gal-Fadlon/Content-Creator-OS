@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
-import { GripVertical, ImageIcon, ZoomIn, ZoomOut, Move, Check } from 'lucide-react';
+import { GripVertical, ImageIcon, ZoomIn, ZoomOut, Move, Check, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface GridItem {
   id: string;
@@ -18,14 +19,17 @@ interface GridItem {
 }
 
 export function InteractiveGridView() {
-  const { contentItems, selectedClientId, userRole, updateContentItem } = useApp();
+  const { contentItems, selectedClientId, userRole, updateContentItem, addContentItem } = useApp();
   const { toast } = useToast();
   const isAdmin = userRole === 'admin';
   
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOverItem, setDragOverItem] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const addFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   
   // Get approved content for this client, sorted by gridOrder or date
@@ -119,6 +123,45 @@ export function InteractiveGridView() {
   
   const getItem = (id: string) => clientContent.find(item => item.id === id);
   
+  // Handle adding new image to grid
+  const handleAddNewImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedClientId) return;
+    
+    const url = URL.createObjectURL(file);
+    setNewImagePreview(url);
+    setShowAddDialog(true);
+    
+    if (addFileInputRef.current) {
+      addFileInputRef.current.value = '';
+    }
+  };
+  
+  const handleConfirmAddImage = (type: 'post' | 'story' | 'reel') => {
+    if (!newImagePreview || !selectedClientId) return;
+    
+    const nextOrder = clientContent.length;
+    
+    addContentItem({
+      clientId: selectedClientId,
+      type,
+      status: 'approved',
+      platform: 'instagram',
+      date: new Date().toISOString().split('T')[0],
+      caption: '',
+      mediaUrl: newImagePreview,
+      gridOrder: nextOrder,
+    });
+    
+    toast({
+      title: 'תמונה נוספה',
+      description: 'התמונה נוספה לגריד בהצלחה',
+    });
+    
+    setNewImagePreview(null);
+    setShowAddDialog(false);
+  };
+  
   return (
     <div className="space-y-4">
       {isAdmin && (
@@ -135,7 +178,15 @@ export function InteractiveGridView() {
         className="hidden"
       />
       
-      {/* 3-Column Grid with 4:5 aspect ratio */}
+      <input
+        ref={addFileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleAddNewImage}
+        className="hidden"
+      />
+      
+      {/* 3-Column Grid with 4:5 aspect ratio - Instagram style */}
       <div className="grid grid-cols-3 gap-1 max-w-2xl mx-auto">
         {clientContent.map((item) => {
           const zoom = item.gridZoom ?? 1;
@@ -310,12 +361,92 @@ export function InteractiveGridView() {
           );
         })}
         
-        {clientContent.length === 0 && (
+        {/* Add new image button - always at the end for admin */}
+        {isAdmin && (
+          <button
+            onClick={() => addFileInputRef.current?.click()}
+            className={cn(
+              'aspect-[4/5] bg-muted/50 rounded-sm overflow-hidden relative',
+              'border-2 border-dashed border-border hover:border-sand hover:bg-muted/70',
+              'flex flex-col items-center justify-center gap-2 transition-all',
+              'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <Plus className="h-8 w-8" />
+            <span className="text-xs font-body">הוסף תמונה</span>
+          </button>
+        )}
+        
+        {clientContent.length === 0 && !isAdmin && (
           <div className="col-span-full text-center py-12 text-muted-foreground font-body">
             אין תוכן מאושר להצגה
           </div>
         )}
       </div>
+      
+      {/* Add Image Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">הוספת תמונה לגריד</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {newImagePreview && (
+              <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-muted">
+                <img 
+                  src={newImagePreview} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground text-center">בחר סוג תוכן:</p>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleConfirmAddImage('post')}
+                  className="flex-col h-auto py-3 gap-1"
+                >
+                  <ImageIcon className="h-5 w-5" />
+                  <span className="text-xs">פוסט</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleConfirmAddImage('reel')}
+                  className="flex-col h-auto py-3 gap-1"
+                >
+                  <span className="text-lg">▶</span>
+                  <span className="text-xs">רילס</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleConfirmAddImage('story')}
+                  className="flex-col h-auto py-3 gap-1"
+                >
+                  <span className="text-lg">◯</span>
+                  <span className="text-xs">סטורי</span>
+                </Button>
+              </div>
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setNewImagePreview(null);
+                setShowAddDialog(false);
+              }}
+              className="w-full text-muted-foreground"
+            >
+              <X className="h-4 w-4 ml-2" />
+              ביטול
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
