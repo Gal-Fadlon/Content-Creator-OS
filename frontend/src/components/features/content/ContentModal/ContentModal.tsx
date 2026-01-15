@@ -1,0 +1,136 @@
+import React from 'react';
+import ModalHeader from '../ModalHeader/ModalHeader';
+import ModeToggle from '../ModeToggle/ModeToggle';
+import ContentForm from '../ContentForm/ContentForm';
+import EventForm from '../EventForm/EventForm';
+import { useContentModal } from './useContentModal';
+import { isContentItem, isEventItem } from './ContentModal.helper';
+import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
+import {
+  StyledDialog,
+  StyledDialogContent,
+  StyledHiddenInput,
+  StyledClientMessage,
+  StyledClientMessageText,
+  StyledSaveButton,
+} from './ContentModal.style';
+
+const ContentModal: React.FC = () => {
+  const {
+    isOpen,
+    isEditing,
+    isAdmin,
+    item,
+    mode,
+    displayDate,
+    fileInputRef,
+    contentType,
+    status,
+    caption,
+    creativeDescription,
+    mediaPreview,
+    eventTitle,
+    eventDescription,
+    eventColor,
+    setMode,
+    setContentType,
+    setStatus,
+    setCaption,
+    setCreativeDescription,
+    setEventTitle,
+    setEventDescription,
+    setEventColor,
+    handleClose,
+    handleDelete,
+    handleCopyCaption,
+    handleApprove,
+    handleFileClick,
+    handleFileChange,
+    handleSave,
+    formatDate,
+  } = useContentModal();
+
+  const showContentForm = mode === 'media' || (isEditing && item && isContentItem(item));
+  const showEventForm = mode === 'event' || (isEditing && item && isEventItem(item));
+  const contentItem = item && isContentItem(item) ? item : null;
+
+  return (
+    <StyledDialog open={isOpen} onClose={handleClose}>
+      {/* Hidden file input */}
+      <StyledHiddenInput
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        onChange={handleFileChange}
+      />
+
+      <ModalHeader
+        dateDisplay={formatDate(displayDate)}
+        isAdmin={isAdmin}
+        isEditing={isEditing}
+        onClose={handleClose}
+        onDelete={handleDelete}
+      />
+
+      <StyledDialogContent>
+        {/* Mode toggle - only for new items */}
+        {!isEditing && isAdmin && (
+          <ModeToggle mode={mode} onModeChange={setMode} />
+        )}
+
+        {/* Content form */}
+        {showContentForm && (
+          <ContentForm
+            item={contentItem}
+            isAdmin={isAdmin}
+            isEditing={isEditing}
+            contentType={contentType}
+            status={status}
+            caption={caption}
+            creativeDescription={creativeDescription}
+            mediaPreview={mediaPreview}
+            onContentTypeChange={setContentType}
+            onStatusChange={setStatus}
+            onCaptionChange={setCaption}
+            onCreativeDescriptionChange={setCreativeDescription}
+            onFileClick={handleFileClick}
+            onCopyCaption={handleCopyCaption}
+            onApprove={handleApprove}
+          />
+        )}
+
+        {/* Event form */}
+        {showEventForm && (
+          <EventForm
+            eventTitle={eventTitle}
+            eventDescription={eventDescription}
+            eventColor={eventColor}
+            isAdmin={isAdmin}
+            onTitleChange={setEventTitle}
+            onDescriptionChange={setEventDescription}
+            onColorChange={setEventColor}
+          />
+        )}
+
+        {/* Save button (admin only) */}
+        {isAdmin && (
+          <StyledSaveButton onClick={handleSave} variant="contained" size="large">
+            {COMMON.save}
+          </StyledSaveButton>
+        )}
+
+        {/* Info for client when viewing new date */}
+        {!isAdmin && !isEditing && (
+          <StyledClientMessage>
+            <StyledClientMessageText>{CONTENT_MODAL.clientMessage.line1}</StyledClientMessageText>
+            <StyledClientMessageText variant="body2">
+              {CONTENT_MODAL.clientMessage.line2}
+            </StyledClientMessageText>
+          </StyledClientMessage>
+        )}
+      </StyledDialogContent>
+    </StyledDialog>
+  );
+};
+
+export default React.memo(ContentModal);

@@ -1,0 +1,12 @@
+{
+  "name": "@content-creator-os/backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Backend not yet implemented'",
+    "build": "echo 'Backend not yet implemented'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

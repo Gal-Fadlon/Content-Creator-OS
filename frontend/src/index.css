@@ -1,0 +1,33 @@
+/* Content OS - Base Styles
+   RTL Hebrew support with artistic typography
+   Colors are managed via MUI theme (see theme/palette.ts)
+*/
+
+/* Base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: rgba(61, 46, 36, 0.12);
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  margin: 0;
+  background-color: #d6d6d6;
+  color: #3d2e24;
+  font-family: 'Assistant', 'Heebo', 'Rubik', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* RTL specific adjustments */
+[dir="rtl"] input,
+[dir="rtl"] textarea {
+  text-align: right;
+}
