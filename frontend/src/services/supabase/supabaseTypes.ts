@@ -1,0 +1,419 @@
+/**
+ * Supabase Database Types
+ * Generated types for the database schema
+ * 
+ * Note: In a production setup, you would generate these automatically using:
+ * npx supabase gen types typescript --project-id tjvfbmtprqxnyweziiqg > src/services/supabase/supabaseTypes.ts
+ */
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export interface Database {
+  public: {
+    Tables: {
+      clients: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          avatar_url: string | null;
+          brand_color: string | null;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          avatar_url?: string | null;
+          brand_color?: string | null;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          avatar_url?: string | null;
+          brand_color?: string | null;
+          description?: string | null;
+          updated_at?: string;
+        };
+      };
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          full_name: string | null;
+          role: 'admin' | 'client';
+          client_id: string | null;
+          avatar_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          full_name?: string | null;
+          role?: 'admin' | 'client';
+          client_id?: string | null;
+          avatar_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          email?: string;
+          full_name?: string | null;
+          role?: 'admin' | 'client';
+          client_id?: string | null;
+          avatar_url?: string | null;
+          updated_at?: string;
+        };
+      };
+      content: {
+        Row: {
+          id: string;
+          client_id: string;
+          type: 'post' | 'story' | 'reel' | 'carousel';
+          status: 'draft' | 'pending' | 'approved' | 'rejected' | 'published';
+          platform: 'instagram' | 'tiktok' | 'facebook' | null;
+          source: 'calendar' | 'grid';
+          scheduled_date: string | null;
+          scheduled_time: string | null;
+          caption: string | null;
+          creative_description: string | null;
+          media_url: string | null;
+          media_type: 'image' | 'video' | null;
+          cover_image_url: string | null;
+          thumbnail_url: string | null;
+          notes: string | null;
+          technical_instructions: string | null;
+          rejection_reason: string | null;
+          grid_order: number;
+          grid_zoom: number;
+          grid_offset_x: number;
+          grid_offset_y: number;
+          created_by: string | null;
+          approved_by: string | null;
+          approved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          type: 'post' | 'story' | 'reel' | 'carousel';
+          status?: 'draft' | 'pending' | 'approved' | 'rejected' | 'published';
+          platform?: 'instagram' | 'tiktok' | 'facebook' | null;
+          source?: 'calendar' | 'grid';
+          scheduled_date?: string | null;
+          scheduled_time?: string | null;
+          caption?: string | null;
+          creative_description?: string | null;
+          media_url?: string | null;
+          media_type?: 'image' | 'video' | null;
+          cover_image_url?: string | null;
+          thumbnail_url?: string | null;
+          notes?: string | null;
+          technical_instructions?: string | null;
+          rejection_reason?: string | null;
+          grid_order?: number;
+          grid_zoom?: number;
+          grid_offset_x?: number;
+          grid_offset_y?: number;
+          created_by?: string | null;
+          approved_by?: string | null;
+          approved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          client_id?: string;
+          type?: 'post' | 'story' | 'reel' | 'carousel';
+          status?: 'draft' | 'pending' | 'approved' | 'rejected' | 'published';
+          platform?: 'instagram' | 'tiktok' | 'facebook' | null;
+          source?: 'calendar' | 'grid';
+          scheduled_date?: string | null;
+          scheduled_time?: string | null;
+          caption?: string | null;
+          creative_description?: string | null;
+          media_url?: string | null;
+          media_type?: 'image' | 'video' | null;
+          cover_image_url?: string | null;
+          thumbnail_url?: string | null;
+          notes?: string | null;
+          technical_instructions?: string | null;
+          rejection_reason?: string | null;
+          grid_order?: number;
+          grid_zoom?: number;
+          grid_offset_x?: number;
+          grid_offset_y?: number;
+          approved_by?: string | null;
+          approved_at?: string | null;
+          updated_at?: string;
+        };
+      };
+      events: {
+        Row: {
+          id: string;
+          client_id: string;
+          title: string;
+          description: string | null;
+          event_date: string;
+          color: 'red' | 'blue' | 'beige' | 'brown' | 'black';
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          title: string;
+          description?: string | null;
+          event_date: string;
+          color?: 'red' | 'blue' | 'beige' | 'brown' | 'black';
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          client_id?: string;
+          title?: string;
+          description?: string | null;
+          event_date?: string;
+          color?: 'red' | 'blue' | 'beige' | 'brown' | 'black';
+          updated_at?: string;
+        };
+      };
+      event_requests: {
+        Row: {
+          id: string;
+          client_id: string;
+          requested_by: string;
+          title: string;
+          description: string | null;
+          requested_date: string;
+          status: 'pending' | 'approved' | 'rejected';
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          requested_by: string;
+          title: string;
+          description?: string | null;
+          requested_date: string;
+          status?: 'pending' | 'approved' | 'rejected';
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          title?: string;
+          description?: string | null;
+          requested_date?: string;
+          status?: 'pending' | 'approved' | 'rejected';
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+        };
+      };
+      monthly_themes: {
+        Row: {
+          id: string;
+          client_id: string;
+          month: number;
+          year: number;
+          theme_text: string | null;
+          backdrop_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          month: number;
+          year: number;
+          theme_text?: string | null;
+          backdrop_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          theme_text?: string | null;
+          backdrop_url?: string | null;
+          updated_at?: string;
+        };
+      };
+      stickers: {
+        Row: {
+          id: string;
+          client_id: string;
+          month: number;
+          year: number;
+          sticker_type: string;
+          lucide_icon: string | null;
+          icon_type: 'lucide' | 'custom';
+          color: string | null;
+          label: string | null;
+          position_x: number;
+          position_y: number;
+          rotation: number;
+          scale: number;
+          custom_image_url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          month: number;
+          year: number;
+          sticker_type: string;
+          lucide_icon?: string | null;
+          icon_type?: 'lucide' | 'custom';
+          color?: string | null;
+          label?: string | null;
+          position_x: number;
+          position_y: number;
+          rotation?: number;
+          scale?: number;
+          custom_image_url?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          sticker_type?: string;
+          lucide_icon?: string | null;
+          icon_type?: 'lucide' | 'custom';
+          color?: string | null;
+          label?: string | null;
+          position_x?: number;
+          position_y?: number;
+          rotation?: number;
+          scale?: number;
+          custom_image_url?: string | null;
+        };
+      };
+      custom_sticker_bank: {
+        Row: {
+          id: string;
+          client_id: string;
+          image_url: string;
+          label: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          image_url: string;
+          label: string;
+          created_at?: string;
+        };
+        Update: {
+          image_url?: string;
+          label?: string;
+        };
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: 'content_pending' | 'publish_reminder' | 'content_approved' | 'new_request' | 'event_request' | 'new_comment';
+          title: string;
+          message: string | null;
+          content_id: string | null;
+          comment_id: string | null;
+          event_request_id: string | null;
+          client_id: string | null;
+          is_read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: 'content_pending' | 'publish_reminder' | 'content_approved' | 'new_request' | 'event_request' | 'new_comment';
+          title: string;
+          message?: string | null;
+          content_id?: string | null;
+          comment_id?: string | null;
+          event_request_id?: string | null;
+          client_id?: string | null;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          type?: 'content_pending' | 'publish_reminder' | 'content_approved' | 'new_request' | 'event_request' | 'new_comment';
+          title?: string;
+          message?: string | null;
+          comment_id?: string | null;
+          is_read?: boolean;
+        };
+      };
+      content_comments: {
+        Row: {
+          id: string;
+          content_id: string;
+          user_id: string;
+          message: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          content_id: string;
+          user_id: string;
+          message: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          message?: string;
+          updated_at?: string;
+        };
+      };
+    };
+    Functions: {
+      is_admin: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      get_my_client_id: {
+        Args: Record<string, never>;
+        Returns: string | null;
+      };
+      get_my_role: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+    };
+  };
+}
+
+// Helper types for easier usage
+export type Tables<T extends keyof Database['public']['Tables']> = 
+  Database['public']['Tables'][T]['Row'];
+
+export type InsertTables<T extends keyof Database['public']['Tables']> = 
+  Database['public']['Tables'][T]['Insert'];
+
+export type UpdateTables<T extends keyof Database['public']['Tables']> = 
+  Database['public']['Tables'][T]['Update'];
+
+// Convenience type aliases
+export type ClientRow = Tables<'clients'>;
+export type ProfileRow = Tables<'profiles'>;
+export type ContentRow = Tables<'content'>;
+export type EventRow = Tables<'events'>;
+export type EventRequestRow = Tables<'event_requests'>;
+export type NotificationRow = Tables<'notifications'>;
+export type MonthlyThemeRow = Tables<'monthly_themes'>;
+export type StickerRow = Tables<'stickers'>;
+export type ContentCommentRow = Tables<'content_comments'>;
