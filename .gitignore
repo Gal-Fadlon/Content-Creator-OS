@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase CLI temp files
+supabase/.temp/
+**/supabase/.temp/
+
+# Environment files
+.env*
+!.env.example
+*.local
+
+# Sensitive guides (contain credentials)
+CLI_DATABASE_GUIDE.md
