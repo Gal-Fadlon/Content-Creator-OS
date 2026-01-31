@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import GridItem from '../GridItem/GridItem';
+import GridItemSkeleton from '../GridItemSkeleton/GridItemSkeleton';
 import AddImageButton from '../AddImageButton/AddImageButton';
 import AddImageDialog from '../AddImageDialog/AddImageDialog';
 import { useGridContent } from './useGridContent';
@@ -15,12 +16,15 @@ import {
 const InteractiveGridView: React.FC = () => {
   const {
     isAdmin,
+    showSkeletons,
+    skeletonCount,
     clientContent,
     fileInputRef,
     addFileInputRef,
     showAddDialog,
     setShowAddDialog,
     newImagePreview,
+    deletingItemId,
     handleCoverUploadClick,
     handleFileChange,
     handleZoomChange,
@@ -29,6 +33,7 @@ const InteractiveGridView: React.FC = () => {
     handleConfirmAddImage,
     handleCancelAdd,
     handleAddButtonClick,
+    handleDeleteItem,
   } = useGridContent();
 
   const {
@@ -76,12 +81,21 @@ const InteractiveGridView: React.FC = () => {
 
       {/* 3-Column Grid with 4:5 aspect ratio - Instagram style */}
       <StyledGrid>
-        {clientContent.map((item) => (
+        {/* Show skeletons while loading */}
+        {showSkeletons && (
+          Array.from({ length: skeletonCount }).map((_, index) => (
+            <GridItemSkeleton key={`skeleton-${index}`} />
+          ))
+        )}
+
+        {/* Show actual content when loaded */}
+        {!showSkeletons && clientContent.map((item) => (
           <GridItem
             key={item.id}
             item={item}
             isAdmin={isAdmin}
             isEditing={editingItemId === item.id}
+            isDeleting={deletingItemId === item.id}
             isDragged={draggedItem === item.id}
             isDragOver={dragOverItem === item.id}
             onDragStart={handleDragStart}
@@ -91,6 +105,7 @@ const InteractiveGridView: React.FC = () => {
             onDragEnd={handleDragEnd}
             onCoverClick={() => handleCoverUploadClick(item.id)}
             onEditClick={() => handleEditClick(item.id)}
+            onDeleteClick={() => handleDeleteItem(item.id)}
             onEditDone={handleEditDone}
             onEditCancel={handleEditCancel}
             onZoomChange={(zoom) => handleZoomChange(item.id, zoom)}
@@ -101,7 +116,7 @@ const InteractiveGridView: React.FC = () => {
         {/* Add new image button - always at the end for admin */}
         {isAdmin && <AddImageButton onClick={handleAddButtonClick} />}
 
-        {clientContent.length === 0 && !isAdmin && (
+        {clientContent.length === 0 && !isAdmin && !showSkeletons && (
           <StyledEmptyMessage>
             {GRID_VIEW.emptyMessage}
           </StyledEmptyMessage>

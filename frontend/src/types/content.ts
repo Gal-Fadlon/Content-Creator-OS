@@ -5,9 +5,10 @@
 
 // Content item types
 export type ContentType = 'post' | 'story' | 'reel' | 'carousel';
-export type ContentStatus = 'draft' | 'pending' | 'approved' | 'published';
+export type ContentStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'published';
 export type Platform = 'instagram' | 'tiktok' | 'facebook';
 export type MarkerColor = 'red' | 'blue' | 'beige' | 'brown' | 'black';
+export type ContentSource = 'calendar' | 'grid';
 
 export interface ContentItem {
   id: string;
@@ -15,7 +16,8 @@ export interface ContentItem {
   type: ContentType;
   status: ContentStatus;
   platform: Platform;
-  date: string; // ISO date string
+  source?: ContentSource; // 'calendar' or 'grid' - determines where content appears
+  date: string | null; // ISO date string, null for grid-only items
   time?: string; // HH:mm format
   caption: string;
   creativeDescription?: string; // תיאור הקריאייטיב - internal description for client
@@ -25,13 +27,16 @@ export interface ContentItem {
   thumbnailUrl?: string;
   notes?: string;
   technicalInstructions?: string;
+  rejectionReason?: string; // Client feedback when rejecting content
   gridOrder?: number; // For drag & drop ordering in grid view
   // Grid frame controls
   gridZoom?: number; // 0.5 to 2, default 1
   gridOffsetX?: number; // percentage offset
   gridOffsetY?: number; // percentage offset
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // UI state for optimistic updates
+  isUploading?: boolean; // True when image is being uploaded in background
 }
 
 export interface EventItem {
@@ -60,7 +65,12 @@ export interface Client {
 }
 
 // User/Role types
-export type UserRole = 'admin' | 'client';
+export const USER_ROLES = {
+  ADMIN: 'admin',
+  CLIENT: 'client',
+} as const;
+
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 
 export interface User {
   id: string;
@@ -75,7 +85,8 @@ export type NotificationType =
   | 'publish_reminder' 
   | 'content_approved' 
   | 'new_request' 
-  | 'event_request';
+  | 'event_request'
+  | 'new_comment';
 
 export interface Notification {
   id: string;
@@ -87,6 +98,21 @@ export interface Notification {
   clientId?: string;
   read: boolean;
   createdAt: string;
+  // Joined from content table
+  contentDate?: string;
+  contentMediaUrl?: string;
+}
+
+// Content comment types
+export interface ContentComment {
+  id: string;
+  contentId: string;
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Event request from client

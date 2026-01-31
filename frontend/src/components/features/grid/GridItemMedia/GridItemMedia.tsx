@@ -3,15 +3,14 @@ import { Typography } from '@mui/material';
 import { GRID_ITEM_MEDIA } from '@/constants/strings.constants';
 import {
   StyledMedia,
-  StyledVideoContainer,
-  StyledVideo,
   StyledPlaceholder,
 } from './GridItemMedia.style';
+import type { ContentType } from '@/types/content';
 
 interface GridItemMediaProps {
   mediaUrl?: string;
   coverImageUrl?: string;
-  type: 'post' | 'story' | 'reel';
+  type: ContentType;
   zoom: number;
   offsetX: number;
   offsetY: number;
@@ -33,21 +32,7 @@ const GridItemMedia: React.FC<GridItemMediaProps> = ({
     );
   }
 
-  // Reel without cover shows video
-  if (type === 'reel' && !coverImageUrl && mediaUrl) {
-    return (
-      <StyledVideoContainer>
-        <StyledVideo
-          src={mediaUrl}
-          muted
-          zoom={zoom}
-          offsetX={offsetX}
-          offsetY={offsetY}
-        />
-      </StyledVideoContainer>
-    );
-  }
-
+  // Always show image in grid - this is an Instagram grid preview
   return (
     <StyledMedia
       src={coverImageUrl || mediaUrl}

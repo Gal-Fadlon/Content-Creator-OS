@@ -1,14 +1,24 @@
-import React from 'react';
-import { Check } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Check, X } from 'lucide-react';
+import { Button } from '@mui/material';
 import ContentTypeSelector from '../ContentTypeSelector/ContentTypeSelector';
 import StatusSelector from '../StatusSelector/StatusSelector';
 import MediaUpload from '../MediaUpload/MediaUpload';
 import CaptionField from '../CaptionField/CaptionField';
 import CreativeDescriptionField from '../CreativeDescriptionField/CreativeDescriptionField';
-import { StyledApproveButton } from './ContentForm.style';
+import {
+  StyledButtonsContainer,
+  StyledApproveButton,
+  StyledRejectButton,
+  StyledRejectDialog,
+  StyledRejectDialogTitle,
+  StyledRejectDialogContent,
+  StyledRejectTextField,
+  StyledRejectDialogActions,
+} from './ContentForm.style';
 import { isContentItem } from '../ContentModal/ContentModal.helper';
 import type { ContentItem, ContentType, ContentStatus } from '@/types/content';
-import { CONTENT_FORM } from '@/constants/strings.constants';
+import { CONTENT_FORM, COMMON } from '@/constants/strings.constants';
 
 interface ContentFormProps {
   item: ContentItem | null;
@@ -24,8 +34,8 @@ interface ContentFormProps {
   onCaptionChange: (caption: string) => void;
   onCreativeDescriptionChange: (description: string) => void;
   onFileClick: () => void;
-  onCopyCaption: () => void;
   onApprove: () => void;
+  onReject: (reason?: string) => void;
 }
 
 const ContentForm: React.FC<ContentFormProps> = ({
@@ -42,12 +52,29 @@ const ContentForm: React.FC<ContentFormProps> = ({
   onCaptionChange,
   onCreativeDescriptionChange,
   onFileClick,
-  onCopyCaption,
   onApprove,
+  onReject,
 }) => {
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+
   const contentItem = item && isContentItem(item) ? item : null;
   const existingMediaUrl = contentItem?.mediaUrl;
-  const showApproveButton = !isAdmin && isEditing && contentItem?.status === 'pending';
+  const showClientActions = !isAdmin && isEditing && contentItem?.status === 'pending';
+
+  const handleOpenRejectDialog = useCallback(() => {
+    setRejectDialogOpen(true);
+  }, []);
+
+  const handleCloseRejectDialog = useCallback(() => {
+    setRejectDialogOpen(false);
+    setRejectionReason('');
+  }, []);
+
+  const handleSubmitRejection = useCallback(() => {
+    onReject(rejectionReason || undefined);
+    handleCloseRejectDialog();
+  }, [onReject, rejectionReason, handleCloseRejectDialog]);
 
   return (
     <>
@@ -77,7 +104,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
 
       {/* Creative Description */}
       <CreativeDescriptionField
-        value={isEditing && contentItem ? contentItem.creativeDescription || '' : creativeDescription}
+        value={isEditing && contentItem ? (isAdmin ? creativeDescription : contentItem.creativeDescription || '') : creativeDescription}
         onChange={onCreativeDescriptionChange}
         isAdmin={isAdmin}
         isEditing={isEditing}
@@ -89,20 +116,53 @@ const ContentForm: React.FC<ContentFormProps> = ({
         onChange={onCaptionChange}
         isAdmin={isAdmin}
         isEditing={isEditing}
-        onCopy={onCopyCaption}
       />
 
-      {/* Client approve button */}
-      {showApproveButton && (
-        <StyledApproveButton
-          onClick={onApprove}
-          variant="contained"
-          size="large"
-          startIcon={<Check size={16} />}
-        >
-          {CONTENT_FORM.approveButton}
-        </StyledApproveButton>
+      {/* Client approve/reject buttons */}
+      {showClientActions && (
+        <StyledButtonsContainer>
+          <StyledApproveButton
+            onClick={onApprove}
+            variant="contained"
+            size="large"
+            startIcon={<Check size={16} />}
+          >
+            {CONTENT_FORM.approveButton}
+          </StyledApproveButton>
+          <StyledRejectButton
+            onClick={handleOpenRejectDialog}
+            variant="outlined"
+            size="large"
+            startIcon={<X size={16} />}
+          >
+            {CONTENT_FORM.rejectButton}
+          </StyledRejectButton>
+        </StyledButtonsContainer>
       )}
+
+      {/* Rejection dialog */}
+      <StyledRejectDialog open={rejectDialogOpen} onClose={handleCloseRejectDialog}>
+        <StyledRejectDialogTitle>{CONTENT_FORM.rejectionDialogTitle}</StyledRejectDialogTitle>
+        <StyledRejectDialogContent>
+          <StyledRejectTextField
+            label={CONTENT_FORM.rejectionReasonLabel}
+            placeholder={CONTENT_FORM.rejectionReasonPlaceholder}
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            multiline
+            rows={3}
+            fullWidth
+          />
+        </StyledRejectDialogContent>
+        <StyledRejectDialogActions>
+          <Button onClick={handleCloseRejectDialog} color="inherit">
+            {CONTENT_FORM.rejectionDialogCancel}
+          </Button>
+          <Button onClick={handleSubmitRejection} color="error" variant="contained">
+            {CONTENT_FORM.rejectionDialogSubmit}
+          </Button>
+        </StyledRejectDialogActions>
+      </StyledRejectDialog>
     </>
   );
 };

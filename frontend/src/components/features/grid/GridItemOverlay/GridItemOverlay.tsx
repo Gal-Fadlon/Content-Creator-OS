@@ -1,20 +1,24 @@
 import React, { useCallback } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { GRID_OVERLAY } from '@/constants/strings.constants';
 import {
   StyledOverlay,
   StyledOverlayButton,
+  StyledDeleteButton,
 } from './GridItemOverlay.style';
 
 interface GridItemOverlayProps {
   onCoverClick: () => void;
   onEditClick: () => void;
+  onDeleteClick: () => void;
 }
 
 const GridItemOverlay: React.FC<GridItemOverlayProps> = ({
   onCoverClick,
   onEditClick,
+  onDeleteClick,
 }) => {
   // Stop propagation to prevent drag when clicking buttons
   const handleEditClick = useCallback((e: React.MouseEvent) => {
@@ -26,6 +30,11 @@ const GridItemOverlay: React.FC<GridItemOverlayProps> = ({
     e.stopPropagation();
     onCoverClick();
   }, [onCoverClick]);
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDeleteClick();
+  }, [onDeleteClick]);
 
   return (
     <StyledOverlay className="grid-item-overlay">
@@ -43,6 +52,13 @@ const GridItemOverlay: React.FC<GridItemOverlayProps> = ({
       >
         <SwapHorizIcon />
       </StyledOverlayButton>
+      <StyledDeleteButton
+        onClick={handleDeleteClick}
+        title={GRID_OVERLAY.deleteItem}
+        size="small"
+      >
+        <DeleteIcon />
+      </StyledDeleteButton>
     </StyledOverlay>
   );
 };

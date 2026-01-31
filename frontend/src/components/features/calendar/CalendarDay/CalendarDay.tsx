@@ -1,11 +1,18 @@
 import React, { useMemo, useCallback } from 'react';
+import { Crop } from 'lucide-react';
 import ContentBadge from '../ContentBadge/ContentBadge';
 import EventBadge from '../EventBadge/EventBadge';
+import InlineImageEditor from '@/components/features/grid/InlineImageEditor/InlineImageEditor';
+import { useUploadingState } from '@/context/providers/ModalProvider';
 import type { CalendarDayData } from '@/types/content';
 import { CALENDAR } from '@/constants/strings.constants';
 import {
   StyledDayCell,
+  StyledBackgroundImageContainer,
   StyledBackgroundImage,
+  StyledEditButton,
+  StyledEditorContainer,
+  StyledSkeletonOverlay,
   StyledDayContent,
   StyledDayNumber,
   StyledContentBadgesContainer,
@@ -19,6 +26,7 @@ interface CalendarDayProps {
   dragOverDate: string | null;
   isDropDisabled: boolean;
   isAdmin: boolean;
+  editingItemId: string | null;
   onDayClick: (date: Date) => void;
   onItemClick: (itemId: string, e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent, itemId: string, itemType: 'content' | 'event') => void;
@@ -26,6 +34,11 @@ interface CalendarDayProps {
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
   onDragEnd: () => void;
+  onEditImageClick: (itemId: string) => void;
+  onEditImageDone: () => void;
+  onEditImageCancel: () => void;
+  onZoomChange: (itemId: string, zoom: number) => void;
+  onOffsetChange: (itemId: string, offsetX: number, offsetY: number) => void;
 }
 
 const CalendarDay: React.FC<CalendarDayProps> = ({
@@ -34,6 +47,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   dragOverDate,
   isDropDisabled,
   isAdmin,
+  editingItemId,
   onDayClick,
   onItemClick,
   onDragStart,
@@ -41,7 +55,17 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   onDragLeave,
   onDrop,
   onDragEnd,
+  onEditImageClick,
+  onEditImageDone,
+  onEditImageCancel,
+  onZoomChange,
+  onOffsetChange,
 }) => {
+  const { isDateUploading } = useUploadingState();
+  
+  const dateStr = day.date.toISOString().split('T')[0];
+  const isUploading = isDateUploading(dateStr);
+  
   const contentWithMedia = useMemo(
     () =>
       day.content.find(
@@ -58,6 +82,13 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
     [contentWithMedia]
   );
 
+  // Get crop settings from the content with media
+  const cropSettings = useMemo(() => ({
+    zoom: contentWithMedia?.gridZoom ?? 1,
+    offsetX: contentWithMedia?.gridOffsetX ?? 0,
+    offsetY: contentWithMedia?.gridOffsetY ?? 0,
+  }), [contentWithMedia]);
+
   const isToday = day.date.toDateString() === new Date().toDateString();
   const isDragOver = dragOverDate === day.date.toISOString().split('T')[0];
   const hasThumbnail = !!thumbnailUrl && day.isCurrentMonth;
@@ -69,6 +100,11 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
     }
     return day.events.some((event) => event.id !== draggedItemId);
   }, [day.events, draggedItemId]);
+
+  // Check if this day's content is being edited
+  const isEditingThisDay = useMemo(() => {
+    return contentWithMedia && editingItemId === contentWithMedia.id;
+  }, [contentWithMedia, editingItemId]);
 
   const handleContentDragStart = useCallback(
     (e: React.DragEvent, itemId: string) => {
@@ -85,10 +121,30 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   );
 
   const handleDayClick = useCallback(() => {
+    // Don't open modal when in edit mode
+    if (isEditingThisDay) return;
+    
     if (day.isCurrentMonth) {
       onDayClick(day.date);
     }
-  }, [day.isCurrentMonth, day.date, onDayClick]);
+  }, [day.isCurrentMonth, day.date, onDayClick, isEditingThisDay]);
+
+  const handleEditClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (contentWithMedia) {
+      onEditImageClick(contentWithMedia.id);
+    }
+  }, [contentWithMedia, onEditImageClick]);
+
+  const handleEditorSave = useCallback((zoom: number, offsetX: number, offsetY: number) => {
+    if (contentWithMedia) {
+      onZoomChange(contentWithMedia.id, zoom);
+      onOffsetChange(contentWithMedia.id, offsetX, offsetY);
+      onEditImageDone();
+    }
+  }, [contentWithMedia, onZoomChange, onOffsetChange, onEditImageDone]);
+
+  const showEditOnHover = isAdmin && hasThumbnail && !isEditingThisDay;
 
   return (
     <StyledDayCell
@@ -100,8 +156,44 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
       isToday={isToday}
       isDragOver={isDragOver}
       hasThumbnail={hasThumbnail}
+      showEditOnHover={showEditOnHover}
     >
-      {hasThumbnail && <StyledBackgroundImage imageUrl={thumbnailUrl!} />}
+      {isUploading && <StyledSkeletonOverlay />}
+      
+      {hasThumbnail && (
+        <>
+          {isEditingThisDay ? (
+            <StyledEditorContainer>
+              <InlineImageEditor
+                imageUrl={thumbnailUrl!}
+                initialZoom={cropSettings.zoom}
+                initialOffsetX={cropSettings.offsetX}
+                initialOffsetY={cropSettings.offsetY}
+                onSave={handleEditorSave}
+                onCancel={onEditImageCancel}
+                showDoneButton={true}
+              />
+            </StyledEditorContainer>
+          ) : (
+            <>
+              <StyledBackgroundImageContainer>
+                <StyledBackgroundImage
+                  src={thumbnailUrl!}
+                  alt=""
+                  zoom={cropSettings.zoom}
+                  offsetX={cropSettings.offsetX}
+                  offsetY={cropSettings.offsetY}
+                />
+              </StyledBackgroundImageContainer>
+              {isAdmin && (
+                <StyledEditButton className="edit-button" onClick={handleEditClick}>
+                  <Crop size={12} />
+                  </StyledEditButton>
+              )}
+            </>
+          )}
+        </>
+      )}
 
       <StyledDayContent>
         <StyledDayNumber isToday={isToday} hasThumbnail={hasThumbnail}>

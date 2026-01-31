@@ -1,11 +1,13 @@
 /**
  * React Query hooks for events and event requests
- * Shared across calendar, grid, modal components
+ * Uses Supabase Realtime for instant updates
  */
 
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/services/queryKeys';
 import { services } from '@/services/services';
+import { supabase } from '@/services/supabase/supabaseClient';
 import type { CreateEventDTO, UpdateEventDTO, CreateEventRequestDTO } from '@/services/api/types';
 
 // ============ EVENTS ============
@@ -89,14 +91,44 @@ export function useDeleteEvent() {
 // ============ EVENT REQUESTS ============
 
 /**
- * Fetch all event requests for a client
+ * Fetch all event requests for a client with Realtime subscription
  */
 export function useEventRequests(clientId: string | null) {
+  const queryClient = useQueryClient();
+
+  // Set up Realtime subscription for instant updates
+  useEffect(() => {
+    if (!clientId) return;
+
+    const channel = supabase
+      .channel(`event-requests-${clientId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_requests',
+          filter: `client_id=eq.${clientId}`,
+        },
+        () => {
+          // Invalidate and refetch on any change
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.events.requests.all(clientId),
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [clientId, queryClient]);
+
   return useQuery({
     queryKey: queryKeys.events.requests.all(clientId ?? ''),
     queryFn: () => services.events.getRequests(clientId!),
     enabled: !!clientId,
-    staleTime: 1 * 60 * 1000, // 1 minute (requests change more frequently)
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
 
@@ -111,10 +143,6 @@ export function useCreateEventRequest() {
     onSuccess: (newRequest) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.events.requests.all(newRequest.clientId),
-      });
-      // Also invalidate notifications since a new one was likely created
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
       });
     },
   });

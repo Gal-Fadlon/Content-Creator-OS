@@ -1,11 +1,11 @@
-import React from 'react';
-import { Upload, Download, FileImage } from 'lucide-react';
+import React, { useCallback } from 'react';
+import { Upload, Download } from 'lucide-react';
 import { MEDIA_UPLOAD } from '@/constants/strings.constants';
 import {
   StyledMediaContainer,
   StyledMediaImage,
+  StyledClickableImage,
   StyledDownloadButton,
-  StyledEditButton,
   StyledUploadArea,
   StyledUploadIcon,
   StyledUploadText,
@@ -29,20 +29,25 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
 }) => {
   const displayUrl = mediaPreview || existingMediaUrl;
 
+  const handleDownload = useCallback(() => {
+    if (!existingMediaUrl) return;
+    
+    // Open in new tab - user can right-click and save
+    // This avoids CORS issues with fetch
+    window.open(existingMediaUrl, '_blank');
+  }, [existingMediaUrl]);
+
   // Show existing media with edit option
   if (displayUrl && existingMediaUrl) {
     return (
       <StyledMediaContainer>
-        <StyledMediaImage src={displayUrl} alt="" />
+        <StyledClickableImage clickable={isAdmin} onClick={isAdmin ? onFileClick : undefined}>
+          <StyledMediaImage src={displayUrl} alt="" />
+        </StyledClickableImage>
         {!isAdmin && (
-          <StyledDownloadButton size="small">
+          <StyledDownloadButton size="small" onClick={handleDownload}>
             <Download size={16} />
           </StyledDownloadButton>
-        )}
-        {isAdmin && (
-          <StyledEditButton size="small" onClick={onFileClick}>
-            <FileImage size={16} />
-          </StyledEditButton>
         )}
       </StyledMediaContainer>
     );

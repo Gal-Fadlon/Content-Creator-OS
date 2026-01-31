@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useContentModal as useContentModalContext } from '@/context/providers/ModalProvider';
+import { useContentModal as useContentModalContext, useUploadingState } from '@/context/providers/ModalProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import { useContentItems, useCreateContent, useUpdateContent, useDeleteContent } from '@/hooks/queries/useContent';
 import { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent } from '@/hooks/queries/useEvents';
 import { useToast } from '@/context/SnackbarContext';
 import { isContentItem, isEventItem } from './ContentModal.helper';
+import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
+import { uploadFile, deleteFile } from '@/services/storage/uploadService';
 import type { ContentType, ContentStatus, MarkerColor, ModalMode } from '@/types/content';
 
 export interface ContentFormState {
@@ -26,8 +28,9 @@ export interface EventFormState {
 
 export function useContentModal() {
   const { isOpen, selectedDate, editItemId, close } = useContentModalContext();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const [selectedClientId] = useSelectedClientId();
+  const { addUploadingDate, removeUploadingDate } = useUploadingState();
   const { data: contentItems = [] } = useContentItems(selectedClientId);
   const { data: events = [] } = useEvents(selectedClientId);
   
@@ -62,6 +65,9 @@ export function useContentModal() {
   const [eventTitle, setEventTitle] = useState('');
   const [eventDescription, setEventDescription] = useState('');
   const [eventColor, setEventColor] = useState<MarkerColor>('black');
+  
+  // Upload state
+  const [isUploading, setIsUploading] = useState(false);
   
   const isEditing = !!item;
   
@@ -98,6 +104,10 @@ export function useContentModal() {
   };
   
   const handleClose = () => {
+    // Blur active element to prevent aria-hidden warning
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     close();
     resetForm();
   };
@@ -105,23 +115,36 @@ export function useContentModal() {
   const handleDelete = () => {
     if (!item || !selectedClientId) return;
     
-    if (isContentItem(item)) {
+    // Optimistic UI: Close modal immediately
+    const isContent = isContentItem(item);
+    const itemId = item.id;
+    
+    handleClose();
+    
+    // Run deletion in background, show toast only when complete
+    if (isContent) {
       deleteContent.mutate(
-        { id: item.id, clientId: selectedClientId },
+        { id: itemId, clientId: selectedClientId },
         {
           onSuccess: () => {
-            toast({ title: 'נמחק!', description: 'התוכן נמחק בהצלחה' });
-            handleClose();
+            toast({ title: CONTENT_MODAL.delete.success, description: CONTENT_MODAL.delete.contentDeleted });
+          },
+          onError: (error) => {
+            console.error('Failed to delete content:', error);
+            toast({ title: COMMON.error, description: 'המחיקה נכשלה', variant: 'destructive' });
           },
         }
       );
-    } else if (isEventItem(item)) {
+    } else {
       deleteEvent.mutate(
-        { id: item.id, clientId: selectedClientId },
+        { id: itemId, clientId: selectedClientId },
         {
           onSuccess: () => {
-            toast({ title: 'נמחק!', description: 'האירוע נמחק בהצלחה' });
-            handleClose();
+            toast({ title: CONTENT_MODAL.delete.success, description: CONTENT_MODAL.delete.eventDeleted });
+          },
+          onError: (error) => {
+            console.error('Failed to delete event:', error);
+            toast({ title: COMMON.error, description: 'המחיקה נכשלה', variant: 'destructive' });
           },
         }
       );
@@ -131,7 +154,7 @@ export function useContentModal() {
   const handleCopyCaption = () => {
     const textToCopy = isContentItem(item!) ? item.caption : '';
     navigator.clipboard.writeText(textToCopy);
-    toast({ title: 'הועתק!', description: 'הקופי הועתק ללוח' });
+    toast({ title: CONTENT_MODAL.copy.success, description: CONTENT_MODAL.copy.captionCopied });
   };
   
   const handleApprove = () => {
@@ -140,8 +163,22 @@ export function useContentModal() {
         { id: item.id, data: { status: 'approved' } },
         {
           onSuccess: () => {
-            toast({ title: 'אושר!', description: 'התוכן אושר לפרסום' });
-            handleClose();
+            toast({ title: CONTENT_MODAL.approve.success, description: CONTENT_MODAL.approve.contentApproved });
+            // Don't close modal - user might want to add a comment
+          },
+        }
+      );
+    }
+  };
+
+  const handleReject = (reason?: string) => {
+    if (item && isContentItem(item)) {
+      updateContent.mutate(
+        { id: item.id, data: { status: 'rejected', rejectionReason: reason } },
+        {
+          onSuccess: () => {
+            toast({ title: CONTENT_MODAL.reject.success, description: CONTENT_MODAL.reject.contentRejected });
+            // Don't close modal - user might want to add a comment
           },
         }
       );
@@ -161,55 +198,186 @@ export function useContentModal() {
     setMediaPreview(url);
     
     toast({ 
-      title: 'קובץ נבחר', 
+      title: CONTENT_MODAL.file.selected, 
       description: file.name 
     });
   };
   
   const handleSave = () => {
-    if (!selectedClientId) return;
+    if (!selectedClientId) {
+      toast({ title: COMMON.error, description: CONTENT_MODAL.save.noClientSelected, variant: 'destructive' });
+      return;
+    }
+
+    // Check if auth is ready before attempting upload
+    if (isAuthLoading || !isAuthenticated) {
+      toast({ title: COMMON.error, description: 'יש להמתין לטעינת המערכת', variant: 'destructive' });
+      return;
+    }
     
     if (mode === 'media') {
-      const dateStr = selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
+      // Store values before closing (they'll be reset)
+      const currentMediaFile = mediaFile;
+      const currentContentType = contentType;
+      const currentStatus = status;
+      const currentCaption = caption;
+      const currentCreativeDescription = creativeDescription;
+      const currentItem = item;
+      const currentIsEditing = isEditing;
+      const oldMediaUrl = currentIsEditing && isContentItem(currentItem!) ? currentItem.mediaUrl : null;
+
+      // Use the item's date when editing, otherwise use selectedDate or today
+      const itemDate = currentIsEditing && isContentItem(currentItem!) ? currentItem.date : null;
+      const dateStr = itemDate || selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
       
-      if (isEditing && isContentItem(item!)) {
-        updateContent.mutate(
-          {
-            id: item.id,
-            data: {
-              status,
-              caption,
-              creativeDescription,
-              mediaUrl: mediaPreview || item.mediaUrl,
-            },
-          },
-          {
-            onSuccess: () => {
-              toast({ title: 'נשמר!', description: 'התוכן נשמר בהצלחה' });
-              handleClose();
-            },
+      // Close modal immediately for better UX
+      handleClose();
+      
+      // If there's a file to upload, show skeleton and run in background
+      if (currentMediaFile) {
+        addUploadingDate(dateStr);
+
+        // Failsafe: Remove uploading state after max 90 seconds no matter what
+        const failsafeTimeout = setTimeout(() => {
+          console.warn('Upload failsafe timeout reached - removing skeleton');
+          removeUploadingDate(dateStr);
+          toast({ title: COMMON.error, description: 'העלאה נכשלה - נסה שוב', variant: 'destructive' });
+        }, 90000);
+
+        // Helper to clear failsafe and remove uploading state
+        const cleanupUpload = (success: boolean, message?: string) => {
+          clearTimeout(failsafeTimeout);
+          removeUploadingDate(dateStr);
+          if (success) {
+            toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.contentSaved });
+          } else if (message) {
+            toast({ title: COMMON.error, description: message, variant: 'destructive' });
           }
-        );
+        };
+
+        // Run upload in background
+        console.log('Starting upload for date:', dateStr);
+        uploadFile(currentMediaFile, {
+          clientId: selectedClientId,
+          folder: 'content',
+        })
+          .then(async (result) => {
+            console.log('Upload successful, URL:', result.url);
+            const finalMediaUrl = result.url;
+
+            // Validate we got a URL
+            if (!finalMediaUrl) {
+              throw new Error('No URL returned from upload');
+            }
+
+            // Delete old file from R2 only after successful upload
+            if (oldMediaUrl && finalMediaUrl) {
+              try {
+                const urlParts = new URL(oldMediaUrl);
+                const key = urlParts.pathname.startsWith('/')
+                  ? urlParts.pathname.slice(1)
+                  : urlParts.pathname;
+                await deleteFile(key);
+                console.log('Successfully deleted old file from R2:', key);
+              } catch (deleteError) {
+                console.error('Failed to delete old file from R2:', deleteError);
+              }
+            }
+
+            // Save content with uploaded URL
+            if (currentIsEditing && isContentItem(currentItem!)) {
+              updateContent.mutate(
+                {
+                  id: currentItem.id,
+                  data: {
+                    status: currentStatus,
+                    caption: currentCaption,
+                    creativeDescription: currentCreativeDescription,
+                    mediaUrl: finalMediaUrl,
+                  },
+                },
+                {
+                  onSuccess: () => cleanupUpload(true),
+                  onError: (error) => {
+                    console.error('Failed to update content:', error);
+                    cleanupUpload(false, CONTENT_MODAL.save.contentSaveFailed);
+                  },
+                }
+              );
+            } else {
+              createContent.mutate(
+                {
+                  clientId: selectedClientId,
+                  type: currentContentType,
+                  source: 'calendar',
+                  status: currentStatus,
+                  platform: 'instagram',
+                  date: dateStr,
+                  caption: currentCaption,
+                  creativeDescription: currentCreativeDescription,
+                  mediaUrl: finalMediaUrl,
+                  mediaType: currentMediaFile.type.startsWith('video') ? 'video' : 'image',
+                },
+                {
+                  onSuccess: () => cleanupUpload(true),
+                  onError: (error) => {
+                    console.error('Failed to create content:', error);
+                    cleanupUpload(false, CONTENT_MODAL.save.contentCreateFailed);
+                  },
+                }
+              );
+            }
+          })
+          .catch((error) => {
+            console.error('Failed to upload file:', error);
+            cleanupUpload(false, error?.message || 'העלאת הקובץ נכשלה');
+          });
       } else {
-        createContent.mutate(
-          {
-            clientId: selectedClientId,
-            type: contentType,
-            status,
-            platform: 'instagram',
-            date: dateStr,
-            caption,
-            creativeDescription,
-            mediaUrl: mediaPreview || undefined,
-            mediaType: mediaFile?.type.startsWith('video') ? 'video' : 'image',
-          },
-          {
-            onSuccess: () => {
-              toast({ title: 'נשמר!', description: 'התוכן נשמר בהצלחה' });
-              handleClose();
+        // No file to upload, just save the content
+        if (currentIsEditing && isContentItem(currentItem!)) {
+          updateContent.mutate(
+            {
+              id: currentItem.id,
+              data: {
+                status: currentStatus,
+                caption: currentCaption,
+                creativeDescription: currentCreativeDescription,
+                mediaUrl: currentItem.mediaUrl,
+              },
             },
-          }
-        );
+            {
+              onSuccess: () => {
+                toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.contentSaved });
+              },
+              onError: (error) => {
+                console.error('Failed to update content:', error);
+                toast({ title: COMMON.error, description: CONTENT_MODAL.save.contentSaveFailed, variant: 'destructive' });
+              },
+            }
+          );
+        } else {
+          createContent.mutate(
+            {
+              clientId: selectedClientId,
+              type: currentContentType,
+              source: 'calendar',
+              status: currentStatus,
+              platform: 'instagram',
+              date: dateStr,
+              caption: currentCaption,
+              creativeDescription: currentCreativeDescription,
+            },
+            {
+              onSuccess: () => {
+                toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.contentSaved });
+              },
+              onError: (error) => {
+                console.error('Failed to create content:', error);
+                toast({ title: COMMON.error, description: CONTENT_MODAL.save.contentCreateFailed, variant: 'destructive' });
+              },
+            }
+          );
+        }
       }
     } else {
       const dateStr = selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
@@ -226,8 +394,12 @@ export function useContentModal() {
           },
           {
             onSuccess: () => {
-              toast({ title: 'נשמר!', description: 'האירוע נשמר בהצלחה' });
+              toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.eventSaved });
               handleClose();
+            },
+            onError: (error) => {
+              console.error('Failed to update event:', error);
+              toast({ title: COMMON.error, description: CONTENT_MODAL.save.eventSaveFailed, variant: 'destructive' });
             },
           }
         );
@@ -242,8 +414,12 @@ export function useContentModal() {
           },
           {
             onSuccess: () => {
-              toast({ title: 'נשמר!', description: 'האירוע נשמר בהצלחה' });
+              toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.eventSaved });
               handleClose();
+            },
+            onError: (error) => {
+              console.error('Failed to create event:', error);
+              toast({ title: COMMON.error, description: CONTENT_MODAL.save.eventCreateFailed, variant: 'destructive' });
             },
           }
         );
@@ -265,6 +441,7 @@ export function useContentModal() {
     isOpen,
     isEditing,
     isAdmin,
+    isUploading,
     item,
     mode,
     displayDate,
@@ -298,6 +475,7 @@ export function useContentModal() {
     handleDelete,
     handleCopyCaption,
     handleApprove,
+    handleReject,
     handleFileClick,
     handleFileChange,
     handleSave,

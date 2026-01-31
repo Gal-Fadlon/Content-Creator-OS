@@ -19,9 +19,10 @@ export function useCalendarData() {
   const { data: contentItems = [] } = useContentItems(selectedClientId);
   const { data: events = [] } = useEvents(selectedClientId);
 
-  // Apply filters to content
+  // Apply filters to content (only calendar source)
   const filteredContent = useMemo(() => {
-    return applyContentFilters(contentItems, filters);
+    const calendarContent = contentItems.filter(item => item.source === 'calendar' || !item.source);
+    return applyContentFilters(calendarContent, filters);
   }, [contentItems, filters]);
 
   // Get calendar grid data

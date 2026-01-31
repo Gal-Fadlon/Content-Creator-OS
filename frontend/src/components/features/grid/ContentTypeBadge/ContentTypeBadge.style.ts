@@ -2,7 +2,7 @@ import { styled } from '@mui/material/styles';
 import { Chip } from '@mui/material';
 
 interface StyledContentTypeBadgeProps {
-  contentType?: 'reel' | 'story' | 'post';
+  contentType?: 'reel' | 'story' | 'post' | 'carousel';
 }
 
 export const StyledContentTypeBadge = styled(Chip, {
@@ -35,6 +35,11 @@ export const StyledContentTypeBadge = styled(Chip, {
 
   ...(contentType === 'post' && {
     backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+  }),
+
+  ...(contentType === 'carousel' && {
+    backgroundColor: theme.palette.success.main,
     color: theme.palette.common.white,
   }),
 }));

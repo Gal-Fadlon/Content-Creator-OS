@@ -1,54 +1,115 @@
 /**
  * Notifications Service Interface
  * Defines the contract for notification operations
+ * Now uses Supabase
  */
 
 import type { Notification } from '@/types/content';
-import { apiClient } from '@/services/api/client';
-
-export interface CreateNotificationDTO {
-  type: Notification['type'];
-  title: string;
-  message: string;
-  contentId?: string;
-  eventRequestId?: string;
-  clientId?: string;
-}
+import { supabase } from '@/services/supabase/supabaseClient';
+import type { NotificationRow } from '@/services/supabase/supabaseTypes';
 
 export interface NotificationsService {
   getAll: () => Promise<Notification[]>;
   markRead: (id: string) => Promise<Notification>;
   markAllRead: () => Promise<void>;
-  create: (data: CreateNotificationDTO) => Promise<Notification>;
   delete: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
 }
 
+// Extended row type with joined content data
+interface NotificationWithContent extends NotificationRow {
+  content?: {
+    scheduled_date: string | null;
+    media_url: string | null;
+  } | null;
+}
+
+// Transform database row to frontend type
+const toNotification = (row: NotificationWithContent): Notification => ({
+  id: row.id,
+  type: row.type,
+  title: row.title,
+  message: row.message || '',
+  contentId: row.content_id || undefined,
+  eventRequestId: row.event_request_id || undefined,
+  clientId: row.client_id || undefined,
+  read: row.is_read,
+  createdAt: row.created_at,
+  contentDate: row.content?.scheduled_date || undefined,
+  contentMediaUrl: row.content?.media_url || undefined,
+});
+
 export const notificationsService: NotificationsService = {
   async getAll() {
-    const response = await apiClient.get<Notification[]>('/notifications');
-    return response.data;
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .select(`
+        *,
+        content:content_id (
+          scheduled_date,
+          media_url
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map((row) => toNotification(row as NotificationWithContent));
   },
 
   async markRead(id: string) {
-    const response = await apiClient.patch<Notification>(`/notifications/${id}/read`);
-    return response.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any)
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return toNotification(data as NotificationRow);
   },
 
   async markAllRead() {
-    await apiClient.post('/notifications/mark-all-read');
-  },
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) throw new Error('Not authenticated');
 
-  async create(data: CreateNotificationDTO) {
-    const response = await apiClient.post<Notification>('/notifications', data);
-    return response.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', user.id)
+      .eq('is_read', false);
+
+    if (error) throw error;
   },
 
   async delete(id: string) {
-    await apiClient.delete(`/notifications/${id}`);
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 
   async clearAll() {
-    await apiClient.delete('/notifications');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (error) throw error;
   },
 };

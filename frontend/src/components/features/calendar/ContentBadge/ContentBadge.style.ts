@@ -13,10 +13,16 @@ export const StyledBadgeContainer = styled(Box, {
     !['hasThumbnail', 'contentType', 'isAdmin', 'isDragging'].includes(prop as string),
 })<StyledBadgeContainerProps>(({ theme, hasThumbnail, contentType, isAdmin, isDragging }) => ({
   cursor: isAdmin ? 'grab' : 'pointer',
-  padding: theme.spacing(0.5),
-  borderRadius: theme.shape.borderRadius,
-  transition: theme.transitions.create('transform'),
+  width: 22,
+  height: 22,
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '0.85rem',
+  transition: theme.transitions.create(['transform', 'background-color']),
   opacity: isDragging ? 0.5 : 1,
+  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
 
   '&:hover': {
     transform: 'scale(1.1)',
@@ -27,7 +33,7 @@ export const StyledBadgeContainer = styled(Box, {
   },
 
   ...(hasThumbnail && {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     color: theme.palette.text.primary,
   }),
 

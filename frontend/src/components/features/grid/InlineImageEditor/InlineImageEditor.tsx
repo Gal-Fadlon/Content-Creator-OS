@@ -6,6 +6,7 @@ import {
   StyledImageContainer,
   StyledImage,
   StyledDragOverlay,
+  StyledPreviewOverlay,
   StyledCropGrid,
   StyledControlsPanel,
   StyledSlider,
@@ -22,6 +23,7 @@ interface InlineImageEditorProps {
   onCancel?: () => void;
   showDoneButton?: boolean;
   autoSaveOnChange?: boolean;
+  showOverlay?: boolean; // Show dark overlay to match calendar view
 }
 
 const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
@@ -33,14 +35,43 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
   onCancel,
   showDoneButton = true,
   autoSaveOnChange = false,
+  showOverlay = false,
 }) => {
-  const [zoom, setZoom] = useState(initialZoom);
+  // Ensure initial zoom is at least 1 (Instagram-style: image always covers container)
+  const [zoom, setZoom] = useState(Math.max(1, initialZoom));
   const [offsetX, setOffsetX] = useState(initialOffsetX);
   const [offsetY, setOffsetY] = useState(initialOffsetY);
 
   const isDragging = useRef(false);
   const lastPosition = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate max pan offset based on zoom level (Instagram-style mask behavior)
+  // When zoomed in, we can pan more. At zoom=1, no panning allowed (image exactly fills container)
+  const getMaxOffset = useCallback((currentZoom: number) => {
+    // At zoom 1, max offset is 0 (image exactly covers container)
+    // At zoom 2, we can pan up to 25% in each direction (half of the extra 100%)
+    // Formula: maxOffset = ((zoom - 1) / zoom) * 50
+    if (currentZoom <= 1) return 0;
+    return ((currentZoom - 1) / currentZoom) * 50;
+  }, []);
+
+  // Constrain offset values based on current zoom
+  const constrainOffset = useCallback((offset: number, currentZoom: number) => {
+    const maxOffset = getMaxOffset(currentZoom);
+    return Math.max(-maxOffset, Math.min(maxOffset, offset));
+  }, [getMaxOffset]);
+
+  // Constrain offsets when zoom changes (bounce-back effect)
+  useEffect(() => {
+    const constrainedX = constrainOffset(offsetX, zoom);
+    const constrainedY = constrainOffset(offsetY, zoom);
+
+    if (constrainedX !== offsetX || constrainedY !== offsetY) {
+      setOffsetX(constrainedX);
+      setOffsetY(constrainedY);
+    }
+  }, [zoom, offsetX, offsetY, constrainOffset]);
 
   // Auto-save when values change (for dialog use case)
   useEffect(() => {
@@ -86,10 +117,11 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
     const percentX = (deltaX / containerRect.width) * 100 / zoom;
     const percentY = (deltaY / containerRect.height) * 100 / zoom;
 
-    setOffsetX((prev) => Math.max(-50, Math.min(50, prev + percentX)));
-    setOffsetY((prev) => Math.max(-50, Math.min(50, prev + percentY)));
+    // Apply Instagram-style constraints: can only pan within zoomed area
+    setOffsetX((prev) => constrainOffset(prev + percentX, zoom));
+    setOffsetY((prev) => constrainOffset(prev + percentY, zoom));
     lastPosition.current = { x: e.clientX, y: e.clientY };
-  }, [zoom]);
+  }, [zoom, constrainOffset]);
 
   const handleMouseUp = useCallback(() => {
     isDragging.current = false;
@@ -98,11 +130,13 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.stopPropagation();
     const delta = e.deltaY > 0 ? -0.05 : 0.05;
-    setZoom((prev) => Math.max(0.5, Math.min(3, prev + delta)));
+    // Minimum zoom is 1 (image always covers container, Instagram-style)
+    setZoom((prev) => Math.max(1, Math.min(3, prev + delta)));
   }, []);
 
   const handleZoomChange = useCallback((_: Event, value: number | number[]) => {
-    setZoom(value as number);
+    // Ensure minimum zoom of 1 (Instagram-style: image always covers container)
+    setZoom(Math.max(1, value as number));
   }, []);
 
   const handleDoneClick = useCallback((e: React.MouseEvent) => {
@@ -129,6 +163,9 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
         />
       </StyledImageContainer>
 
+      {/* Preview overlay to show how it will look in calendar */}
+      {showOverlay && <StyledPreviewOverlay />}
+
       {/* Drag overlay for panning */}
       <StyledDragOverlay
         onMouseDown={handleMouseDown}
@@ -147,7 +184,7 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
         <StyledSlider
           value={zoom}
           onChange={handleZoomChange}
-          min={0.5}
+          min={1}
           max={3}
           step={0.05}
           size="small"

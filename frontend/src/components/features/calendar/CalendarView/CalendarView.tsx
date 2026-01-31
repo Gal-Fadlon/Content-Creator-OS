@@ -1,7 +1,9 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useCalendarNav } from '@/context/providers/CalendarNavProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import { useContentModal } from '@/context/providers/ModalProvider';
+import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';
+import { useUpdateContent } from '@/hooks/queries/useContent';
 import { useCalendarData } from './useCalendarData';
 import type { CalendarDayData } from '@/types/content';
 import CalendarHeader from '../CalendarHeader/CalendarHeader';
@@ -16,7 +18,12 @@ const CalendarView: React.FC = () => {
   const { currentMonth, goToNextMonth, goToPrevMonth } = useCalendarNav();
   const { isAdmin } = useAuth();
   const { openForDate, openForEdit } = useContentModal();
+  const [selectedClientId] = useSelectedClientId();
   const { calendarDays } = useCalendarData();
+  const updateContent = useUpdateContent();
+  
+  // Inline image editing state
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   const {
     draggedItemId,
@@ -70,6 +77,27 @@ const CalendarView: React.FC = () => {
     [openForEdit]
   );
 
+  // Inline image editing handlers
+  const handleEditImageClick = useCallback((itemId: string) => {
+    setEditingItemId(itemId);
+  }, []);
+
+  const handleEditImageDone = useCallback(() => {
+    setEditingItemId(null);
+  }, []);
+
+  const handleEditImageCancel = useCallback(() => {
+    setEditingItemId(null);
+  }, []);
+
+  const handleZoomChange = useCallback((itemId: string, zoom: number) => {
+    updateContent.mutate({ id: itemId, data: { gridZoom: zoom }, clientId: selectedClientId || undefined });
+  }, [updateContent, selectedClientId]);
+
+  const handleOffsetChange = useCallback((itemId: string, offsetX: number, offsetY: number) => {
+    updateContent.mutate({ id: itemId, data: { gridOffsetX: offsetX, gridOffsetY: offsetY }, clientId: selectedClientId || undefined });
+  }, [updateContent, selectedClientId]);
+
   return (
     <StyledCalendarContainer>
       <StyledCalendarPaper elevation={0}>
@@ -85,6 +113,7 @@ const CalendarView: React.FC = () => {
           dragOverDate={dragOverDate}
           isDropDisabled={isDropDisabled}
           isAdmin={isAdmin}
+          editingItemId={editingItemId}
           onDayClick={handleDayClick}
           onItemClick={handleItemClick}
           onDragStart={handleDragStart}
@@ -92,6 +121,11 @@ const CalendarView: React.FC = () => {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onDragEnd={handleDragEnd}
+          onEditImageClick={handleEditImageClick}
+          onEditImageDone={handleEditImageDone}
+          onEditImageCancel={handleEditImageCancel}
+          onZoomChange={handleZoomChange}
+          onOffsetChange={handleOffsetChange}
         />
       </StyledCalendarPaper>
     </StyledCalendarContainer>

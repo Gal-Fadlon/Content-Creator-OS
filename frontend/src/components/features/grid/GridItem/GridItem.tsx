@@ -1,4 +1,5 @@
 import React from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
 import GridItemMedia from '../GridItemMedia/GridItemMedia';
 import GridItemOverlay from '../GridItemOverlay/GridItemOverlay';
 import GridItemEditControls from '../GridItemEditControls/GridItemEditControls';
@@ -9,12 +10,14 @@ import {
   StyledGridItemContainer,
   StyledMediaWrapper,
   StyledCoverBadge,
+  StyledUploadingOverlay,
 } from './GridItem.style';
 
 interface GridItemProps {
   item: ContentItem;
   isAdmin: boolean;
   isEditing: boolean;
+  isDeleting: boolean;
   isDragged: boolean;
   isDragOver: boolean;
   onDragStart: (e: React.DragEvent, itemId: string) => void;
@@ -24,6 +27,7 @@ interface GridItemProps {
   onDragEnd: () => void;
   onCoverClick: () => void;
   onEditClick: () => void;
+  onDeleteClick: () => void;
   onEditDone: () => void;
   onEditCancel: () => void;
   onZoomChange: (zoom: number) => void;
@@ -34,6 +38,7 @@ const GridItem: React.FC<GridItemProps> = ({
   item,
   isAdmin,
   isEditing,
+  isDeleting,
   isDragged,
   isDragOver,
   onDragStart,
@@ -43,6 +48,7 @@ const GridItem: React.FC<GridItemProps> = ({
   onDragEnd,
   onCoverClick,
   onEditClick,
+  onDeleteClick,
   onEditDone,
   onEditCancel,
   onZoomChange,
@@ -51,10 +57,12 @@ const GridItem: React.FC<GridItemProps> = ({
   const zoom = item.gridZoom ?? 1;
   const offsetX = item.gridOffsetX ?? 0;
   const offsetY = item.gridOffsetY ?? 0;
+  const isUploading = item.isUploading ?? false;
+  const showLoadingOverlay = isUploading || isDeleting;
 
   return (
     <StyledGridItemContainer
-      draggable={isAdmin && !isEditing}
+      draggable={isAdmin && !isEditing && !showLoadingOverlay}
       onDragStart={(e) => onDragStart(e as React.DragEvent, item.id)}
       onDragOver={(e) => onDragOver(e as React.DragEvent, item.id)}
       onDragLeave={onDragLeave}
@@ -77,8 +85,15 @@ const GridItem: React.FC<GridItemProps> = ({
         />
       </StyledMediaWrapper>
 
+      {/* Loading overlay - shown while uploading or deleting */}
+      {showLoadingOverlay && (
+        <StyledUploadingOverlay>
+          <CircularProgress size={32} sx={{ color: 'white' }} />
+        </StyledUploadingOverlay>
+      )}
+
       {/* Editing controls - shown when editing */}
-      {isEditing && (
+      {isEditing && !showLoadingOverlay && (
         <GridItemEditControls
           imageUrl={item.coverImageUrl || item.mediaUrl || ''}
           zoom={zoom}
@@ -91,18 +106,18 @@ const GridItem: React.FC<GridItemProps> = ({
         />
       )}
 
-      {/* Admin overlay controls - shown on hover when not editing */}
-      {isAdmin && !isEditing && (
-        <GridItemOverlay onCoverClick={onCoverClick} onEditClick={onEditClick} />
+      {/* Admin overlay controls - shown on hover when not editing or loading */}
+      {isAdmin && !isEditing && !showLoadingOverlay && (
+        <GridItemOverlay onCoverClick={onCoverClick} onEditClick={onEditClick} onDeleteClick={onDeleteClick} />
       )}
 
       {/* Cover image indicator */}
-      {item.coverImageUrl && !isEditing && (
+      {item.coverImageUrl && !isEditing && !showLoadingOverlay && (
         <StyledCoverBadge label={GRID_ITEM.coverBadge} size="small" />
       )}
 
       {/* Content type badge */}
-      {!isEditing && <ContentTypeBadge type={item.type} />}
+      {!isEditing && !showLoadingOverlay && <ContentTypeBadge type={item.type} />}
     </StyledGridItemContainer>
   );
 };

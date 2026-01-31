@@ -53,3 +53,34 @@ A notification snackbar component for displaying toast messages.
 - Supports title and description
 - Bottom-right positioning
 - Memoized for performance
+
+---
+
+## LoadingSpinner
+
+Full-page loading indicator with MUI CircularProgress.
+
+**Files:**
+- `LoadingSpinner.tsx` - Main component
+- `LoadingSpinner.style.ts` - MUI styled components
+
+**Usage:**
+```tsx
+<LoadingSpinner />
+```
+
+---
+
+## AuthGuard
+
+Route protection components for authentication.
+
+**Files:**
+- `AuthGuard.tsx` - Exports `ProtectedRoute` and `PublicRoute`
+- `AuthGuard.style.ts` - Style placeholder
+
+**Usage:**
+```tsx
+<ProtectedRoute><Dashboard /></ProtectedRoute>
+<PublicRoute><Login /></PublicRoute>
+```

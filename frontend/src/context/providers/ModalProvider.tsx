@@ -11,6 +11,10 @@ interface ContentModalState {
   editItemId: string | null;
 }
 
+interface UploadingState {
+  uploadingDates: string[];
+}
+
 interface EventRequestModalState {
   isOpen: boolean;
   initialDate: Date | null;
@@ -19,6 +23,7 @@ interface EventRequestModalState {
 interface ModalState {
   contentModal: ContentModalState;
   eventRequestModal: EventRequestModalState;
+  uploading: UploadingState;
 }
 
 interface ModalActions {
@@ -29,6 +34,9 @@ interface ModalActions {
   // Event request modal
   openEventRequestModal: (date?: Date) => void;
   closeEventRequestModal: () => void;
+  // Uploading state
+  addUploadingDate: (dateStr: string) => void;
+  removeUploadingDate: (dateStr: string) => void;
 }
 
 type ModalContextValue = ModalState & ModalActions;
@@ -50,9 +58,14 @@ const initialEventRequestModal: EventRequestModalState = {
   initialDate: null,
 };
 
+const initialUploading: UploadingState = {
+  uploadingDates: [],
+};
+
 export function ModalProvider({ children }: ModalProviderProps) {
   const [contentModal, setContentModal] = useState<ContentModalState>(initialContentModal);
   const [eventRequestModal, setEventRequestModal] = useState<EventRequestModalState>(initialEventRequestModal);
+  const [uploading, setUploading] = useState<UploadingState>(initialUploading);
 
   // Content modal actions
   const openContentModalForDate = useCallback((date: Date) => {
@@ -87,22 +100,41 @@ export function ModalProvider({ children }: ModalProviderProps) {
     setEventRequestModal(initialEventRequestModal);
   }, []);
 
+  // Uploading state actions
+  const addUploadingDate = useCallback((dateStr: string) => {
+    setUploading(prev => ({
+      uploadingDates: [...prev.uploadingDates, dateStr],
+    }));
+  }, []);
+
+  const removeUploadingDate = useCallback((dateStr: string) => {
+    setUploading(prev => ({
+      uploadingDates: prev.uploadingDates.filter(d => d !== dateStr),
+    }));
+  }, []);
+
   const value = useMemo<ModalContextValue>(() => ({
     contentModal,
     eventRequestModal,
+    uploading,
     openContentModalForDate,
     openContentModalForEdit,
     closeContentModal,
     openEventRequestModal,
     closeEventRequestModal,
+    addUploadingDate,
+    removeUploadingDate,
   }), [
     contentModal,
     eventRequestModal,
+    uploading,
     openContentModalForDate,
     openContentModalForEdit,
     closeContentModal,
     openEventRequestModal,
     closeEventRequestModal,
+    addUploadingDate,
+    removeUploadingDate,
   ]);
 
   return (
@@ -156,5 +188,23 @@ export function useEventRequestModal() {
     ...eventRequestModal,
     open: openEventRequestModal,
     close: closeEventRequestModal,
+  };
+}
+
+/**
+ * Hook for uploading state
+ */
+export function useUploadingState() {
+  const {
+    uploading,
+    addUploadingDate,
+    removeUploadingDate,
+  } = useModals();
+
+  return {
+    ...uploading,
+    addUploadingDate,
+    removeUploadingDate,
+    isDateUploading: (dateStr: string) => uploading.uploadingDates.includes(dateStr),
   };
 }

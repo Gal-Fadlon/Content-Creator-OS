@@ -41,6 +41,10 @@ export const StyledLabel = styled(InputLabel)(({ theme }) => ({
   fontSize: '0.875rem',
   fontWeight: 500,
   color: theme.palette.text.primary,
+  display: 'flex',
+  flexDirection: 'row-reverse',
+  justifyContent: 'flex-end',
+  gap: theme.spacing(0.5),
 }));
 
 export const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -64,6 +68,11 @@ export const StyledDateButton = styled(Button)(({ theme }) => ({
   '&:hover': {
     borderColor: theme.palette.text.primary,
   },
+  // Fix icon overlap with text in RTL
+  '& .MuiButton-startIcon': {
+    marginLeft: theme.spacing(1),
+    marginRight: 0,
+  },
 }));
 
 export const StyledSubmitButton = styled(Button)(({ theme }) => ({
@@ -73,6 +82,11 @@ export const StyledSubmitButton = styled(Button)(({ theme }) => ({
   fontFamily: '"Heebo", sans-serif',
   fontWeight: 500,
   gap: theme.spacing(1),
+  // Reverse order so icon is on the left in RTL, and flip the icon to point left
+  flexDirection: 'row-reverse',
+  '& .MuiSvgIcon-root': {
+    transform: 'scaleX(-1)',
+  },
   '&:hover': {
     background: `linear-gradient(135deg, ${theme.palette.secondary.light} 0%, ${theme.palette.secondary.main} 100%)`,
   },

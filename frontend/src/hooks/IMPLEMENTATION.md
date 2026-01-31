@@ -1,52 +1,45 @@
 # Hooks Implementation
 
-## Overview
-
-Custom React Query hooks for data fetching and mutations, providing a clean abstraction layer over the services.
-
 ## Structure
 
 ```
 hooks/
 └── queries/
-    ├── useClients.ts      # Client data hooks
-    ├── useContent.ts      # Content CRUD hooks
-    ├── useEvents.ts       # Events & event requests hooks
-    └── useNotifications.ts # Notification hooks
+    ├── useClients.ts       # Client data hooks
+    ├── useContent.ts       # Content CRUD hooks
+    ├── useEvents.ts        # Events & event requests hooks
+    ├── useNotifications.ts # Notification hooks with Realtime
+    └── useComments.ts      # Content comments hooks
 ```
 
 ## Hooks Summary
 
 ### `useClients.ts`
-- `useClients()` - Fetch all clients (5min stale time)
-- `useClient(id)` - Fetch single client by ID
-- `useUpdateClientTheme()` - Update client's monthly theme
+- `useClients()` - Fetch all clients
+- `useClient(id)` - Fetch single client
+- `useUpdateClientTheme()` - Update monthly theme
 
 ### `useContent.ts`
-- `useContentItems(clientId)` - Fetch all content for a client
-- `useContentItem(id)` - Fetch single content item
-- `useCreateContent()` - Create new content
-- `useUpdateContent()` - Update content (with optimistic updates)
-- `useDeleteContent()` - Delete content
+- `useContentItems(clientId)` - Fetch client content
+- `useCreateContent()` / `useUpdateContent()` / `useDeleteContent()`
 - `useBatchUpdateContent()` - Batch update for reordering
 
 ### `useEvents.ts`
-- `useEvents(clientId)` - Fetch all events for a client
-- `useEvent(id)` - Fetch single event
-- `useCreateEvent()` / `useUpdateEvent()` / `useDeleteEvent()` - Event CRUD
-- `useEventRequests(clientId)` - Fetch event requests
-- `useCreateEventRequest()` - Create event request (client role)
-- `useApproveEventRequest()` / `useRejectEventRequest()` - Admin actions
+- `useEvents(clientId)` - Fetch events
+- `useEventRequests(clientId)` - Fetch requests with Realtime
+- `useApproveEventRequest()` / `useRejectEventRequest()`
 
 ### `useNotifications.ts`
-- `useNotifications()` - Fetch all notifications (30s stale, 1min polling)
+- `useNotifications()` - Fetch with Supabase Realtime subscription
 - `useUnreadCount()` - Derived unread count
-- `useMarkNotificationRead()` / `useMarkAllNotificationsRead()` - Mark as read (optimistic)
-- `useDeleteNotification()` / `useClearAllNotifications()` - Delete operations
+- `useMarkAllNotificationsRead()` - Optimistic updates
 
-## Patterns Used
+### `useComments.ts`
+- `useContentComments(contentId)` - Fetch comments for content
+- `useCreateComment()` / `useDeleteComment()` - Mutations with cache invalidation
 
+## Patterns
+
+- **Supabase Realtime**: Notifications and event requests use Realtime for instant updates
 - **Optimistic Updates**: Content updates and notification reads update UI immediately
-- **Cache Invalidation**: Mutations invalidate related queries for fresh data
-- **Conditional Fetching**: Queries use `enabled` flag to prevent fetching with null IDs
-- **Stale Time**: Configured per-hook based on data volatility
+- **Cache Invalidation**: Mutations invalidate related queries

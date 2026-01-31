@@ -28,6 +28,7 @@ export const COMMON = {
 export const APP_HEADER = {
   title: 'Content OS',
   requestNewEvent: 'בקשת אירוע חדש',
+  logout: 'התנתק',
 } as const;
 
 // ============================================================================
@@ -118,6 +119,36 @@ export const CONTENT_MODAL = {
     line1: 'השתמש בכפתור "+" בתפריט העליון',
     line2: 'כדי לבקש אירוע חדש',
   },
+  save: {
+    success: 'נשמר!',
+    contentSaved: 'התוכן נשמר בהצלחה',
+    eventSaved: 'האירוע נשמר בהצלחה',
+    noClientSelected: 'לא נבחר לקוח',
+    contentSaveFailed: 'שמירת התוכן נכשלה',
+    eventSaveFailed: 'שמירת האירוע נכשלה',
+    contentCreateFailed: 'יצירת התוכן נכשלה',
+    eventCreateFailed: 'יצירת האירוע נכשלה',
+  },
+  delete: {
+    success: 'נמחק!',
+    contentDeleted: 'התוכן נמחק בהצלחה',
+    eventDeleted: 'האירוע נמחק בהצלחה',
+  },
+  copy: {
+    success: 'הועתק!',
+    captionCopied: 'הקופי הועתק ללוח',
+  },
+  approve: {
+    success: 'אושר!',
+    contentApproved: 'התוכן אושר לפרסום',
+  },
+  reject: {
+    success: 'נדחה',
+    contentRejected: 'התוכן נדחה והמנהל יקבל התראה',
+  },
+  file: {
+    selected: 'קובץ נבחר',
+  },
 } as const;
 
 // ============================================================================
@@ -148,6 +179,7 @@ export const STATUS_LABELS: Record<ContentStatus, string> = {
   draft: 'טיוטה',
   pending: 'ממתין לאישור',
   approved: 'מאושר',
+  rejected: 'נדחה',
   published: 'פורסם',
 } as const;
 
@@ -189,6 +221,12 @@ export const MEDIA_UPLOAD = {
 
 export const CONTENT_FORM = {
   approveButton: 'אישור תוכן',
+  rejectButton: 'דחיית תוכן',
+  rejectionReasonLabel: 'סיבת הדחייה (אופציונלי)',
+  rejectionReasonPlaceholder: 'ספר לנו מה לא בסדר...',
+  rejectionDialogTitle: 'דחיית התוכן',
+  rejectionDialogSubmit: 'שלח דחייה',
+  rejectionDialogCancel: 'ביטול',
 } as const;
 
 // ============================================================================
@@ -301,6 +339,7 @@ export const ADD_IMAGE = {
   button: 'הוסף תמונה',
   dialogTitle: 'הוספת תמונה לגריד',
   selectType: 'בחר סוג תוכן:',
+  confirm: 'אישור',
 } as const;
 
 // ============================================================================
@@ -328,6 +367,7 @@ export const GRID_EDIT_CONTROLS = {
 export const GRID_OVERLAY = {
   replaceCover: 'החלף תמונת קאבר',
   adjustZoomPosition: 'התאם זום ומיקום',
+  deleteItem: 'מחק מהגריד',
 } as const;
 
 // ============================================================================
@@ -385,3 +425,43 @@ export const IMAGE_CROP_EDITOR = {
   cancel: 'ביטול',
   apply: 'בוצע',
 } as const;
+
+// ============================================================================
+// Login Page
+// ============================================================================
+
+export const LOGIN = {
+  title: 'Content Creator OS',
+  subtitle: 'התחבר לחשבונך',
+  emailLabel: 'אימייל',
+  emailPlaceholder: 'הכנס אימייל',
+  passwordLabel: 'סיסמה',
+  passwordPlaceholder: 'הכנס סיסמה',
+  loginButton: 'התחבר',
+  loggingIn: 'מתחבר...',
+  invalidCredentials: 'אימייל או סיסמה שגויים',
+  footer: '© 2026 RZ Social Media. כל הזכויות שמורות.',
+  validation: {
+    emailRequired: 'נא להזין אימייל',
+    passwordRequired: 'נא להזין סיסמה',
+  },
+} as const;
+
+// ============================================================================
+// Comments Section
+// ============================================================================
+
+export const COMMENTS = {
+  title: 'תגובות',
+  placeholder: 'כתוב תגובה...',
+  send: 'שלח',
+  empty: 'אין תגובות עדיין',
+  admin: 'מנהל',
+  client: 'לקוח',
+  deleteConfirm: 'האם למחוק את התגובה?',
+  justNow: 'עכשיו',
+  minutesAgo: (count: number) => count === 1 ? 'לפני דקה' : `לפני ${count} דקות`,
+  hoursAgo: (count: number) => count === 1 ? 'לפני שעה' : `לפני ${count} שעות`,
+  daysAgo: (count: number) => count === 1 ? 'אתמול' : `לפני ${count} ימים`,
+} as const;
+

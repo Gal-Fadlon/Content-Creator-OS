@@ -1,22 +1,54 @@
 /**
  * React Query hooks for notifications
- * Shared across NotificationBell, etc.
+ * Uses Supabase Realtime for instant updates
  */
 
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/services/queryKeys';
 import { services } from '@/services/services';
+import { supabase } from '@/services/supabase/supabaseClient';
+import { useAuth } from '@/context/providers/AuthProvider';
 import type { Notification } from '@/types/content';
 
 /**
- * Fetch all notifications
+ * Fetch all notifications with Realtime subscription
  */
 export function useNotifications() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Set up Realtime subscription for instant updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('notifications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Invalidate and refetch notifications on any change
+          queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
+
   return useQuery({
     queryKey: queryKeys.notifications.all,
     queryFn: () => services.notifications.getAll(),
     staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Poll every minute
+    enabled: !!user?.id,
   });
 }
 

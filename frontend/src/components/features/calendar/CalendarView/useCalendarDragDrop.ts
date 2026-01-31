@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useUpdateContent } from '@/hooks/queries/useContent';
 import { useUpdateEvent } from '@/hooks/queries/useEvents';
 import { useAuth } from '@/context/providers/AuthProvider';
+import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';
 
 type DragItemType = 'content' | 'event';
 
@@ -24,6 +25,7 @@ export function useCalendarDragDrop(): CalendarDragDropState & CalendarDragDropA
   const updateContent = useUpdateContent();
   const updateEvent = useUpdateEvent();
   const { isAdmin } = useAuth();
+  const [selectedClientId] = useSelectedClientId();
   
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const [draggedItemType, setDraggedItemType] = useState<DragItemType | null>(null);
@@ -80,16 +82,16 @@ export function useCalendarDragDrop(): CalendarDragDropState & CalendarDragDropA
     const newDate = date.toISOString().split('T')[0];
     
     if (draggedItemType === 'content') {
-      updateContent.mutate({ id: draggedItemId, data: { date: newDate } });
+      updateContent.mutate({ id: draggedItemId, data: { date: newDate }, clientId: selectedClientId || undefined });
     } else {
       updateEvent.mutate({ id: draggedItemId, data: { date: newDate } });
     }
-    
+
     setDraggedItemId(null);
     setDraggedItemType(null);
     setDragOverDate(null);
     setIsDropDisabled(false);
-  }, [isAdmin, draggedItemId, draggedItemType, updateContent, updateEvent]);
+  }, [isAdmin, draggedItemId, draggedItemType, updateContent, updateEvent, selectedClientId]);
   
   const handleDragEnd = useCallback(() => {
     setDraggedItemId(null);

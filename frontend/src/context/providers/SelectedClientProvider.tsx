@@ -3,9 +3,31 @@
  * Manages the currently selected client ID
  */
 
-import { createContext, useContext, useState, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
 import { useClients } from '@/hooks/queries/useClients';
+import { useAuth } from '@/context/providers/AuthProvider';
 import type { Client } from '@/types/content';
+
+const LAST_SELECTED_CLIENT_KEY = 'last-selected-client';
+
+// Get last selected client from localStorage (for skeleton count on hard refresh)
+export const getLastSelectedClientId = (): string | null => {
+  try {
+    return localStorage.getItem(LAST_SELECTED_CLIENT_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const setLastSelectedClientId = (clientId: string | null): void => {
+  try {
+    if (clientId) {
+      localStorage.setItem(LAST_SELECTED_CLIENT_KEY, clientId);
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
+};
 
 interface SelectedClientContextValue {
   /** Currently selected client ID */
@@ -18,15 +40,43 @@ const SelectedClientContext = createContext<SelectedClientContextValue | undefin
 
 interface SelectedClientProviderProps {
   children: ReactNode;
-  /** Initial selected client ID */
-  defaultClientId?: string | null;
 }
 
-export function SelectedClientProvider({
-  children,
-  defaultClientId = 'c1',
-}: SelectedClientProviderProps) {
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(defaultClientId);
+export function SelectedClientProvider({ children }: SelectedClientProviderProps) {
+  const { user, isAdmin } = useAuth();
+  const { data: clients } = useClients();
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+
+  // Auto-select client based on user role
+  useEffect(() => {
+    if (!user) {
+      setSelectedClientId(null);
+      return;
+    }
+
+    // Client users: use their assigned client_id
+    if (!isAdmin && user.clientId) {
+      setSelectedClientId(user.clientId);
+      setLastSelectedClientId(user.clientId);
+      return;
+    }
+
+    // Admin users: try to restore last selected, or use first client
+    if (isAdmin && clients?.length && !selectedClientId) {
+      const lastClientId = getLastSelectedClientId();
+      const validLastClient = lastClientId && clients.some(c => c.id === lastClientId);
+      const clientToSelect = validLastClient ? lastClientId : clients[0].id;
+      setSelectedClientId(clientToSelect);
+      setLastSelectedClientId(clientToSelect);
+    }
+  }, [user, isAdmin, clients, selectedClientId]);
+
+  // Persist selection changes to localStorage
+  useEffect(() => {
+    if (selectedClientId) {
+      setLastSelectedClientId(selectedClientId);
+    }
+  }, [selectedClientId]);
 
   const value = useMemo(() => ({
     selectedClientId,

@@ -37,6 +37,15 @@ export const StyledDragOverlay = styled(Box)({
   touchAction: 'none',
 });
 
+// Optional overlay to match calendar view (so user sees what it will look like)
+export const StyledPreviewOverlay = styled(Box)({
+  position: 'absolute',
+  inset: 0,
+  background: 'linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3), rgba(0,0,0,0.1))',
+  pointerEvents: 'none',
+  zIndex: 0,
+});
+
 export const StyledCropGrid = styled(Box)({
   position: 'absolute',
   inset: 0,

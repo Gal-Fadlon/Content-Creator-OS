@@ -1,7 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import { Clock, CalendarClock, CheckCircle, Inbox, CalendarPlus, MessageCircle } from 'lucide-react';
 import { useNotifications, useUnreadCount, useMarkNotificationRead, useMarkAllNotificationsRead } from '@/hooks/queries/useNotifications';
+import { useContentModal } from '@/context/providers/ModalProvider';
 import { NOTIFICATIONS } from '@/constants/strings.constants';
+import type { Notification, NotificationType } from '@/types/content';
 import {
   StyledIconButton,
   StyledBadge,
@@ -12,17 +15,35 @@ import {
   StyledEmptyMessage,
   StyledNotificationItem,
   StyledNotificationContent,
-  StyledUnreadDot,
   StyledNotificationTextWrapper,
   StyledNotificationTitle,
   StyledNotificationMessage,
+  StyledNotificationThumbnail,
+  StyledNotificationIcon,
 } from './NotificationBell.style';
+
+// Icon and color mapping for notification types
+const notificationIconConfig: Record<NotificationType, { icon: typeof Clock; color: string }> = {
+  content_pending: { icon: Clock, color: '#f59e0b' }, // amber
+  publish_reminder: { icon: CalendarClock, color: '#3b82f6' }, // blue
+  content_approved: { icon: CheckCircle, color: '#22c55e' }, // green
+  new_request: { icon: Inbox, color: '#8b5cf6' }, // purple
+  event_request: { icon: CalendarPlus, color: '#ec4899' }, // pink
+  new_comment: { icon: MessageCircle, color: '#06b6d4' }, // cyan
+};
+
+const getNotificationIcon = (type: NotificationType) => {
+  const config = notificationIconConfig[type];
+  const IconComponent = config.icon;
+  return <IconComponent size={16} color={config.color} />;
+};
 
 const NotificationBell: React.FC = () => {
   const { data: notifications = [] } = useNotifications();
   const unreadCount = useUnreadCount();
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
+  const { openForEdit } = useContentModal();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleOpen = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -36,10 +57,16 @@ const NotificationBell: React.FC = () => {
   }, []);
 
   const handleNotificationClick = useCallback(
-    (notificationId: string) => {
-      markReadMutation.mutate(notificationId);
+    (notification: Notification) => {
+      markReadMutation.mutate(notification.id);
+      
+      // If notification has a contentId, open the content modal
+      if (notification.contentId) {
+        handleClose();
+        openForEdit(notification.contentId);
+      }
     },
-    [markReadMutation]
+    [markReadMutation, openForEdit, handleClose]
   );
 
   const isOpen = Boolean(anchorEl);
@@ -77,14 +104,22 @@ const NotificationBell: React.FC = () => {
               <StyledNotificationItem
                 key={notif.id}
                 isUnread={!notif.read}
-                onClick={() => handleNotificationClick(notif.id)}
+                onClick={() => handleNotificationClick(notif)}
               >
                 <StyledNotificationContent>
-                  {!notif.read && <StyledUnreadDot />}
+                  <StyledNotificationIcon isUnread={!notif.read}>
+                    {getNotificationIcon(notif.type)}
+                  </StyledNotificationIcon>
                   <StyledNotificationTextWrapper>
                     <StyledNotificationTitle>{notif.title}</StyledNotificationTitle>
                     <StyledNotificationMessage>{notif.message}</StyledNotificationMessage>
                   </StyledNotificationTextWrapper>
+                  {notif.contentMediaUrl && (
+                    <StyledNotificationThumbnail 
+                      src={notif.contentMediaUrl} 
+                      alt="" 
+                    />
+                  )}
                 </StyledNotificationContent>
               </StyledNotificationItem>
             ))

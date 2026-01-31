@@ -1,15 +1,15 @@
 # Context Layer Implementation
 
-This folder contains React Context providers for **client-side UI state** management.
+React Context providers for **client-side UI state** management.
 
-> **Note:** Server state (content, events, clients, notifications) is handled by React Query hooks in `/hooks/queries/`, not contexts.
+> Server state (content, events, notifications) is handled by React Query hooks in `/hooks/queries/`.
 
 ## Provider Hierarchy
 
-Providers are composed in `AppProviders.tsx` in dependency order:
+Providers are composed in `AppProviders.tsx`:
 
 1. **ThemeProvider** – MUI theme
-2. **QueryClientProvider** – React Query (5min stale, 10min gc)
+2. **QueryClientProvider** – React Query
 3. **SnackbarProvider** – Toast notifications
 4. **AuthProvider** – User session & role switching
 5. **SelectedClientProvider** – Currently selected client
@@ -23,19 +23,19 @@ Providers are composed in `AppProviders.tsx` in dependency order:
 
 | Provider | State | Hooks |
 |----------|-------|-------|
-| `SnackbarProvider` | Toast messages queue | `useToast` |
-| `AuthProvider` | User, role, auth state | `useAuth`, `useUserRole`, `useIsAdmin` |
+| `SnackbarProvider` | Toast messages | `useToast` |
+| `AuthProvider` | User, role, Supabase session | `useAuth` |
 | `SelectedClientProvider` | Selected client ID | `useSelectedClientId`, `useSelectedClient` |
-| `CalendarNavProvider` | Current month, navigation | `useCalendarNav`, `useMonthKey` |
-| `ViewModeProvider` | Calendar/Grid view mode | `useViewMode` |
+| `CalendarNavProvider` | Current month | `useCalendarNav`, `useMonthKey` |
+| `ViewModeProvider` | Calendar/Grid view | `useViewMode` |
 | `FilterProvider` | Content filters | `useFilters` |
-| `ModalProvider` | Content & event modals | `useModals`, `useContentModal`, `useEventRequestModal` |
-| `MonthlyStateProvider` | Backdrop, stickers, theme per month | `useMonthlyState`, `useBackdrop`, `useStickers`, `useCustomStickerBank` |
+| `ModalProvider` | Content & event modals | `useContentModal`, `useEventRequestModal` |
+| `MonthlyStateProvider` | Backdrop, stickers, theme | `useMonthlyState`, `useBackdrop`, `useStickers` |
 
-## Patterns Used
+## Auth Flow
 
-- **createContext + Provider + custom hook** pattern for all contexts
-- **useMemo** for stable context values to prevent unnecessary re-renders
-- **useCallback** for action functions
-- **useReducer** for complex state (MonthlyStateProvider)
-- Specialized hooks (e.g., `useMonthKey`) to minimize re-renders by selecting only needed state
+`AuthProvider` uses **Supabase Auth**:
+- `signIn(email, password)` - Login with credentials
+- `signOut()` - Cancels queries, clears cache, signs out
+- Auto-fetches user profile from `profiles` table
+- Listens to auth state changes via `onAuthStateChange`

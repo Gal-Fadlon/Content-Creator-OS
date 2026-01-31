@@ -40,4 +40,9 @@ export const queryKeys = {
     all: ['notifications'] as const,
     unreadCount: ['notifications', 'unread-count'] as const,
   },
+
+  // Comments
+  comments: {
+    byContent: (contentId: string) => ['comments', contentId] as const,
+  },
 } as const;

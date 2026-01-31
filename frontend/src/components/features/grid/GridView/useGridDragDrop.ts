@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react';
 import { useUpdateContent } from '@/hooks/queries/useContent';
 import { useAuth } from '@/context/providers/AuthProvider';
+import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import type { ContentItem } from '@/types/content';
 
 export function useGridDragDrop(clientContent: ContentItem[]) {
   const updateContent = useUpdateContent();
   const { isAdmin } = useAuth();
+  const [selectedClientId] = useSelectedClientId();
   
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOverItem, setDragOverItem] = useState<string | null>(null);
@@ -40,12 +42,12 @@ export function useGridDragDrop(clientContent: ContentItem[]) {
     newOrder.splice(targetIndex, 0, removed);
     
     newOrder.forEach((item, index) => {
-      updateContent.mutate({ id: item.id, data: { gridOrder: index } });
+      updateContent.mutate({ id: item.id, data: { gridOrder: index }, clientId: selectedClientId || undefined });
     });
-    
+
     setDraggedItem(null);
     setDragOverItem(null);
-  }, [isAdmin, draggedItem, clientContent, updateContent]);
+  }, [isAdmin, draggedItem, clientContent, updateContent, selectedClientId]);
   
   const handleDragEnd = useCallback(() => {
     setDraggedItem(null);

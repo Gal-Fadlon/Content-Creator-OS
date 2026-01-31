@@ -108,3 +108,29 @@ export const StyledNotificationMessage = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   marginTop: theme.spacing(0.25),
 }));
+
+export const StyledNotificationThumbnail = styled('img')(({ theme }) => ({
+  width: 40,
+  height: 40,
+  borderRadius: theme.shape.borderRadius,
+  objectFit: 'cover',
+  flexShrink: 0,
+  marginRight: theme.spacing(1),
+}));
+
+interface StyledNotificationIconProps {
+  isUnread?: boolean;
+}
+
+export const StyledNotificationIcon = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isUnread',
+})<StyledNotificationIconProps>(({ theme, isUnread }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 32,
+  height: 32,
+  borderRadius: '50%',
+  backgroundColor: isUnread ? 'rgba(212, 168, 85, 0.15)' : theme.palette.grey[100],
+  flexShrink: 0,
+}));

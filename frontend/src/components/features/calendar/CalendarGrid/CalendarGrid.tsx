@@ -15,6 +15,7 @@ interface CalendarGridProps {
   dragOverDate: string | null;
   isDropDisabled: boolean;
   isAdmin: boolean;
+  editingItemId: string | null;
   onDayClick: (date: Date) => void;
   onItemClick: (itemId: string, e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent, itemId: string, itemType: 'content' | 'event') => void;
@@ -22,6 +23,11 @@ interface CalendarGridProps {
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
   onDragEnd: () => void;
+  onEditImageClick: (itemId: string) => void;
+  onEditImageDone: () => void;
+  onEditImageCancel: () => void;
+  onZoomChange: (itemId: string, zoom: number) => void;
+  onOffsetChange: (itemId: string, offsetX: number, offsetY: number) => void;
 }
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -30,6 +36,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   dragOverDate,
   isDropDisabled,
   isAdmin,
+  editingItemId,
   onDayClick,
   onItemClick,
   onDragStart,
@@ -37,6 +44,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   onDragLeave,
   onDrop,
   onDragEnd,
+  onEditImageClick,
+  onEditImageDone,
+  onEditImageCancel,
+  onZoomChange,
+  onOffsetChange,
 }) => {
   return (
     <StyledGridContainer>
@@ -55,6 +67,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             dragOverDate={dragOverDate}
             isDropDisabled={isDropDisabled}
             isAdmin={isAdmin}
+            editingItemId={editingItemId}
             onDayClick={onDayClick}
             onItemClick={onItemClick}
             onDragStart={onDragStart}
@@ -62,6 +75,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             onDragEnd={onDragEnd}
+            onEditImageClick={onEditImageClick}
+            onEditImageDone={onEditImageDone}
+            onEditImageCancel={onEditImageCancel}
+            onZoomChange={onZoomChange}
+            onOffsetChange={onOffsetChange}
           />
         ))}
       </StyledDaysGrid>

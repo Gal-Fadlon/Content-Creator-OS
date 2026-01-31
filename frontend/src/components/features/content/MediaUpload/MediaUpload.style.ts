@@ -1,19 +1,41 @@
 import { styled } from '@mui/material/styles';
 import { Box, ButtonBase, IconButton, Typography } from '@mui/material';
 
-export const StyledMediaContainer = styled(Box)(({ theme }) => ({
+export const StyledMediaContainer = styled(Box)({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
+  display: 'flex',
+  justifyContent: 'center',
+});
+
+interface StyledClickableImageProps {
+  clickable?: boolean;
+}
+
+export const StyledClickableImage = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'clickable',
+})<StyledClickableImageProps>(({ clickable }) => ({
+  position: 'relative',
+  cursor: clickable ? 'pointer' : 'default',
+  borderRadius: 8,
   overflow: 'hidden',
-  backgroundColor: theme.palette.action.hover,
-  aspectRatio: '16 / 9',
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+  transition: 'transform 0.2s ease, opacity 0.2s ease',
+  ...(clickable && {
+    '&:hover': {
+      transform: 'scale(1.02)',
+      '& img': {
+        opacity: 0.85,
+      },
+    },
+  }),
 }));
 
 export const StyledMediaImage = styled('img')({
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
+  maxWidth: '100%',
+  maxHeight: 200,
+  borderRadius: 8,
+  objectFit: 'contain',
+  display: 'block',
+  transition: 'opacity 0.2s ease',
 });
 
 export const StyledMediaActionButton = styled(IconButton)(({ theme }) => ({

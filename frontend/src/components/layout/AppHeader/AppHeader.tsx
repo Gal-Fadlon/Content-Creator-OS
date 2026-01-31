@@ -1,13 +1,15 @@
 import React from 'react';
-import { Container } from '@mui/material';
+import { Container, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '@/context/providers/AuthProvider';
-import { useSelectedClient } from '@/context/providers/SelectedClientProvider';
+import { useSelectedClient, useSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import ClientSelector from '@/components/layout/ClientSelector/ClientSelector';
 import NotificationBell from '@/components/layout/NotificationBell/NotificationBell';
 import RoleToggle from '@/components/layout/RoleToggle/RoleToggle';
 import BackdropManager from '@/components/layout/BackdropManager/BackdropManager';
 import ViewToggle, { ViewMode } from '@/components/layout/ViewToggle/ViewToggle';
+import EventRequestsPanel from '@/components/features/events/EventRequestsPanel/EventRequestsPanel';
 import { APP_HEADER } from '@/constants/strings.constants';
 import {
   StyledAppBar,
@@ -17,6 +19,7 @@ import {
   StyledClientName,
   StyledActionsSection,
   StyledEventRequestButton,
+  StyledLogoutButton,
 } from './AppHeader.style';
 
 interface AppHeaderProps {
@@ -30,8 +33,17 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onViewModeChange,
   onRequestEvent,
 }) => {
-  const { role } = useAuth();
+  const { isAdmin, isActualAdmin, signOut } = useAuth();
   const selectedClient = useSelectedClient();
+  const [selectedClientId] = useSelectedClientId();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
 
   return (
     <StyledAppBar elevation={0}>
@@ -42,19 +54,20 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             <StyledLogoTitle variant="h2">
               {APP_HEADER.title}
             </StyledLogoTitle>
-            {role === 'admin' && <ClientSelector />}
-            {role === 'client' && selectedClient && (
+            {isAdmin && <ClientSelector />}
+            {!isAdmin && selectedClient && (
               <StyledClientName>
                 {selectedClient.name}
               </StyledClientName>
             )}
             <NotificationBell />
+            {isAdmin && <EventRequestsPanel clientId={selectedClientId} />}
           </StyledLogoSection>
 
           {/* Left side - Actions */}
           <StyledActionsSection>
             {/* Client: Request new event button */}
-            {role === 'client' && (
+            {!isAdmin && (
               <StyledEventRequestButton
                 variant="contained"
                 onClick={onRequestEvent}
@@ -71,9 +84,17 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             />
 
             {/* Backdrop Manager (Admin only) */}
-            {role === 'admin' && <BackdropManager />}
+            {isAdmin && <BackdropManager />}
 
-            <RoleToggle />
+            {/* Role Toggle (Actual admins only - for previewing client view) */}
+            {isActualAdmin && <RoleToggle />}
+
+            {/* Logout */}
+            <Tooltip title={APP_HEADER.logout}>
+              <StyledLogoutButton onClick={handleLogout} size="small">
+                <LogoutIcon fontSize="small" />
+              </StyledLogoutButton>
+            </Tooltip>
           </StyledActionsSection>
         </StyledToolbar>
       </Container>

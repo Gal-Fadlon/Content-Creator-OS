@@ -3,6 +3,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PersonIcon from '@mui/icons-material/Person';
 import Tooltip from '@mui/material/Tooltip';
 import { useAuth } from '@/context/providers/AuthProvider';
+import { USER_ROLES } from '@/types/content';
 import { ROLE_TOGGLE } from '@/constants/strings.constants';
 import {
   StyledRoleToggleContainer,
@@ -10,18 +11,15 @@ import {
 } from './RoleToggle.style';
 
 const RoleToggle: React.FC = () => {
-  const { role, switchRole } = useAuth();
+  const { isAdmin, switchRole } = useAuth();
 
   const handleAdminClick = useCallback(() => {
-    switchRole('admin');
+    switchRole(USER_ROLES.ADMIN);
   }, [switchRole]);
 
   const handleClientClick = useCallback(() => {
-    switchRole('client');
+    switchRole(USER_ROLES.CLIENT);
   }, [switchRole]);
-
-  const isClient = role === 'client';
-  const isAdmin = role === 'admin';
 
   return (
     <StyledRoleToggleContainer>
@@ -37,7 +35,7 @@ const RoleToggle: React.FC = () => {
 
       <Tooltip title={ROLE_TOGGLE.client} arrow>
         <StyledRoleIconButton
-          isActive={isClient}
+          isActive={!isAdmin}
           onClick={handleClientClick}
           aria-label={ROLE_TOGGLE.client}
         >

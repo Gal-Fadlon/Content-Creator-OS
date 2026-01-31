@@ -19,9 +19,10 @@
  */
 
 import { ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { SnackbarProvider } from '@/context/SnackbarContext';
+import { queryClient } from '@/context/queryClient';
 import { AuthProvider } from './AuthProvider';
 import { SelectedClientProvider } from './SelectedClientProvider';
 import { ViewModeProvider } from './ViewModeProvider';
@@ -29,18 +30,6 @@ import { CalendarNavProvider } from './CalendarNavProvider';
 import { FilterProvider } from './FilterProvider';
 import { ModalProvider } from './ModalProvider';
 import { MonthlyStateProvider } from './MonthlyStateProvider';
-
-// Create query client with default options
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 interface AppProvidersProps {
   children: ReactNode;

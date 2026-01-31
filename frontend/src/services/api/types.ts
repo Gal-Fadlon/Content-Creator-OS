@@ -52,9 +52,10 @@ export interface AuthResponse {
 export interface CreateContentDTO {
   clientId: string;
   type: 'post' | 'story' | 'reel' | 'carousel';
-  status: 'draft' | 'pending' | 'approved' | 'published';
+  source?: 'calendar' | 'grid';
+  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'published';
   platform: 'instagram' | 'tiktok' | 'facebook';
-  date: string;
+  date: string | null; // null for grid-only items without scheduled date
   time?: string;
   caption: string;
   creativeDescription?: string;
@@ -63,6 +64,12 @@ export interface CreateContentDTO {
   coverImageUrl?: string;
   notes?: string;
   technicalInstructions?: string;
+  rejectionReason?: string;
+  // Grid properties for grid-only items
+  gridOrder?: number;
+  gridZoom?: number;
+  gridOffsetX?: number;
+  gridOffsetY?: number;
 }
 
 export interface UpdateContentDTO extends Partial<CreateContentDTO> {

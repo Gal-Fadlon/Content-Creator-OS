@@ -1,11 +1,8 @@
 import React from 'react';
-import { Copy } from 'lucide-react';
 import { CAPTION_FIELD } from '@/constants/strings.constants';
 import {
   StyledFieldContainer,
-  StyledLabelRow,
   StyledLabel,
-  StyledCopyButton,
   StyledTextField,
   StyledReadOnlyBox,
   StyledReadOnlyText,
@@ -16,7 +13,6 @@ interface CaptionFieldProps {
   onChange: (value: string) => void;
   isAdmin: boolean;
   isEditing: boolean;
-  onCopy?: () => void;
 }
 
 const CaptionField: React.FC<CaptionFieldProps> = ({
@@ -24,7 +20,6 @@ const CaptionField: React.FC<CaptionFieldProps> = ({
   onChange,
   isAdmin,
   isEditing,
-  onCopy,
 }) => {
   // Admin can edit caption
   if (isAdmin) {
@@ -44,17 +39,11 @@ const CaptionField: React.FC<CaptionFieldProps> = ({
     );
   }
 
-  // Client view - read only with copy button (only when editing)
+  // Client view - read only (only when editing)
   if (isEditing && value) {
     return (
       <StyledFieldContainer>
-        <StyledLabelRow>
-          <StyledCopyButton size="small" onClick={onCopy}>
-            <Copy size={16} />
-            {CAPTION_FIELD.copyButton}
-          </StyledCopyButton>
-          <StyledLabel>{CAPTION_FIELD.label}</StyledLabel>
-        </StyledLabelRow>
+        <StyledLabel>{CAPTION_FIELD.label}</StyledLabel>
         <StyledReadOnlyBox>
           <StyledReadOnlyText>{value}</StyledReadOnlyText>
         </StyledReadOnlyBox>

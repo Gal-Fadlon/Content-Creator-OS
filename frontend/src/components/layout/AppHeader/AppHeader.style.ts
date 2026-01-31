@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { AppBar, Toolbar, Box, Typography, Button } from '@mui/material';
+import { AppBar, Toolbar, Box, Typography, Button, IconButton } from '@mui/material';
 
 export const StyledAppBar = styled(AppBar)(({ theme }) => ({
   position: 'sticky',
@@ -66,5 +66,13 @@ export const StyledEventRequestButton = styled(Button)(({ theme }) => ({
   },
   '& .MuiButton-startIcon': {
     margin: 0,
+  },
+}));
+
+export const StyledLogoutButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  '&:hover': {
+    color: theme.palette.error.main,
+    backgroundColor: 'rgba(107, 27, 0, 0.08)',
   },
 }));

@@ -1,15 +1,15 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { ImageIcon } from 'lucide-react';
 import { Typography, Box, Button } from '@mui/material';
 import InlineImageEditor from '../InlineImageEditor/InlineImageEditor';
 import type { ContentType } from '@/types/content';
-import { ADD_IMAGE, CONTENT_TYPE_LABELS_HE, COMMON } from '@/constants/strings.constants';
+import { ADD_IMAGE, CONTENT_TYPE_LABELS_HE } from '@/constants/strings.constants';
 import {
   StyledDialog,
   StyledDialogContent,
   StyledPreviewContainer,
   StyledDialogActions,
-  StyledCancelButton,
+  StyledConfirmButton,
 } from './AddImageDialog.style';
 
 interface AddImageDialogProps {
@@ -35,25 +35,39 @@ const AddImageDialog: React.FC<AddImageDialogProps> = ({
 }) => {
   // Store crop values
   const cropValues = useRef({ zoom: 1, offsetX: 0, offsetY: 0 });
+  // Selected content type state
+  const [selectedType, setSelectedType] = useState<ContentType>('post');
 
   const handleCropChange = useCallback((zoom: number, offsetX: number, offsetY: number) => {
     cropValues.current = { zoom, offsetX, offsetY };
   }, []);
 
-  const handleConfirm = useCallback((type: ContentType) => {
+  const handleConfirm = useCallback(() => {
+    // Blur active element to prevent aria-hidden focus warning
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     const { zoom, offsetX, offsetY } = cropValues.current;
-    onConfirm(type, zoom, offsetX, offsetY);
+    onConfirm(selectedType, zoom, offsetX, offsetY);
     // Reset for next use
     cropValues.current = { zoom: 1, offsetX: 0, offsetY: 0 };
-  }, [onConfirm]);
+    setSelectedType('post');
+  }, [onConfirm, selectedType]);
 
   const handleCancel = useCallback(() => {
     cropValues.current = { zoom: 1, offsetX: 0, offsetY: 0 };
+    setSelectedType('post');
     onCancel();
   }, [onCancel]);
 
+  const handleDialogClose = useCallback(() => {
+    handleCancel();
+    onOpenChange(false);
+  }, [handleCancel, onOpenChange]);
+
   return (
-    <StyledDialog open={open} onClose={() => onOpenChange(false)}>
+    <StyledDialog open={open} onClose={handleDialogClose} disableRestoreFocus>
       <StyledDialogContent>
         {imagePreview && (
           <StyledPreviewContainer>
@@ -82,8 +96,8 @@ const AddImageDialog: React.FC<AddImageDialogProps> = ({
             {CONTENT_TYPE_CONFIG.map(({ type, icon }) => (
               <Button
                 key={type}
-                variant="outlined"
-                onClick={() => handleConfirm(type)}
+                variant={selectedType === type ? 'contained' : 'outlined'}
+                onClick={() => setSelectedType(type)}
                 sx={{
                   flexDirection: 'column',
                   height: 'auto',
@@ -99,13 +113,13 @@ const AddImageDialog: React.FC<AddImageDialogProps> = ({
         </Box>
 
         <StyledDialogActions>
-          <StyledCancelButton
-            variant="outlined"
-            onClick={handleCancel}
+          <StyledConfirmButton
+            variant="contained"
+            onClick={handleConfirm}
             fullWidth
           >
-            {COMMON.cancel}
-          </StyledCancelButton>
+            {ADD_IMAGE.confirm}
+          </StyledConfirmButton>
         </StyledDialogActions>
       </StyledDialogContent>
     </StyledDialog>

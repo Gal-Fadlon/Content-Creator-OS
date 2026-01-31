@@ -1,9 +1,12 @@
 import React from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
 import ModalHeader from '../ModalHeader/ModalHeader';
 import ModeToggle from '../ModeToggle/ModeToggle';
 import ContentForm from '../ContentForm/ContentForm';
 import EventForm from '../EventForm/EventForm';
+import CommentsSection from '../CommentsSection/CommentsSection';
 import { useContentModal } from './useContentModal';
+import { useAuth } from '@/context/providers/AuthProvider';
 import { isContentItem, isEventItem } from './ContentModal.helper';
 import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
 import {
@@ -16,10 +19,12 @@ import {
 } from './ContentModal.style';
 
 const ContentModal: React.FC = () => {
+  const { user } = useAuth();
   const {
     isOpen,
     isEditing,
     isAdmin,
+    isUploading,
     item,
     mode,
     displayDate,
@@ -42,8 +47,8 @@ const ContentModal: React.FC = () => {
     setEventColor,
     handleClose,
     handleDelete,
-    handleCopyCaption,
     handleApprove,
+    handleReject,
     handleFileClick,
     handleFileChange,
     handleSave,
@@ -53,9 +58,10 @@ const ContentModal: React.FC = () => {
   const showContentForm = mode === 'media' || (isEditing && item && isContentItem(item));
   const showEventForm = mode === 'event' || (isEditing && item && isEventItem(item));
   const contentItem = item && isContentItem(item) ? item : null;
+  const showComments = isEditing && contentItem && user;
 
   return (
-    <StyledDialog open={isOpen} onClose={handleClose}>
+    <StyledDialog open={isOpen} onClose={handleClose} disableRestoreFocus>
       {/* Hidden file input */}
       <StyledHiddenInput
         ref={fileInputRef}
@@ -94,8 +100,16 @@ const ContentModal: React.FC = () => {
             onCaptionChange={setCaption}
             onCreativeDescriptionChange={setCreativeDescription}
             onFileClick={handleFileClick}
-            onCopyCaption={handleCopyCaption}
             onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        )}
+
+        {/* Comments section - only for existing content items */}
+        {showComments && (
+          <CommentsSection
+            contentId={contentItem.id}
+            currentUserId={user.id}
           />
         )}
 
@@ -114,8 +128,13 @@ const ContentModal: React.FC = () => {
 
         {/* Save button (admin only) */}
         {isAdmin && (
-          <StyledSaveButton onClick={handleSave} variant="contained" size="large">
-            {COMMON.save}
+          <StyledSaveButton 
+            onClick={handleSave} 
+            variant="contained" 
+            size="large"
+            disabled={isUploading}
+          >
+            {isUploading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : COMMON.save}
           </StyledSaveButton>
         )}
 
