@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error MUI types issue
 import { TypographyOptions } from '@mui/material/styles/createTypography';
 
 /**

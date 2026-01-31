@@ -34,7 +34,7 @@ export const clientsService: ClientsService = {
     if (error) throw error;
 
     // Get pending counts for each client
-    const clientsWithCounts = await Promise.all(
+    return Promise.all(
       (data || []).map(async (client) => {
         // Get pending content count
         const { count: pendingCount } = await supabase
@@ -52,8 +52,6 @@ export const clientsService: ClientsService = {
         return toClient(client, pendingCount || 0, totalCount || 0);
       })
     );
-
-    return clientsWithCounts;
   },
 
   async getById(id: string) {

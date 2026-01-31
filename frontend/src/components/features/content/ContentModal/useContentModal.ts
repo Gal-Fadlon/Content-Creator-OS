@@ -67,7 +67,7 @@ export function useContentModal() {
   const [eventColor, setEventColor] = useState<MarkerColor>('black');
   
   // Upload state
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading] = useState(false);
   
   const isEditing = !!item;
   

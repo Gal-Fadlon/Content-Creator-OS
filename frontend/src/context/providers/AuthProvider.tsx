@@ -167,7 +167,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
 
       if (signInError) {
-        throw signInError;
+        setError(signInError.message || 'שגיאה בהתחברות. אנא נסה שנית.');
+        setIsLoading(false);
+        return;
       }
 
       if (data.session?.user) {
@@ -176,10 +178,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(userProfile);
         setViewAsRole(null);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Sign in error:', err);
-      setError(err.message || 'שגיאה בהתחברות. אנא נסה שנית.');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'שגיאה בהתחברות. אנא נסה שנית.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -202,10 +204,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Then sign out from Supabase
       const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
-    } catch (err: any) {
+      if (signOutError) {
+        console.error('Sign out error:', signOutError);
+        setError(signOutError.message || 'שגיאה בהתנתקות');
+      }
+    } catch (err: unknown) {
       console.error('Sign out error:', err);
-      setError(err.message || 'שגיאה בהתנתקות');
+      const errorMessage = err instanceof Error ? err.message : 'שגיאה בהתנתקות';
+      setError(errorMessage);
     }
   }, []);
 

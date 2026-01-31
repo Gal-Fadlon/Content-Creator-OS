@@ -6,18 +6,17 @@ import {
   Box,
   TextField,
   Button,
-  Typography,
   InputLabel,
 } from '@mui/material';
 
-export const StyledDialog = styled(Dialog)(({ theme }) => ({
+export const StyledDialog = styled(Dialog)(() => ({
   '& .MuiDialog-paper': {
     maxWidth: 450,
     width: '100%',
   },
 }));
 
-export const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+export const StyledDialogTitle = styled(DialogTitle)(() => ({
   fontFamily: '"Cormorant Garamond", Georgia, serif',
   fontSize: '1.25rem',
   fontWeight: 600,
@@ -47,7 +46,7 @@ export const StyledLabel = styled(InputLabel)(({ theme }) => ({
   gap: theme.spacing(0.5),
 }));
 
-export const StyledTextField = styled(TextField)(({ theme }) => ({
+export const StyledTextField = styled(TextField)(() => ({
   '& .MuiOutlinedInput-root': {
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
   },

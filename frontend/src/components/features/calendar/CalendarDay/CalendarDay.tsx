@@ -45,7 +45,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   day,
   draggedItemId,
   dragOverDate,
-  isDropDisabled,
   isAdmin,
   editingItemId,
   onDayClick,

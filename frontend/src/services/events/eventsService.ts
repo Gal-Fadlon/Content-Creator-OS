@@ -108,7 +108,7 @@ export const eventsService: EventsService = {
   },
 
   async update(id: string, data: UpdateEventDTO) {
-    const update: Record<string, any> = {};
+    const update: Record<string, unknown> = {};
     if (data.title !== undefined) update.title = data.title;
     if (data.description !== undefined) update.description = data.description;
     if (data.date !== undefined) update.event_date = data.date;

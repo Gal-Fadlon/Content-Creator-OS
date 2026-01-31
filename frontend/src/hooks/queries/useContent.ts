@@ -88,7 +88,7 @@ export function useUpdateContent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data, clientId }: { id: string; data: UpdateContentDTO; clientId?: string }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateContentDTO; clientId?: string }) =>
       services.content.update(id, data),
     // Optimistic update for both detail and list caches
     onMutate: async ({ id, data, clientId }) => {
@@ -179,10 +179,9 @@ export function useBatchUpdateContent() {
   return useMutation({
     mutationFn: async (updates: Array<{ id: string; data: UpdateContentDTO }>) => {
       // Run updates in parallel
-      const results = await Promise.all(
+      return Promise.all(
         updates.map(({ id, data }) => services.content.update(id, data))
       );
-      return results;
     },
     onSuccess: (results) => {
       if (results.length > 0) {

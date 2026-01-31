@@ -128,7 +128,7 @@ export function useEventRequests(clientId: string | null) {
     queryKey: queryKeys.events.requests.all(clientId ?? ''),
     queryFn: () => services.events.getRequests(clientId!),
     enabled: !!clientId,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 60 * 1000, // 1 minute
   });
 }
 

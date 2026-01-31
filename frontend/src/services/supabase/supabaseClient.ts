@@ -28,7 +28,7 @@ function getSupabaseClient(): SupabaseClient<Database> {
         detectSessionInUrl: true,
         storage: localStorage,
         // Custom lock that doesn't use navigator.locks (fixes StrictMode AbortError)
-        lock: async (name: string, acquireTimeout: number, callback: () => Promise<any>) => {
+        lock: async <T>(_name: string, _acquireTimeout: number, callback: () => Promise<T>): Promise<T> => {
           return await callback();
         },
       },

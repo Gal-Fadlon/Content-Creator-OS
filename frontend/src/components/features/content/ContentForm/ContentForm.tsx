@@ -18,7 +18,7 @@ import {
 } from './ContentForm.style';
 import { isContentItem } from '../ContentModal/ContentModal.helper';
 import type { ContentItem, ContentType, ContentStatus } from '@/types/content';
-import { CONTENT_FORM, COMMON } from '@/constants/strings.constants';
+import { CONTENT_FORM } from '@/constants/strings.constants';
 
 interface ContentFormProps {
   item: ContentItem | null;

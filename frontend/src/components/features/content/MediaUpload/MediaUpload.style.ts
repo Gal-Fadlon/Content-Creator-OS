@@ -88,11 +88,11 @@ export const StyledUploadArea = styled(ButtonBase, {
   }),
 }));
 
-export const StyledUploadIcon = styled(Box)(({ theme }) => ({
+export const StyledUploadIcon = styled(Box)(() => ({
   color: 'rgba(200, 173, 127, 0.6)',
 }));
 
-export const StyledUploadText = styled(Typography)(({ theme }) => ({
+export const StyledUploadText = styled(Typography)(() => ({
   fontFamily: '"Heebo", sans-serif',
   fontSize: '0.875rem',
   fontWeight: 500,

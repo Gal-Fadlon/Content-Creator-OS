@@ -65,7 +65,7 @@ export const StyledCoverBadge = styled(Chip)(({ theme }) => ({
   },
 }));
 
-export const StyledUploadingOverlay = styled(Box)(({ theme }) => ({
+export const StyledUploadingOverlay = styled(Box)(() => ({
   position: 'absolute',
   inset: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.5)',

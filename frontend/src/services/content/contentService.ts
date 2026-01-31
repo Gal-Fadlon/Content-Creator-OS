@@ -65,7 +65,7 @@ const toInsertContent = (data: CreateContentDTO) => ({
 
 // Transform frontend DTO to database update
 const toUpdateContent = (data: UpdateContentDTO) => {
-  const update: Record<string, any> = {};
+  const update: Record<string, unknown> = {};
   
   if (data.type !== undefined) update.type = data.type;
   if (data.status !== undefined) update.status = data.status;

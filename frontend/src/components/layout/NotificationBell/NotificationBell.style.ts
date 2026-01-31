@@ -8,7 +8,7 @@ import {
   ButtonBase,
 } from '@mui/material';
 
-export const StyledIconButton = styled(IconButton)(({ theme }) => ({
+export const StyledIconButton = styled(IconButton)(() => ({
   position: 'relative',
 }));
 
@@ -35,13 +35,13 @@ export const StyledPopoverHeader = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
-export const StyledPopoverTitle = styled(Typography)(({ theme }) => ({
+export const StyledPopoverTitle = styled(Typography)(() => ({
   fontFamily: '"Heebo", sans-serif',
   fontWeight: 600,
   fontSize: '0.875rem',
 }));
 
-export const StyledNotificationList = styled(Box)(({ theme }) => ({
+export const StyledNotificationList = styled(Box)(() => ({
   maxHeight: 320,
   overflowY: 'auto',
 }));

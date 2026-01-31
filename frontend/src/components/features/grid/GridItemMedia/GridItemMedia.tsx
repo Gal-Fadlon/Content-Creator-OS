@@ -19,7 +19,6 @@ interface GridItemMediaProps {
 const GridItemMedia: React.FC<GridItemMediaProps> = ({
   mediaUrl,
   coverImageUrl,
-  type,
   zoom,
   offsetX,
   offsetY,

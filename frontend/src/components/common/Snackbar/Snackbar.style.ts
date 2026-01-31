@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles';
 import { Snackbar, Alert } from '@mui/material';
 
-export const StyledSnackbar = styled(Snackbar)(({ theme }) => ({
+export const StyledSnackbar = styled(Snackbar)(() => ({
   '& .MuiSnackbarContent-root': {
     fontFamily: '"Heebo", sans-serif',
   },

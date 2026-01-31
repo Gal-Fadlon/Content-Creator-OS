@@ -86,7 +86,7 @@ export const StyledSlider = styled(Slider)(({ theme }) => ({
   },
 }));
 
-export const StyledSliderValue = styled(Box)(({ theme }) => ({
+export const StyledSliderValue = styled(Box)(() => ({
   fontFamily: '"Heebo", sans-serif',
   fontSize: '0.75rem',
   color: 'rgba(255, 255, 255, 0.7)',

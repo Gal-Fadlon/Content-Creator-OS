@@ -29,14 +29,12 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
   const [message, setMessage] = useState('');
   const commentsListRef = useRef<HTMLDivElement>(null);
 
-  const { data: comments, isLoading, isError } = useContentComments(contentId);
+  // Check if this is a valid content ID (not pending upload)
+  const isValidContentId = contentId && !contentId.startsWith('pending-');
+
+  const { data: comments, isLoading, isError } = useContentComments(isValidContentId ? contentId : '');
   const createComment = useCreateComment();
   const deleteComment = useDeleteComment();
-
-  // Don't render comments section for pending uploads or invalid IDs
-  if (!contentId || contentId.startsWith('pending-')) {
-    return null;
-  }
 
   // Auto-scroll to bottom when new comments arrive
   useEffect(() => {
@@ -46,7 +44,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
   }, [comments?.length]);
 
   const handleSubmit = useCallback(() => {
-    if (!message.trim()) return;
+    if (!message.trim() || !isValidContentId) return;
 
     createComment.mutate(
       { contentId, message: message.trim() },
@@ -56,7 +54,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
         },
       }
     );
-  }, [message, contentId, createComment]);
+  }, [message, contentId, isValidContentId, createComment]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -74,6 +72,11 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
     },
     [contentId, deleteComment]
   );
+
+  // Don't render comments section for pending uploads or invalid IDs
+  if (!isValidContentId) {
+    return null;
+  }
 
   const isSubmitting = createComment.isPending;
 

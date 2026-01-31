@@ -68,7 +68,7 @@ export function ViewModeProvider({
     toggleViewMode,
     isCalendarView: viewMode === 'calendar',
     isGridView: viewMode === 'grid',
-  }), [viewMode, toggleViewMode]);
+  }), [viewMode, setViewMode, toggleViewMode]);
 
   return (
     <ViewModeContext.Provider value={value}>

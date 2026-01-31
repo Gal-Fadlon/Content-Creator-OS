@@ -55,7 +55,7 @@ export const StyledRejectDialogContent = styled(DialogContent)(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-export const StyledRejectTextField = styled(TextField)(({ theme }) => ({
+export const StyledRejectTextField = styled(TextField)(() => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 12,
   },

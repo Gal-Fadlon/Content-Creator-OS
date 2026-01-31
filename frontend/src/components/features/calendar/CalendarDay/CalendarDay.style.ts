@@ -36,7 +36,7 @@ interface StyledDayCellProps {
 export const StyledDayCell = styled(ButtonBase, {
   shouldForwardProp: (prop) =>
     !['isCurrentMonth', 'isToday', 'isDragOver', 'hasThumbnail', 'showEditOnHover'].includes(prop as string),
-})<StyledDayCellProps>(({ theme, isCurrentMonth, isToday, isDragOver, showEditOnHover }) => ({
+})<StyledDayCellProps>(({ theme, isCurrentMonth, isDragOver, showEditOnHover }) => ({
   minHeight: 110,
   padding: theme.spacing(1),
   borderRadius: theme.spacing(1.5),
