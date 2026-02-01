@@ -98,27 +98,6 @@ export const lightPalette: PaletteOptions = {
 
 // Custom palette extensions for the design system
 declare module '@mui/material/styles' {
-  interface Palette {
-    neutral: Palette['primary'];
-    status: {
-      draft: string;
-      pending: string;
-      approved: string;
-      published: string;
-    };
-    contentType: {
-      reel: string;
-      story: string;
-      post: string;
-    };
-    marker: {
-      red: string;
-      blue: string;
-      beige: string;
-      brown: string;
-      black: string;
-    };
-  }
   interface PaletteOptions {
     neutral?: PaletteOptions['primary'];
     status?: {

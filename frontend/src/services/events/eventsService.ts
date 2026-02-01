@@ -62,7 +62,7 @@ export const eventsService: EventsService = {
 
     if (error) throw error;
 
-    return (data || []).map(toEventItem);
+    return ((data || []) as EventRow[]).map(toEventItem);
   },
 
   async getById(id: string) {
@@ -80,12 +80,12 @@ export const eventsService: EventsService = {
 
     if (error) throw error;
 
-    return toEventItem(data);
+    return toEventItem(data as EventRow);
   },
 
   async create(data: CreateEventDTO) {
-    const insertPromise = supabase
-      .from('events')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: created, error } = await (supabase.from('events') as any)
       .insert({
         client_id: data.clientId,
         title: data.title,
@@ -96,15 +96,9 @@ export const eventsService: EventsService = {
       .select()
       .single();
 
-    const { data: created, error } = await withTimeout(
-      insertPromise,
-      QUERY_TIMEOUT,
-      'Creating event timed out. Please try again.'
-    );
-
     if (error) throw error;
 
-    return toEventItem(created);
+    return toEventItem(created as EventRow);
   },
 
   async update(id: string, data: UpdateEventDTO) {
@@ -114,8 +108,8 @@ export const eventsService: EventsService = {
     if (data.date !== undefined) update.event_date = data.date;
     if (data.color !== undefined) update.color = data.color;
 
-    const { data: updated, error } = await supabase
-      .from('events')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: updated, error } = await (supabase.from('events') as any)
       .update(update)
       .eq('id', id)
       .select()
@@ -123,7 +117,7 @@ export const eventsService: EventsService = {
 
     if (error) throw error;
 
-    return toEventItem(updated);
+    return toEventItem(updated as EventRow);
   },
 
   async delete(id: string) {
@@ -144,16 +138,16 @@ export const eventsService: EventsService = {
 
     if (error) throw error;
 
-    return (data || []).map(toEventRequest);
+    return ((data || []) as EventRequestRow[]).map(toEventRequest);
   },
 
   async createRequest(data: CreateEventRequestDTO) {
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) throw new Error('Not authenticated');
 
-    const { data: created, error } = await supabase
-      .from('event_requests')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: created, error } = await (supabase.from('event_requests') as any)
       .insert({
         client_id: data.clientId,
         requested_by: user.id,
@@ -166,24 +160,26 @@ export const eventsService: EventsService = {
 
     if (error) throw error;
 
-    return toEventRequest(created);
+    return toEventRequest(created as EventRequestRow);
   },
 
   async approveRequest(id: string) {
     const { data: { user } } = await supabase.auth.getUser();
 
     // First get the request details
-    const { data: request, error: fetchError } = await supabase
+    const { data: requestData, error: fetchError } = await supabase
       .from('event_requests')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError || !requestData) throw fetchError || new Error('Request not found');
+
+    const request = requestData as EventRequestRow;
 
     // Update the request status
-    const { error: updateError } = await supabase
-      .from('event_requests')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (supabase.from('event_requests') as any)
       .update({
         status: 'approved',
         reviewed_by: user?.id,
@@ -194,8 +190,8 @@ export const eventsService: EventsService = {
     if (updateError) throw updateError;
 
     // Create the event from the approved request
-    const { data: newEvent, error: createError } = await supabase
-      .from('events')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: newEvent, error: createError } = await (supabase.from('events') as any)
       .insert({
         client_id: request.client_id,
         title: request.title,
@@ -209,14 +205,14 @@ export const eventsService: EventsService = {
 
     if (createError) throw createError;
 
-    return toEventItem(newEvent);
+    return toEventItem(newEvent as EventRow);
   },
 
   async rejectRequest(id: string) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: updated, error } = await supabase
-      .from('event_requests')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: updated, error } = await (supabase.from('event_requests') as any)
       .update({
         status: 'rejected',
         reviewed_by: user?.id,
@@ -228,6 +224,6 @@ export const eventsService: EventsService = {
 
     if (error) throw error;
 
-    return toEventRequest(updated);
+    return toEventRequest(updated as EventRequestRow);
   },
 };

@@ -52,10 +52,6 @@ export const StyledDownloadButton = styled(StyledMediaActionButton)(({ theme }) 
   left: theme.spacing(1),
 }));
 
-export const StyledEditButton = styled(StyledMediaActionButton)(({ theme }) => ({
-  right: theme.spacing(1),
-}));
-
 interface StyledUploadAreaProps {
   hasPreview?: boolean;
 }

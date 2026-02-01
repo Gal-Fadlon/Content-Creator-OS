@@ -4,9 +4,10 @@
  * Now uses Supabase Auth
  */
 
-import type { User } from '@/types/content';
+import type { User, UserRole } from '@/types/content';
 import type { LoginCredentials, AuthResponse } from '@/services/api/types';
 import { supabase } from '@/services/supabase/supabaseClient';
+import type { ProfileRow } from '@/services/supabase/supabaseTypes';
 
 export interface AuthService {
   getCurrentUser: () => Promise<User>;
@@ -23,15 +24,17 @@ export const authService: AuthService = {
     }
 
     // Get profile data
-    const { data: profile, error: profileError } = await supabase
+    const { data, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
 
-    if (profileError) {
-      throw profileError;
+    if (profileError || !data) {
+      throw profileError || new Error('Profile not found');
     }
+
+    const profile = data as ProfileRow;
 
     return {
       id: profile.id,
@@ -52,11 +55,13 @@ export const authService: AuthService = {
     }
 
     // Get profile data
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
       .single();
+
+    const profile = profileData as ProfileRow | null;
 
     return {
       user: {

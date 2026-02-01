@@ -51,6 +51,7 @@ export const SnackbarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => {
   const context = useContext(SnackbarContext);
   if (!context) {

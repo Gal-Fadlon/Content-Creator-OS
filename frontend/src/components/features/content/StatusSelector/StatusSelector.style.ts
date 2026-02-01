@@ -17,9 +17,9 @@ export const StyledLabel = styled(Typography)(({ theme }) => ({
   width: '100%',
 }));
 
-export const StyledFormControl = styled(FormControl)(({ theme }) => ({
+export const StyledFormControl = styled(FormControl)({
   width: '100%',
-}));
+});
 
 export const StyledSelect = styled(Select)(({ theme }) => ({
   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',

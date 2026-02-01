@@ -1,6 +1,6 @@
 /**
  * React Query hooks for events and event requests
- * Uses Supabase Realtime for instant updates
+ * Uses realtime subscriptions for instant updates
  */
 
 import { useEffect } from 'react';
@@ -25,17 +25,6 @@ export function useEvents(clientId: string | null) {
 }
 
 /**
- * Fetch a single event by ID
- */
-export function useEvent(id: string | null) {
-  return useQuery({
-    queryKey: queryKeys.events.detail(id ?? ''),
-    queryFn: () => services.events.getById(id!),
-    enabled: !!id,
-  });
-}
-
-/**
  * Create a new event
  */
 export function useCreateEvent() {
@@ -44,7 +33,7 @@ export function useCreateEvent() {
   return useMutation({
     mutationFn: (data: CreateEventDTO) => services.events.create(data),
     onSuccess: (newEvent) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.all(newEvent.clientId),
       });
     },
@@ -61,10 +50,10 @@ export function useUpdateEvent() {
     mutationFn: ({ id, data }: { id: string; data: UpdateEventDTO }) =>
       services.events.update(id, data),
     onSuccess: (updatedEvent) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.all(updatedEvent.clientId),
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.detail(updatedEvent.id),
       });
     },
@@ -81,7 +70,7 @@ export function useDeleteEvent() {
     mutationFn: ({ id, clientId }: { id: string; clientId: string }) =>
       services.events.delete(id).then(() => clientId),
     onSuccess: (clientId) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.all(clientId),
       });
     },
@@ -91,12 +80,12 @@ export function useDeleteEvent() {
 // ============ EVENT REQUESTS ============
 
 /**
- * Fetch all event requests for a client with Realtime subscription
+ * Fetch all event requests for a client with realtime subscription
  */
 export function useEventRequests(clientId: string | null) {
   const queryClient = useQueryClient();
 
-  // Set up Realtime subscription for instant updates
+  // Set up realtime subscription for instant updates
   useEffect(() => {
     if (!clientId) return;
 
@@ -112,7 +101,7 @@ export function useEventRequests(clientId: string | null) {
         },
         () => {
           // Invalidate and refetch on any change
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: queryKeys.events.requests.all(clientId),
           });
         }
@@ -120,7 +109,7 @@ export function useEventRequests(clientId: string | null) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [clientId, queryClient]);
 
@@ -141,7 +130,7 @@ export function useCreateEventRequest() {
   return useMutation({
     mutationFn: (data: CreateEventRequestDTO) => services.events.createRequest(data),
     onSuccess: (newRequest) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.requests.all(newRequest.clientId),
       });
     },
@@ -158,11 +147,11 @@ export function useApproveEventRequest() {
     mutationFn: (id: string) => services.events.approveRequest(id),
     onSuccess: (newEvent) => {
       // Invalidate events list (new event was created)
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.all(newEvent.clientId),
       });
       // Invalidate requests list
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.requests.all(newEvent.clientId),
       });
     },
@@ -178,7 +167,7 @@ export function useRejectEventRequest() {
   return useMutation({
     mutationFn: (id: string) => services.events.rejectRequest(id),
     onSuccess: (rejectedRequest) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.events.requests.all(rejectedRequest.clientId),
       });
     },

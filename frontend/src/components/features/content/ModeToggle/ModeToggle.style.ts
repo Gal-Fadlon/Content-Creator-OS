@@ -1,10 +1,10 @@
 import { styled } from '@mui/material/styles';
 import { Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
 
-export const StyledModeToggleContainer = styled(Box)(({ theme }) => ({
+export const StyledModeToggleContainer = styled(Box)({
   display: 'flex',
   justifyContent: 'center',
-}));
+});
 
 export const StyledToggleGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   backgroundColor: 'transparent',

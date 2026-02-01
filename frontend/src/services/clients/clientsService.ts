@@ -33,9 +33,11 @@ export const clientsService: ClientsService = {
 
     if (error) throw error;
 
+    const clients = (data || []) as ClientRow[];
+
     // Get pending counts for each client
     return Promise.all(
-      (data || []).map(async (client) => {
+      clients.map(async (client) => {
         // Get pending content count
         const { count: pendingCount } = await supabase
           .from('content')
@@ -63,6 +65,8 @@ export const clientsService: ClientsService = {
 
     if (error) throw error;
 
+    const client = data as ClientRow;
+
     // Get counts
     const { count: pendingCount } = await supabase
       .from('content')
@@ -75,7 +79,7 @@ export const clientsService: ClientsService = {
       .select('*', { count: 'exact', head: true })
       .eq('client_id', id);
 
-    return toClient(data, pendingCount || 0, totalCount || 0);
+    return toClient(client, pendingCount || 0, totalCount || 0);
   },
 
   async updateTheme(clientId: string, theme: string) {
@@ -85,16 +89,16 @@ export const clientsService: ClientsService = {
     const year = now.getFullYear();
 
     // Upsert monthly theme
-    const { error: themeError } = await supabase
-      .from('monthly_themes')
-      .upsert({
-        client_id: clientId,
-        month,
-        year,
-        theme_text: theme,
-      }, {
-        onConflict: 'client_id,month,year',
-      });
+    const themeData = {
+      client_id: clientId,
+      month,
+      year,
+      theme_text: theme,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: themeError } = await (supabase.from('monthly_themes') as any).upsert(themeData, {
+      onConflict: 'client_id,month,year',
+    });
 
     if (themeError) throw themeError;
 

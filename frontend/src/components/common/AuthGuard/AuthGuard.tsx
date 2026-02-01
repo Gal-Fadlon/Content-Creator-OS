@@ -8,7 +8,7 @@ interface AuthGuardProps {
 }
 
 /**
- * ProtectedRoute - Redirects to login if user is not authenticated
+ * ProtectedRoute - Redirects to log in if user is not authenticated
  */
 export const ProtectedRoute: React.FC<AuthGuardProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -40,5 +40,3 @@ export const PublicRoute: React.FC<AuthGuardProps> = ({ children }) => {
 
   return <>{children}</>;
 };
-
-export default React.memo(ProtectedRoute);

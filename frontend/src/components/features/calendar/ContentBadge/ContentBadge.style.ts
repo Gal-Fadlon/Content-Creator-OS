@@ -3,7 +3,7 @@ import { Box, Typography, Popover } from '@mui/material';
 
 interface StyledBadgeContainerProps {
   hasThumbnail?: boolean;
-  contentType?: 'reel' | 'carousel' | 'post';
+  contentType?: 'reel' | 'carousel' | 'post' | 'story';
   isAdmin?: boolean;
   isDragging?: boolean;
 }

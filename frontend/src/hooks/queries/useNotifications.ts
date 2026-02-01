@@ -34,13 +34,13 @@ export function useNotifications() {
         },
         () => {
           // Invalidate and refetch notifications on any change
-          queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+          void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient]);
 
@@ -93,7 +93,7 @@ export function useMarkNotificationRead() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
@@ -130,35 +130,7 @@ export function useMarkAllNotificationsRead() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-    },
-  });
-}
-
-/**
- * Delete a notification
- */
-export function useDeleteNotification() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => services.notifications.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-    },
-  });
-}
-
-/**
- * Clear all notifications
- */
-export function useClearAllNotifications() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () => services.notifications.clearAll(),
-    onSuccess: () => {
-      queryClient.setQueryData(queryKeys.notifications.all, []);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }

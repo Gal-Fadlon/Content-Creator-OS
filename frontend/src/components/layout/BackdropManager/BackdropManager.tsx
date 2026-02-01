@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import ImageIcon from '@mui/icons-material/Image';
 import UploadIcon from '@mui/icons-material/Upload';
 import CheckIcon from '@mui/icons-material/Check';
@@ -45,6 +45,7 @@ const BackdropManager: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedBackdrop, setSelectedBackdrop] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
 
   const currentBackdrop = currentMonthState.backdrop;
 
@@ -61,6 +62,10 @@ const BackdropManager: React.FC = () => {
   const handleClose = () => {
     setIsOpen(false);
     setSelectedBackdrop(null);
+  };
+
+  const handleTransitionExited = () => {
+    triggerButtonRef.current?.focus();
   };
 
   const handleBackdropSelect = (url: string) => {
@@ -87,6 +92,7 @@ const BackdropManager: React.FC = () => {
     <>
       <StyledTriggerContainer>
         <StyledTriggerButton
+          ref={triggerButtonRef}
           startIcon={<ImageIcon />}
           onClick={handleOpen}
         >
@@ -94,7 +100,12 @@ const BackdropManager: React.FC = () => {
         </StyledTriggerButton>
       </StyledTriggerContainer>
 
-      <StyledDialog open={isOpen} onClose={handleClose}>
+      <StyledDialog
+        open={isOpen}
+        onClose={handleClose}
+        disableRestoreFocus
+        slotProps={{ transition: { onExited: handleTransitionExited } }}
+      >
         <StyledDialogTitle>
           {BACKDROP.dialogTitle(monthName, year)}
         </StyledDialogTitle>

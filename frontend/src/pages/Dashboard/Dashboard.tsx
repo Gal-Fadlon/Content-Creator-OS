@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useMonthlyState } from '@/context/providers/MonthlyStateProvider';
-import { useContentModal, useEventRequestModal } from '@/context/providers/ModalProvider';
+import { useEventRequestModal } from '@/context/providers/ModalProvider';
 import { useViewMode } from '@/context/providers/ViewModeProvider';
 
 // Layout components
@@ -33,7 +33,6 @@ function Dashboard() {
 
   const { currentMonthState } = useMonthlyState();
   const { viewMode, setViewMode } = useViewMode();
-  const contentModal = useContentModal();
   const eventRequestModal = useEventRequestModal();
 
   const monthlyBackdrop = currentMonthState.backdrop;
@@ -82,7 +81,6 @@ function Dashboard() {
 
       {/* Main Content */}
       <StyledMainContainer
-        component="main"
         maxWidth="xl"
         ref={calendarContainerRef}
       >

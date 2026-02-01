@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useContentModal as useContentModalContext, useUploadingState } from '@/context/providers/ModalProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';
@@ -9,22 +9,6 @@ import { isContentItem, isEventItem } from './ContentModal.helper';
 import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
 import { uploadFile, deleteFile } from '@/services/storage/uploadService';
 import type { ContentType, ContentStatus, MarkerColor, ModalMode } from '@/types/content';
-
-export interface ContentFormState {
-  mode: ModalMode;
-  contentType: ContentType;
-  status: ContentStatus;
-  caption: string;
-  creativeDescription: string;
-  mediaFile: File | null;
-  mediaPreview: string | null;
-}
-
-export interface EventFormState {
-  eventTitle: string;
-  eventDescription: string;
-  eventColor: MarkerColor;
-}
 
 export function useContentModal() {
   const { isOpen, selectedDate, editItemId, close } = useContentModalContext();
@@ -153,7 +137,7 @@ export function useContentModal() {
   
   const handleCopyCaption = () => {
     const textToCopy = isContentItem(item!) ? item.caption : '';
-    navigator.clipboard.writeText(textToCopy);
+    void window.navigator.clipboard.writeText(textToCopy);
     toast({ title: CONTENT_MODAL.copy.success, description: CONTENT_MODAL.copy.captionCopied });
   };
   
@@ -194,7 +178,7 @@ export function useContentModal() {
     if (!file) return;
     
     setMediaFile(file);
-    const url = URL.createObjectURL(file);
+    const url = window.URL.createObjectURL(file);
     setMediaPreview(url);
     
     toast({ 

@@ -48,19 +48,3 @@ export const StyledYear = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(0.5),
 }));
 
-export const StyledThemeContainer = styled(Box)(({ theme }) => ({
-  marginTop: theme.spacing(2),
-}));
-
-export const StyledThemeLabel = styled(Typography)(({ theme }) => ({
-  fontFamily: '"Heebo", sans-serif',
-  fontSize: '0.875rem',
-  color: theme.palette.text.secondary,
-}));
-
-export const StyledThemeText = styled(Typography)(({ theme }) => ({
-  fontFamily: '"Amatic SC", cursive',
-  fontSize: '1.5rem',
-  color: theme.palette.info.main,
-  marginTop: theme.spacing(0.5),
-}));

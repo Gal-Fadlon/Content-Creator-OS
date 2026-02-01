@@ -101,9 +101,9 @@ ComponentName/
 
 ❌ **Do NOT** add to a component directory:
 - No `index.ts` barrel files
-- No sub-components in the same directory
+- No subcomponents in the same directory
 
-If a component needs sub-components, each sub-component gets its **own directory**:
+If a component needs subcomponents, each subcomponent gets its **own directory**:
 
 ```
 // ✅ CORRECT

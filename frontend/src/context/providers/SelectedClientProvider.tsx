@@ -11,6 +11,7 @@ import type { Client } from '@/types/content';
 const LAST_SELECTED_CLIENT_KEY = 'last-selected-client';
 
 // Get last selected client from localStorage (for skeleton count on hard refresh)
+// eslint-disable-next-line react-refresh/only-export-components
 export const getLastSelectedClientId = (): string | null => {
   try {
     return localStorage.getItem(LAST_SELECTED_CLIENT_KEY);
@@ -93,6 +94,7 @@ export function SelectedClientProvider({ children }: SelectedClientProviderProps
 /**
  * Hook to access selected client ID and setter
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSelectedClientId(): [string | null, (id: string | null) => void] {
   const context = useContext(SelectedClientContext);
   if (context === undefined) {
@@ -105,6 +107,7 @@ export function useSelectedClientId(): [string | null, (id: string | null) => vo
  * Hook to get the selected client object
  * Combines selection state with client data from React Query
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSelectedClient(): Client | undefined {
   const [selectedClientId] = useSelectedClientId();
   const { data: clients } = useClients();

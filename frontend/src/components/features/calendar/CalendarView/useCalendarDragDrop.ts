@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useUpdateContent } from '@/hooks/queries/useContent';
 import { useUpdateEvent } from '@/hooks/queries/useEvents';
 import { useAuth } from '@/context/providers/AuthProvider';

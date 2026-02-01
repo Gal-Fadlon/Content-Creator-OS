@@ -14,7 +14,7 @@ export const StyledGridItemContainer = styled(Box, {
 })<StyledGridItemContainerProps>(({ theme, isAdmin, isEditing, isDragged, isDragOver }) => ({
   aspectRatio: '4 / 5',
   backgroundColor: theme.palette.action.hover,
-  borderRadius: theme.shape.borderRadius / 2,
+  borderRadius: Number(theme.shape.borderRadius) / 2,
   overflow: 'hidden',
   position: 'relative',
   transition: theme.transitions.create(['opacity', 'transform', 'box-shadow']),

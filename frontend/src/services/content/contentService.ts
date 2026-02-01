@@ -48,43 +48,6 @@ const toContentItem = (row: ContentRow): ContentItem => ({
   updatedAt: row.updated_at,
 });
 
-// Transform frontend DTO to database insert
-const toInsertContent = (data: CreateContentDTO) => ({
-  client_id: data.clientId,
-  type: data.type,
-  source: data.source || 'calendar',
-  status: data.status || 'draft',
-  platform: data.platform || 'instagram',
-  scheduled_date: data.date || null,
-  caption: data.caption || null,
-  creative_description: data.creativeDescription || null,
-  media_url: data.mediaUrl || null,
-  media_type: data.mediaType || null,
-  grid_order: data.gridOrder || 0,
-});
-
-// Transform frontend DTO to database update
-const toUpdateContent = (data: UpdateContentDTO) => {
-  const update: Record<string, unknown> = {};
-  
-  if (data.type !== undefined) update.type = data.type;
-  if (data.status !== undefined) update.status = data.status;
-  if (data.platform !== undefined) update.platform = data.platform;
-  if (data.date !== undefined) update.scheduled_date = data.date;
-  if (data.caption !== undefined) update.caption = data.caption;
-  if (data.creativeDescription !== undefined) update.creative_description = data.creativeDescription;
-  if (data.mediaUrl !== undefined) update.media_url = data.mediaUrl;
-  if (data.mediaType !== undefined) update.media_type = data.mediaType;
-  if (data.coverImageUrl !== undefined) update.cover_image_url = data.coverImageUrl;
-  if (data.rejectionReason !== undefined) update.rejection_reason = data.rejectionReason;
-  if (data.gridOrder !== undefined) update.grid_order = data.gridOrder;
-  if (data.gridZoom !== undefined) update.grid_zoom = data.gridZoom;
-  if (data.gridOffsetX !== undefined) update.grid_offset_x = data.gridOffsetX;
-  if (data.gridOffsetY !== undefined) update.grid_offset_y = data.gridOffsetY;
-  
-  return update;
-};
-
 export const contentService: ContentService = {
   async getAll(clientId: string) {
     const queryPromise = supabase
@@ -102,7 +65,7 @@ export const contentService: ContentService = {
 
     if (error) throw error;
 
-    return (data || []).map(toContentItem);
+    return ((data || []) as ContentRow[]).map(toContentItem);
   },
 
   async getById(id: string) {
@@ -120,58 +83,77 @@ export const contentService: ContentService = {
 
     if (error) throw error;
 
-    return toContentItem(data);
+    return toContentItem(data as ContentRow);
   },
 
   async create(data: CreateContentDTO) {
-    const insertPromise = supabase
-      .from('content')
-      .insert(toInsertContent(data))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: created, error } = await (supabase.from('content') as any)
+      .insert({
+        client_id: data.clientId,
+        type: data.type,
+        source: data.source || 'calendar',
+        status: data.status || 'draft',
+        platform: data.platform || 'instagram',
+        scheduled_date: data.date || null,
+        caption: data.caption || null,
+        creative_description: data.creativeDescription || null,
+        media_url: data.mediaUrl || null,
+        media_type: data.mediaType || null,
+        grid_order: data.gridOrder || 0,
+      })
       .select()
       .single();
 
-    const { data: created, error } = await withTimeout(
-      insertPromise,
-      QUERY_TIMEOUT,
-      'Creating content timed out. Please try again.'
-    );
-
     if (error) throw error;
 
-    return toContentItem(created);
+    return toContentItem(created as ContentRow);
   },
 
   async update(id: string, data: UpdateContentDTO) {
-    const updatePromise = supabase
-      .from('content')
-      .update(toUpdateContent(data))
+    const update: Record<string, unknown> = {};
+
+    if (data.type !== undefined) update.type = data.type;
+    if (data.status !== undefined) update.status = data.status;
+    if (data.platform !== undefined) update.platform = data.platform;
+    if (data.date !== undefined) update.scheduled_date = data.date;
+    if (data.caption !== undefined) update.caption = data.caption;
+    if (data.creativeDescription !== undefined) update.creative_description = data.creativeDescription;
+    if (data.mediaUrl !== undefined) update.media_url = data.mediaUrl;
+    if (data.mediaType !== undefined) update.media_type = data.mediaType;
+    if (data.coverImageUrl !== undefined) update.cover_image_url = data.coverImageUrl;
+    if (data.rejectionReason !== undefined) update.rejection_reason = data.rejectionReason;
+    if (data.gridOrder !== undefined) update.grid_order = data.gridOrder;
+    if (data.gridZoom !== undefined) update.grid_zoom = data.gridZoom;
+    if (data.gridOffsetX !== undefined) update.grid_offset_x = data.gridOffsetX;
+    if (data.gridOffsetY !== undefined) update.grid_offset_y = data.gridOffsetY;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: updated, error } = await (supabase.from('content') as any)
+      .update(update)
       .eq('id', id)
       .select()
       .single();
 
-    const { data: updated, error } = await withTimeout(
-      updatePromise,
-      QUERY_TIMEOUT,
-      'Updating content timed out. Please try again.'
-    );
-
     if (error) throw error;
 
-    return toContentItem(updated);
+    return toContentItem(updated as ContentRow);
   },
 
   async delete(id: string) {
     // Get the content item first to retrieve media URLs
-    const { data: content } = await supabase
+    const { data: contentData } = await supabase
       .from('content')
       .select('media_url, cover_image_url')
       .eq('id', id)
       .single();
 
+    const content = contentData as { media_url: string | null; cover_image_url: string | null } | null;
+
     // Delete files from R2 (don't fail if file deletion fails)
     if (content) {
-      const urlsToDelete = [content.media_url, content.cover_image_url].filter(Boolean);
-      
+      const urlsToDelete = [content.media_url, content.cover_image_url].filter(Boolean) as string[];
+
       for (const url of urlsToDelete) {
         try {
           // Extract key from URL (format: https://domain/clients/...)

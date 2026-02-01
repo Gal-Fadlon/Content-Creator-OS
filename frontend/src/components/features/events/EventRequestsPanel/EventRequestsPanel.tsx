@@ -104,7 +104,7 @@ const EventRequestsPanel: React.FC<EventRequestsPanelProps> = ({ clientId }) => 
         </StyledTriggerButton>
       </Tooltip>
 
-      <StyledDrawer anchor="right" open={open} onClose={handleClose} SlideProps={{ direction: 'left' }}>
+      <StyledDrawer anchor="right" open={open} onClose={handleClose} slotProps={{ transition: { direction: 'left' } }}>
         <StyledHeader>
           <StyledTitle variant="h6">{EVENT_REQUESTS.title}</StyledTitle>
           {pendingRequests.length > 0 && (

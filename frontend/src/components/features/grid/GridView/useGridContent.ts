@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback } from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { useContentItems, useCreateContent, useUpdateContent, useDeleteContent, getStoredGridCount } from '@/hooks/queries/useContent';
 import { useSelectedClientId, getLastSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
@@ -116,7 +116,7 @@ export function useGridContent() {
     const file = e.target.files?.[0];
     if (!file || !selectedClientId) return;
     
-    const url = URL.createObjectURL(file);
+    const url = window.URL.createObjectURL(file);
     setNewImagePreview(url);
     setNewImageFile(file);
     setShowAddDialog(true);
@@ -204,7 +204,7 @@ export function useGridContent() {
     setShowAddDialog(false);
 
     // Fire upload in background (don't await - intentional fire-and-forget)
-    uploadInBackground(tempId, file, clientId, type, zoom, offsetX, offsetY);
+    void uploadInBackground(tempId, file, clientId, type, zoom, offsetX, offsetY);
   };
   
   const handleCancelAdd = () => {

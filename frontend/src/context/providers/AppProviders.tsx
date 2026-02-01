@@ -60,5 +60,3 @@ export function AppProviders({ children }: AppProvidersProps) {
     </ThemeProvider>
   );
 }
-
-export default AppProviders;

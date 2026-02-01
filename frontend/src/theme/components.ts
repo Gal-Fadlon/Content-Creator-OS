@@ -39,18 +39,18 @@ export const components: Components<Theme> = {
         '&:hover': {
           boxShadow: '0 4px 12px rgba(130, 61, 34, 0.15)',
         },
-      },
-      containedPrimary: {
-        background: `linear-gradient(135deg, ${colors.earthBrown} 0%, #a35a3a 100%)`,
-        '&:hover': {
-          background: `linear-gradient(135deg, #5c2a17 0%, ${colors.earthBrown} 100%)`,
+        '&.MuiButton-containedPrimary': {
+          background: `linear-gradient(135deg, ${colors.earthBrown} 0%, #a35a3a 100%)`,
+          '&:hover': {
+            background: `linear-gradient(135deg, #5c2a17 0%, ${colors.earthBrown} 100%)`,
+          },
         },
-      },
-      containedSecondary: {
-        background: `linear-gradient(135deg, ${colors.sandGold} 0%, #dcc9a3 100%)`,
-        color: colors.charcoal,
-        '&:hover': {
-          background: `linear-gradient(135deg, #a8915f 0%, ${colors.sandGold} 100%)`,
+        '&.MuiButton-containedSecondary': {
+          background: `linear-gradient(135deg, ${colors.sandGold} 0%, #dcc9a3 100%)`,
+          color: colors.charcoal,
+          '&:hover': {
+            background: `linear-gradient(135deg, #a8915f 0%, ${colors.sandGold} 100%)`,
+          },
         },
       },
       outlined: {
@@ -122,8 +122,10 @@ export const components: Components<Theme> = {
       },
     },
     defaultProps: {
-      inputProps: {
-        dir: 'rtl',
+      slotProps: {
+        input: {
+          dir: 'rtl',
+        },
       },
     },
   },
@@ -237,8 +239,6 @@ export const components: Components<Theme> = {
     styleOverrides: {
       root: {
         direction: 'rtl',
-      },
-      outlined: {
         borderRadius: '10px',
       },
       select: {
@@ -254,9 +254,11 @@ export const components: Components<Theme> = {
     },
     defaultProps: {
       MenuProps: {
-        PaperProps: {
-          sx: {
-            direction: 'rtl',
+        slotProps: {
+          paper: {
+            sx: {
+              direction: 'rtl',
+            },
           },
         },
       },

@@ -19,7 +19,7 @@ const FilterPill: React.FC<FilterPillProps> = ({
       label={label}
       onClick={onClick}
       isActive={active}
-      variant={variant}
+      pillVariant={variant}
     />
   );
 };

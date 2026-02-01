@@ -50,7 +50,7 @@ const ClientSelector: React.FC = () => {
         anchor="right"
         open={isOpen}
         onClose={() => setIsOpen(false)}
-        SlideProps={{ direction: 'left' }}
+        slotProps={{ transition: { direction: 'left' } }}
       >
         <StyledDrawerTitle>{CLIENT_SELECTOR.drawerTitle}</StyledDrawerTitle>
 

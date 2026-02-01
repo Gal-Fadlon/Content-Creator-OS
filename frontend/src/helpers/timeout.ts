@@ -4,16 +4,18 @@
  */
 
 /**
- * Wraps a promise with a timeout
- * @param promise The promise to wrap
+ * Wraps a promise or thenable with a timeout
+ * @param promiseOrThenable The promise or thenable to wrap
  * @param timeoutMs Timeout in milliseconds (default: 30 seconds)
  * @param errorMessage Custom error message
  */
 export async function withTimeout<T>(
-  promise: Promise<T>,
+  promiseOrThenable: Promise<T> | PromiseLike<T>,
   timeoutMs: number = 30000,
   errorMessage: string = 'Request timed out'
 ): Promise<T> {
+  // Convert thenable to proper Promise to ensure it has catch/finally
+  const promise = Promise.resolve(promiseOrThenable);
   let timeoutId: NodeJS.Timeout;
 
   const timeoutPromise = new Promise<never>((_, reject) => {

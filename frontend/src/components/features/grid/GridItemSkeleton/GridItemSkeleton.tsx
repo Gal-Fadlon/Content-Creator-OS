@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 
 const StyledSkeletonContainer = styled('div')(({ theme }) => ({
   aspectRatio: '4 / 5',
-  borderRadius: theme.shape.borderRadius / 2,
+  borderRadius: Number(theme.shape.borderRadius) / 2,
   overflow: 'hidden',
 }));
 

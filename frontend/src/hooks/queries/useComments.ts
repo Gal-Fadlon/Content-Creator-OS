@@ -18,7 +18,7 @@ export function useContentComments(contentId: string | null) {
     enabled: !!contentId && !contentId.startsWith('pending-'), // Don't fetch for pending uploads
     staleTime: 30 * 1000, // 30 seconds - comments should be relatively fresh
     retry: 1, // Only retry once to avoid long loading states
-    retryDelay: 1000, // 1 second delay before retry
+    retryDelay: 1000, // 1-second delay before retry
   });
 }
 
@@ -32,14 +32,14 @@ export function useCreateComment() {
     mutationFn: (data: CreateCommentDTO) => services.comments.create(data),
     onSuccess: (newComment) => {
       // Invalidate the comments list for this content
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.comments.byContent(newComment.contentId),
       });
       // Also invalidate notifications (new comment triggers notification)
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.unreadCount,
       });
     },
@@ -57,7 +57,7 @@ export function useDeleteComment() {
       services.comments.delete(id).then(() => contentId),
     onSuccess: (contentId) => {
       // Invalidate the comments list
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.comments.byContent(contentId),
       });
     },

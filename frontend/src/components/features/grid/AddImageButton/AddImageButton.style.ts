@@ -4,7 +4,7 @@ import { ButtonBase } from '@mui/material';
 export const StyledAddButton = styled(ButtonBase)(({ theme }) => ({
   aspectRatio: '4 / 5',
   backgroundColor: theme.palette.action.hover,
-  borderRadius: theme.shape.borderRadius / 2,
+  borderRadius: Number(theme.shape.borderRadius) / 2,
   border: `2px dashed ${theme.palette.divider}`,
   display: 'flex',
   flexDirection: 'column',

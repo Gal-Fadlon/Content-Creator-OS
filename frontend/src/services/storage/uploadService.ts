@@ -24,8 +24,6 @@ export interface UploadOptions {
   contentType?: string;
 }
 
-const MEDIA_BASE_URL = import.meta.env.VITE_MEDIA_URL || 'https://media.rzsocialmedia.com';
-
 /**
  * Generate a unique file key for storage
  */
@@ -123,65 +121,43 @@ export const uploadFile = async (
 ): Promise<UploadResult> => {
   console.log('[Upload] Starting upload for file:', file.name, 'size:', file.size);
 
-  try {
-    // Get signed URL
-    const { uploadUrl, publicUrl, key } = await getSignedUploadUrl(
-      options,
-      file.name,
-      file.type
-    );
+  // Get signed URL
+  const { uploadUrl, publicUrl, key } = await getSignedUploadUrl(
+    options,
+    file.name,
+    file.type
+  );
 
-    console.log('[Upload] Got signed URL, uploading to R2...');
+  console.log('[Upload] Got signed URL, uploading to R2...');
 
-    // Upload file directly to R2 with timeout
-    const response = await fetchWithTimeout(
-      uploadUrl,
-      {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
+  // Upload file directly to R2 with timeout
+  const response = await fetchWithTimeout(
+    uploadUrl,
+    {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
       },
-      UPLOAD_TIMEOUT
-    );
+    },
+    UPLOAD_TIMEOUT
+  );
 
-    console.log('[Upload] R2 response status:', response.status);
+  console.log('[Upload] R2 response status:', response.status);
 
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unknown error');
-      console.error('[Upload] R2 upload failed:', response.status, errorText);
-      throw new Error(`Upload failed: ${response.statusText}`);
-    }
-
-    onProgress?.(100);
-    console.log('[Upload] Upload complete, public URL:', publicUrl);
-
-    return {
-      url: publicUrl,
-      key,
-    };
-  } catch (error) {
-    console.error('[Upload] Upload error:', error);
-    throw error;
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error('[Upload] R2 upload failed:', response.status, errorText);
+    throw new Error(`Upload failed: ${response.statusText}`);
   }
-};
 
-/**
- * Upload a file using base64 data URL
- * Converts data URL to blob and uploads
- */
-export const uploadDataUrl = async (
-  dataUrl: string,
-  options: UploadOptions,
-  fileName: string = 'image.jpg'
-): Promise<UploadResult> => {
-  // Convert data URL to blob
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
-  const file = new File([blob], fileName, { type: blob.type });
+  onProgress?.(100);
+  console.log('[Upload] Upload complete, public URL:', publicUrl);
 
-  return uploadFile(file, options);
+  return {
+    url: publicUrl,
+    key,
+  };
 };
 
 /**
@@ -214,33 +190,3 @@ export const deleteFile = async (key: string): Promise<void> => {
   }
 };
 
-/**
- * Temporary: For development without Edge Functions,
- * store files in Supabase Storage instead
- */
-export const uploadToSupabaseStorage = async (
-  file: File,
-  options: UploadOptions
-): Promise<UploadResult> => {
-  const key = generateFileKey(options, file.name);
-
-  const { data, error } = await supabase.storage
-    .from('media')
-    .upload(key, file, {
-      cacheControl: '3600',
-      upsert: false,
-    });
-
-  if (error) {
-    throw new Error(`Upload failed: ${error.message}`);
-  }
-
-  const { data: publicUrl } = supabase.storage
-    .from('media')
-    .getPublicUrl(data.path);
-
-  return {
-    url: publicUrl.publicUrl,
-    key: data.path,
-  };
-};

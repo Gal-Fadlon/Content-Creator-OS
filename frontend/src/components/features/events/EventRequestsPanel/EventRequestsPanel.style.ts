@@ -111,6 +111,6 @@ export const StyledRejectButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-export const StyledTriggerButton = styled(IconButton)(({ theme }) => ({
+export const StyledTriggerButton = styled(IconButton)({
   position: 'relative',
-}));
+});

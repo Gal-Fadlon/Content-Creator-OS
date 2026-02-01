@@ -10,18 +10,18 @@ export const StyledTriggerButton = styled(Button)(({ theme }) => ({
   fontFamily: '"Heebo", sans-serif',
 }));
 
-export const StyledDialog = styled(Dialog)(({ theme }) => ({
+export const StyledDialog = styled(Dialog)({
   '& .MuiDialog-paper': {
     maxWidth: 450,
     width: '100%',
   },
-}));
+});
 
-export const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+export const StyledDialogTitle = styled(DialogTitle)({
   fontFamily: '"Cormorant Garamond", Georgia, serif',
   fontSize: '1.25rem',
   fontWeight: 600,
-}));
+});
 
 export const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   display: 'flex',
@@ -60,9 +60,9 @@ export const StyledUploadSubtext = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.disabled,
 }));
 
-export const StyledPreviewContainer = styled(Box)(({ theme }) => ({
+export const StyledPreviewContainer = styled(Box)({
   position: 'relative',
-}));
+});
 
 export const StyledPreviewImage = styled('img')(({ theme }) => ({
   width: '100%',
@@ -100,18 +100,18 @@ export const StyledLabelContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(0.5),
 }));
 
-export const StyledLabel = styled(Typography)(({ theme }) => ({
+export const StyledLabel = styled(Typography)({
   fontFamily: '"Heebo", sans-serif',
   fontSize: '0.875rem',
   fontWeight: 500,
-}));
+});
 
-export const StyledTextField = styled(TextField)(({ theme }) => ({
+export const StyledTextField = styled(TextField)({
   '& .MuiInputBase-input': {
     fontFamily: '"Heebo", sans-serif',
     fontSize: '0.875rem',
   },
-}));
+});
 
 export const StyledActionsRow = styled(Box)(({ theme }) => ({
   display: 'flex',

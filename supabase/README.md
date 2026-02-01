@@ -130,7 +130,7 @@ SELECT * FROM clients;
 ## Common Issues
 
 ### "permission denied for table X"
-RLS is enabled and you're not authenticated or don't have access. Make sure you're using a valid JWT.
+RLS is enabled, and you're not authenticated or don't have access. Make sure you're using a valid JWT.
 
 ### "relation X does not exist"
 Run the migrations in order: 001, then 002, then 003.

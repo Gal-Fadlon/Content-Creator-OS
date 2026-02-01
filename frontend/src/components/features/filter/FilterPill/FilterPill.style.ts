@@ -3,14 +3,13 @@ import { Chip } from '@mui/material';
 
 interface StyledFilterPillProps {
   isActive?: boolean;
-  variant?: 'default' | 'warning';
+  pillVariant?: 'default' | 'warning';
 }
 
 export const StyledFilterPill = styled(Chip, {
-  shouldForwardProp: (prop) => prop !== 'isActive' && prop !== 'variant',
-})<StyledFilterPillProps>(({ theme, isActive, variant = 'default' }) => {
-  const isWarning = variant === 'warning';
-  
+  shouldForwardProp: (prop) => prop !== 'isActive' && prop !== 'pillVariant',
+})<StyledFilterPillProps>(({ theme, isActive }) => {
+
   return {
     padding: theme.spacing(0.5, 1),
     borderRadius: theme.spacing(3),

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useMonthlyState } from '@/context/providers/MonthlyStateProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import type { PlacedSticker } from '@/types/content';
@@ -54,7 +54,7 @@ export function useStickerBank() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
+      const url = window.URL.createObjectURL(file);
       setUploadPreview(url);
     }
   };

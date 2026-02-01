@@ -1,6 +1,5 @@
 import { styled } from '@mui/material/styles';
 import {
-  Button,
   Drawer,
   Box,
   Typography,
@@ -8,40 +7,7 @@ import {
   ButtonBase,
 } from '@mui/material';
 
-// Container to match ViewToggle exactly
-export const StyledTriggerContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: 10,
-  padding: 4,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-  border: `1px solid ${theme.palette.divider}`,
-}));
-
-export const StyledTriggerButton = styled(Button)(({ theme }) => ({
-  height: 30,
-  gap: 6,
-  paddingLeft: 12,
-  paddingRight: 12,
-  borderRadius: 6,
-  backgroundColor: 'transparent',
-  color: theme.palette.text.primary,
-  textTransform: 'none',
-  fontFamily: '"Heebo", sans-serif',
-  fontWeight: 500,
-  fontSize: '0.8125rem',
-  minWidth: 'auto',
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
-  '& .MuiButton-startIcon': {
-    margin: 0,
-  },
-  '& .MuiSvgIcon-root': {
-    fontSize: '1.1rem',
-  },
-}));
+export { StyledTriggerContainer, StyledTriggerButton } from '@/components/shared/TriggerButton.style';
 
 export const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
@@ -85,10 +51,10 @@ export const StyledClientItem = styled(ButtonBase, {
   },
 }));
 
-export const StyledClientAvatar = styled(Avatar)(({ theme }) => ({
+export const StyledClientAvatar = styled(Avatar)({
   width: 40,
   height: 40,
-}));
+});
 
 export const StyledClientInfo = styled(Box)({
   flex: 1,

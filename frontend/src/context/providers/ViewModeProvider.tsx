@@ -80,6 +80,7 @@ export function ViewModeProvider({
 /**
  * Hook to access view mode context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useViewMode() {
   const context = useContext(ViewModeContext);
   if (context === undefined) {

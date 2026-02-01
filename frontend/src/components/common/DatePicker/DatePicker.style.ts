@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { Box, IconButton } from '@mui/material';
+import { Box } from '@mui/material';
 
 export const StyledCalendarContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1.5),
@@ -158,8 +158,3 @@ export const StyledCalendarContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const StyledNavButton = styled(IconButton)(({ theme }) => ({
-  width: 28,
-  height: 28,
-  padding: 0,
-}));

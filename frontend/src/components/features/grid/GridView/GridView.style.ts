@@ -1,17 +1,10 @@
 import { styled } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 
 export const StyledGridViewContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
-}));
-
-export const StyledHelpText = styled(Typography)(({ theme }) => ({
-  fontFamily: '"Heebo", sans-serif',
-  fontSize: '0.875rem',
-  color: theme.palette.text.secondary,
-  textAlign: 'center',
 }));
 
 export const StyledHiddenInput = styled('input')({

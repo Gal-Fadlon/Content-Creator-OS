@@ -7,57 +7,22 @@ import {
   Box,
   Typography,
   ButtonBase,
-  TextField,
-  IconButton,
 } from '@mui/material';
 
-// Container to match ViewToggle exactly
-export const StyledTriggerContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: 10,
-  padding: 4,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-  border: `1px solid ${theme.palette.divider}`,
-}));
+export { StyledTriggerContainer, StyledTriggerButton } from '@/components/shared/TriggerButton.style';
 
-export const StyledTriggerButton = styled(Button)(({ theme }) => ({
-  height: 30,
-  gap: 6,
-  paddingLeft: 12,
-  paddingRight: 12,
-  borderRadius: 6,
-  backgroundColor: 'transparent',
-  color: theme.palette.text.primary,
-  textTransform: 'none',
-  fontFamily: '"Heebo", sans-serif',
-  fontWeight: 500,
-  fontSize: '0.8125rem',
-  minWidth: 'auto',
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
-  '& .MuiButton-startIcon': {
-    margin: 0,
-  },
-  '& .MuiSvgIcon-root': {
-    fontSize: '1.1rem',
-  },
-}));
-
-export const StyledDialog = styled(Dialog)(({ theme }) => ({
+export const StyledDialog = styled(Dialog)({
   '& .MuiDialog-paper': {
     maxWidth: 500,
     width: '100%',
   },
-}));
+});
 
-export const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+export const StyledDialogTitle = styled(DialogTitle)({
   fontFamily: '"Cormorant Garamond", Georgia, serif',
   fontSize: '1.25rem',
   fontWeight: 600,
-}));
+});
 
 export const StyledDialogSubtitle = styled(Typography)(({ theme }) => ({
   fontFamily: '"Heebo", sans-serif',
@@ -156,11 +121,11 @@ export const StyledUploadSection = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1.5),
 }));
 
-export const StyledUploadTitle = styled(Typography)(({ theme }) => ({
+export const StyledUploadTitle = styled(Typography)({
   fontFamily: '"Heebo", sans-serif',
   fontSize: '0.875rem',
   fontWeight: 500,
-}));
+});
 
 export const StyledUploadButton = styled(Button)(({ theme }) => ({
   gap: theme.spacing(1),
@@ -171,22 +136,6 @@ export const StyledUploadButton = styled(Button)(({ theme }) => ({
 export const StyledHiddenInput = styled('input')({
   display: 'none',
 });
-
-export const StyledUrlInputRow = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  gap: theme.spacing(1),
-}));
-
-export const StyledUrlTextField = styled(TextField)(({ theme }) => ({
-  flex: 1,
-  '& .MuiInputBase-root': {
-    fontFamily: '"Heebo", sans-serif',
-    fontSize: '0.875rem',
-  },
-  '& .MuiInputBase-input': {
-    direction: 'ltr',
-  },
-}));
 
 export const StyledApplyButton = styled(Button)(({ theme }) => ({
   textTransform: 'none',

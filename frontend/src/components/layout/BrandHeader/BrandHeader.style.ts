@@ -11,9 +11,9 @@ export const StyledBrandHeaderContainer = styled(Box)(({ theme }) => ({
   zIndex: 10,
 }));
 
-export const StyledBrandTitle = styled(Typography)(({ theme }) => ({
+export const StyledBrandTitle = styled(Typography)({
   fontFamily: '"Cormorant Garamond", Georgia, serif',
   fontSize: '1.5rem',
   letterSpacing: '0.2em',
   fontWeight: 400,
-}));
+});

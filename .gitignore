@@ -30,7 +30,6 @@ supabase/.temp/
 # Environment files
 .env*
 !.env.example
-*.local
 
 # Sensitive guides (contain credentials)
 CLI_DATABASE_GUIDE.md

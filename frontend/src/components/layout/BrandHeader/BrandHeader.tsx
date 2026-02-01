@@ -7,7 +7,7 @@ import {
 
 const BrandHeader: React.FC = () => {
   return (
-    <StyledBrandHeaderContainer component="div">
+    <StyledBrandHeaderContainer>
       <StyledBrandTitle variant="h1">
         {BRAND_HEADER.title}
       </StyledBrandTitle>

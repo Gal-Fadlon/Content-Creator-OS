@@ -82,15 +82,6 @@ export const StyledNotificationContent = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-export const StyledUnreadDot = styled(Box)(({ theme }) => ({
-  width: 8,
-  height: 8,
-  borderRadius: '50%',
-  backgroundColor: theme.palette.warning.main,
-  marginTop: theme.spacing(0.75),
-  flexShrink: 0,
-}));
-
 export const StyledNotificationTextWrapper = styled(Box)({
   flex: 1,
 });

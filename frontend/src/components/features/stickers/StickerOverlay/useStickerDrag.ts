@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useMonthlyState } from '@/context/providers/MonthlyStateProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import type { PlacedSticker } from '@/types/content';

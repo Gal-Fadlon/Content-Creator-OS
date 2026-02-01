@@ -20,12 +20,12 @@ export const StyledGrid = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-export const StyledStickerWrapper = styled(Box)(({ theme }) => ({
+export const StyledStickerWrapper = styled(Box)({
   position: 'relative',
   '&:hover .MuiIconButton-root': {
     opacity: 1,
   },
-}));
+});
 
 export const StyledStickerButton = styled(ButtonBase)(({ theme }) => ({
   width: '100%',

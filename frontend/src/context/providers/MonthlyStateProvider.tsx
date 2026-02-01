@@ -179,41 +179,11 @@ export function MonthlyStateProvider({ children }: MonthlyStateProviderProps) {
 /**
  * Hook to access monthly state context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMonthlyState() {
   const context = useContext(MonthlyStateContext);
   if (context === undefined) {
     throw new Error('useMonthlyState must be used within MonthlyStateProvider');
   }
   return context;
-}
-
-/**
- * Hook to get just the backdrop (minimizes re-renders)
- */
-export function useBackdrop(): string {
-  const { currentMonthState } = useMonthlyState();
-  return currentMonthState.backdrop;
-}
-
-/**
- * Hook to get stickers and setter
- */
-export function useStickers() {
-  const { currentMonthState, setStickers } = useMonthlyState();
-  return {
-    stickers: currentMonthState.stickers,
-    setStickers,
-  };
-}
-
-/**
- * Hook to get custom sticker bank
- */
-export function useCustomStickerBank() {
-  const { currentMonthState, addCustomSticker, removeCustomSticker } = useMonthlyState();
-  return {
-    customStickers: currentMonthState.customStickerBank,
-    addCustomSticker,
-    removeCustomSticker,
-  };
 }

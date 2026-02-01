@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useUpdateContent } from '@/hooks/queries/useContent';
 import { useAuth } from '@/context/providers/AuthProvider';
 import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';

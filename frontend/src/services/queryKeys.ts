@@ -20,7 +20,6 @@ export const queryKeys = {
   content: {
     all: (clientId: string) => ['content', clientId] as const,
     detail: (id: string) => ['content', 'detail', id] as const,
-    byDate: (clientId: string, date: string) => ['content', clientId, 'date', date] as const,
     byMonth: (clientId: string, monthKey: string) => ['content', clientId, 'month', monthKey] as const,
   },
 

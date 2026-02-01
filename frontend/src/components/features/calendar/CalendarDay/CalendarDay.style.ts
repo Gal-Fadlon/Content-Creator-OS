@@ -97,13 +97,6 @@ export const StyledBackgroundImage = styled('img', {
   transition: 'transform 0.2s ease-out',
 }));
 
-export const StyledBackgroundOverlay = styled(Box)({
-  position: 'absolute',
-  inset: 0,
-  background: 'linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3), rgba(0,0,0,0.1))',
-  zIndex: 1,
-});
-
 export const StyledEditButton = styled(Box)(({ theme }) => ({
   position: 'absolute',
   bottom: theme.spacing(0.5),

@@ -7,7 +7,7 @@ interface StickerOverlayProps {
   containerRef: React.RefObject<HTMLDivElement>;
 }
 
-const StickerOverlay: React.FC<StickerOverlayProps> = ({ containerRef }) => {
+const StickerOverlay: React.FC<StickerOverlayProps> = () => {
   const {
     dragging,
     isAdmin,

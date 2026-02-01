@@ -72,6 +72,7 @@ export function CalendarNavProvider({
 /**
  * Hook to access calendar navigation
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCalendarNav() {
   const context = useContext(CalendarNavContext);
   if (context === undefined) {
@@ -83,6 +84,7 @@ export function useCalendarNav() {
 /**
  * Hook to get just the month key (minimizes re-renders)
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMonthKey(): string {
   const { monthKey } = useCalendarNav();
   return monthKey;

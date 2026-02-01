@@ -126,7 +126,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    initializeAuth();
+    void initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
@@ -193,7 +193,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     try {
       // Cancel all queries immediately to prevent 403 errors
-      queryClient.cancelQueries();
+      await queryClient.cancelQueries();
       // Clear the cache
       queryClient.clear();
       
@@ -264,6 +264,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 /**
  * Hook to access auth context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

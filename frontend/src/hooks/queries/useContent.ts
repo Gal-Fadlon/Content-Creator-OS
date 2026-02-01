@@ -54,17 +54,6 @@ export function useContentItems(clientId: string | null) {
 }
 
 /**
- * Fetch a single content item by ID
- */
-export function useContentItem(id: string | null) {
-  return useQuery({
-    queryKey: queryKeys.content.detail(id ?? ''),
-    queryFn: () => services.content.getById(id!),
-    enabled: !!id,
-  });
-}
-
-/**
  * Create a new content item
  */
 export function useCreateContent() {
@@ -74,7 +63,7 @@ export function useCreateContent() {
     mutationFn: (data: CreateContentDTO) => services.content.create(data),
     onSuccess: (newItem) => {
       // Invalidate the content list for this client
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.content.all(newItem.clientId),
       });
     },
@@ -141,10 +130,10 @@ export function useUpdateContent() {
     onSettled: (updatedItem) => {
       if (updatedItem) {
         // Invalidate to refetch fresh data
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: queryKeys.content.all(updatedItem.clientId),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: queryKeys.content.detail(updatedItem.id),
         });
       }
@@ -163,33 +152,10 @@ export function useDeleteContent() {
       services.content.delete(id).then(() => clientId),
     onSuccess: (clientId) => {
       // Invalidate the content list
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.content.all(clientId),
       });
     },
   });
 }
 
-/**
- * Batch update content items (for reordering)
- */
-export function useBatchUpdateContent() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (updates: Array<{ id: string; data: UpdateContentDTO }>) => {
-      // Run updates in parallel
-      return Promise.all(
-        updates.map(({ id, data }) => services.content.update(id, data))
-      );
-    },
-    onSuccess: (results) => {
-      if (results.length > 0) {
-        // Invalidate content list for the client
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.content.all(results[0].clientId),
-        });
-      }
-    },
-  });
-}

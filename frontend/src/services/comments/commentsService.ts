@@ -5,7 +5,7 @@
 
 import type { ContentComment, UserRole } from '@/types/content';
 import { supabase } from '@/services/supabase/supabaseClient';
-import type { ContentCommentRow } from '@/services/supabase/supabaseTypes';
+import type { ContentCommentRow, ProfileRow } from '@/services/supabase/supabaseTypes';
 import { withTimeout } from '@/helpers/timeout';
 
 const QUERY_TIMEOUT = 15000; // 15 seconds for database queries
@@ -21,14 +21,8 @@ export interface CommentsService {
   delete: (id: string) => Promise<void>;
 }
 
-// Extended row type with author fields
-interface CommentRow extends ContentCommentRow {
-  author_name?: string | null;
-  author_role?: string | null;
-}
-
 // Transform database row to frontend type
-const toContentComment = (row: CommentRow): ContentComment => ({
+const toContentComment = (row: ContentCommentRow): ContentComment => ({
   id: row.id,
   contentId: row.content_id,
   userId: row.user_id,
@@ -51,11 +45,11 @@ export const commentsService: CommentsService = {
       queryPromise,
       QUERY_TIMEOUT,
       'Loading comments timed out. Please try again.'
-    );
+    ) as { data: ContentCommentRow[] | null; error: Error | null };
 
     if (error) throw error;
 
-    return (data || []).map((row) => toContentComment(row as CommentRow));
+    return (data || []).map((row) => toContentComment(row as ContentCommentRow));
   },
 
   async create(data: CreateCommentDTO) {
@@ -74,32 +68,28 @@ export const commentsService: CommentsService = {
       profilePromise,
       QUERY_TIMEOUT,
       'Loading profile timed out.'
-    );
-
+    ) as { data: ProfileRow | null; error: Error | null };
     const authorName = profile?.full_name || profile?.email || 'משתמש';
     const authorRole = profile?.role || 'client';
 
-    const insertPromise = supabase
-      .from('content_comments')
-      .insert({
-        content_id: data.contentId,
-        user_id: user.id,
-        message: data.message,
-        author_name: authorName,
-        author_role: authorRole,
-      })
-      .select('*')
-      .single();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const insertPromise = (supabase.from('content_comments') as any).insert({
+      content_id: data.contentId,
+      user_id: user.id,
+      message: data.message,
+      author_name: authorName,
+      author_role: authorRole,
+    }).select('*').single();
 
     const { data: created, error } = await withTimeout(
       insertPromise,
       QUERY_TIMEOUT,
       'Creating comment timed out. Please try again.'
-    );
+    ) as { data: ContentCommentRow | null; error: Error | null };
 
     if (error) throw error;
 
-    return toContentComment(created as CommentRow);
+    return toContentComment(created as ContentCommentRow);
   },
 
   async delete(id: string) {
@@ -117,7 +107,7 @@ export const commentsService: CommentsService = {
       deleteCommentPromise,
       QUERY_TIMEOUT,
       'Deleting comment timed out. Please try again.'
-    );
+    ) as { data: null; error: Error | null };
 
     if (error) throw error;
   },

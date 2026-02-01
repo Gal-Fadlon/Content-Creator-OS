@@ -3,34 +3,6 @@
  * Common types for API requests and responses
  */
 
-// Generic API response wrapper
-export interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  success: boolean;
-}
-
-// Pagination
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export interface PaginationParams {
-  page?: number;
-  pageSize?: number;
-}
-
-// Error response
-export interface ApiError {
-  code: string;
-  message: string;
-  details?: Record<string, string[]>;
-}
-
 // Auth
 export interface LoginCredentials {
   email: string;
@@ -96,6 +68,3 @@ export interface CreateEventRequestDTO {
   description?: string;
 }
 
-export interface UpdateClientThemeDTO {
-  monthlyTheme: string;
-}

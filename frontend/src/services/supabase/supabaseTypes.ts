@@ -3,16 +3,8 @@
  * Generated types for the database schema
  * 
  * Note: In a production setup, you would generate these automatically using:
- * npx supabase gen types typescript --project-id tjvfbmtprqxnyweziiqg > src/services/supabase/supabaseTypes.ts
+ * npx supabase gen types TypeScript --project-id tjvfbmtprqxnyweziiqg > src/services/supabase/supabaseTypes.ts
  */
-
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
 
 export interface Database {
   public: {
@@ -363,6 +355,8 @@ export interface Database {
           content_id: string;
           user_id: string;
           message: string;
+          author_name: string | null;
+          author_role: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -371,14 +365,21 @@ export interface Database {
           content_id: string;
           user_id: string;
           message: string;
+          author_name?: string | null;
+          author_role?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           message?: string;
+          author_name?: string | null;
+          author_role?: string | null;
           updated_at?: string;
         };
       };
+    };
+    Views: {
+      [_ in never]: never;
     };
     Functions: {
       is_admin: {
@@ -394,18 +395,18 @@ export interface Database {
         Returns: string;
       };
     };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
 }
 
 // Helper types for easier usage
 export type Tables<T extends keyof Database['public']['Tables']> = 
   Database['public']['Tables'][T]['Row'];
-
-export type InsertTables<T extends keyof Database['public']['Tables']> = 
-  Database['public']['Tables'][T]['Insert'];
-
-export type UpdateTables<T extends keyof Database['public']['Tables']> = 
-  Database['public']['Tables'][T]['Update'];
 
 // Convenience type aliases
 export type ClientRow = Tables<'clients'>;
@@ -414,6 +415,4 @@ export type ContentRow = Tables<'content'>;
 export type EventRow = Tables<'events'>;
 export type EventRequestRow = Tables<'event_requests'>;
 export type NotificationRow = Tables<'notifications'>;
-export type MonthlyThemeRow = Tables<'monthly_themes'>;
-export type StickerRow = Tables<'stickers'>;
 export type ContentCommentRow = Tables<'content_comments'>;

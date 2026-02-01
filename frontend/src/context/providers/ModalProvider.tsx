@@ -147,6 +147,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
 /**
  * Hook to access full modal context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useModals() {
   const context = useContext(ModalContext);
   if (context === undefined) {
@@ -158,6 +159,7 @@ export function useModals() {
 /**
  * Hook for content modal only
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useContentModal() {
   const {
     contentModal,
@@ -177,6 +179,7 @@ export function useContentModal() {
 /**
  * Hook for event request modal only
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useEventRequestModal() {
   const {
     eventRequestModal,
@@ -194,6 +197,7 @@ export function useEventRequestModal() {
 /**
  * Hook for uploading state
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUploadingState() {
   const {
     uploading,

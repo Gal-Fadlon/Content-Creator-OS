@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles';
-import { Dialog, DialogTitle, DialogContent, Box, Button, Typography } from '@mui/material';
+import { Dialog, DialogContent, Box, Button, Typography } from '@mui/material';
 
-export const StyledDialog = styled(Dialog)(({ theme }) => ({
+export const StyledDialog = styled(Dialog)({
   '& .MuiDialog-paper': {
     maxWidth: 500,
     width: '100%',
@@ -10,7 +10,7 @@ export const StyledDialog = styled(Dialog)(({ theme }) => ({
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
     direction: 'rtl',
   },
-}));
+});
 
 export const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -30,10 +30,10 @@ export const StyledClientMessage = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-export const StyledClientMessageText = styled(Typography)(({ theme }) => ({
+export const StyledClientMessageText = styled(Typography)({
   fontFamily: '"Heebo", sans-serif',
   fontSize: '0.875rem',
-}));
+});
 
 export const StyledSaveButton = styled(Button)(({ theme }) => ({
   width: '100%',
