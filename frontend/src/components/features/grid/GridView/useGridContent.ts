@@ -19,7 +19,7 @@ interface PendingUpload {
 export function useGridContent() {
   const [selectedClientId] = useSelectedClientId();
   const { data: contentItems = [], isLoading: isContentLoading, isPlaceholderData } = useContentItems(selectedClientId);
-  const { isAdmin, isLoading: isAuthLoading, isAuthenticated } = useAuth();
+  const { isAdmin, isLoading: isAuthLoading, isAuthenticated, session } = useAuth();
   const { toast } = useToast();
   const createContent = useCreateContent();
   const updateContent = useUpdateContent();
@@ -89,6 +89,7 @@ export function useGridContent() {
       const result = await uploadFile(file, {
         clientId: selectedClientId,
         folder: 'content',
+        accessToken: session?.access_token,
       });
       updateContent.mutate({ id: uploadingFor, data: { coverImageUrl: result.url }, clientId: selectedClientId });
       toast({ title: 'הצלחה', description: 'התמונה הועלתה בהצלחה' });
@@ -134,10 +135,11 @@ export function useGridContent() {
     type: ContentType,
     zoom: number,
     offsetX: number,
-    offsetY: number
+    offsetY: number,
+    accessToken?: string
   ) => {
     try {
-      const result = await uploadFile(file, { clientId, folder: 'content' });
+      const result = await uploadFile(file, { clientId, folder: 'content', accessToken });
 
       // Remove from pending uploads
       setPendingUploads(prev => prev.filter(p => p.id !== tempId));
@@ -204,7 +206,7 @@ export function useGridContent() {
     setShowAddDialog(false);
 
     // Fire upload in background (don't await - intentional fire-and-forget)
-    void uploadInBackground(tempId, file, clientId, type, zoom, offsetX, offsetY);
+    void uploadInBackground(tempId, file, clientId, type, zoom, offsetX, offsetY, session?.access_token);
   };
   
   const handleCancelAdd = () => {
@@ -224,7 +226,7 @@ export function useGridContent() {
     setDeletingItemId(itemId);
 
     deleteContent.mutate(
-      { id: itemId, clientId: selectedClientId },
+      { id: itemId, clientId: selectedClientId, accessToken: session?.access_token },
       {
         onSuccess: () => {
           setDeletingItemId(null);

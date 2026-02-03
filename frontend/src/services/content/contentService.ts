@@ -18,7 +18,7 @@ export interface ContentService {
   getById: (id: string) => Promise<ContentItem>;
   create: (data: CreateContentDTO) => Promise<ContentItem>;
   update: (id: string, data: UpdateContentDTO) => Promise<ContentItem>;
-  delete: (id: string) => Promise<void>;
+  delete: (id: string, accessToken?: string) => Promise<void>;
 }
 
 // Transform database row to frontend type
@@ -140,7 +140,7 @@ export const contentService: ContentService = {
     return toContentItem(updated as ContentRow);
   },
 
-  async delete(id: string) {
+  async delete(id: string, accessToken?: string) {
     // Get the content item first to retrieve media URLs
     const { data: contentData } = await supabase
       .from('content')
@@ -159,7 +159,7 @@ export const contentService: ContentService = {
           // Extract key from URL (format: https://domain/clients/...)
           const key = url.split('.r2.dev/')[1] || url.split('.com/')[1];
           if (key) {
-            await deleteFile(key);
+            await deleteFile(key, accessToken);
           }
         } catch (err) {
           console.warn('Failed to delete file from R2:', url, err);

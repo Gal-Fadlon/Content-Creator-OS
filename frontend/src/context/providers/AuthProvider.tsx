@@ -102,11 +102,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Initialize auth state
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     const initializeAuth = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => {
+            reject(new Error('Auth initialization timed out'));
+          }, 10000);
+        });
+
+        const { data: { session: initialSession } } = await Promise.race([sessionPromise, timeoutPromise]);
+
+        if (timeoutId) clearTimeout(timeoutId);
         if (!isMounted) return;
 
         if (initialSession?.user) {
@@ -117,8 +127,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } catch (err) {
+        if (timeoutId) clearTimeout(timeoutId);
         if (err instanceof Error && err.name === 'AbortError') return;
         console.error('Error initializing auth:', err);
+        // Don't block the app - just continue without auth
       } finally {
         if (isMounted) {
           setIsLoading(false);

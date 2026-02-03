@@ -12,7 +12,7 @@ import type { ContentType, ContentStatus, MarkerColor, ModalMode } from '@/types
 
 export function useContentModal() {
   const { isOpen, selectedDate, editItemId, close } = useContentModalContext();
-  const { isAdmin, isLoading: isAuthLoading, isAuthenticated } = useAuth();
+  const { isAdmin, isLoading: isAuthLoading, isAuthenticated, session } = useAuth();
   const [selectedClientId] = useSelectedClientId();
   const { addUploadingDate, removeUploadingDate } = useUploadingState();
   const { data: contentItems = [] } = useContentItems(selectedClientId);
@@ -108,7 +108,7 @@ export function useContentModal() {
     // Run deletion in background, show toast only when complete
     if (isContent) {
       deleteContent.mutate(
-        { id: itemId, clientId: selectedClientId },
+        { id: itemId, clientId: selectedClientId, accessToken: session?.access_token },
         {
           onSuccess: () => {
             toast({ title: CONTENT_MODAL.delete.success, description: CONTENT_MODAL.delete.contentDeleted });
@@ -241,9 +241,11 @@ export function useContentModal() {
 
         // Run upload in background
         console.log('Starting upload for date:', dateStr);
+        const accessToken = session?.access_token;
         uploadFile(currentMediaFile, {
           clientId: selectedClientId,
           folder: 'content',
+          accessToken,
         })
           .then(async (result) => {
             console.log('Upload successful, URL:', result.url);
@@ -261,7 +263,7 @@ export function useContentModal() {
                 const key = urlParts.pathname.startsWith('/')
                   ? urlParts.pathname.slice(1)
                   : urlParts.pathname;
-                await deleteFile(key);
+                await deleteFile(key, accessToken);
                 console.log('Successfully deleted old file from R2:', key);
               } catch (deleteError) {
                 console.error('Failed to delete old file from R2:', deleteError);

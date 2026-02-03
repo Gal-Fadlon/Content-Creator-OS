@@ -148,8 +148,8 @@ export function useDeleteContent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, clientId }: { id: string; clientId: string }) =>
-      services.content.delete(id).then(() => clientId),
+    mutationFn: ({ id, clientId, accessToken }: { id: string; clientId: string; accessToken?: string }) =>
+      services.content.delete(id, accessToken).then(() => clientId),
     onSuccess: (clientId) => {
       // Invalidate the content list
       void queryClient.invalidateQueries({
