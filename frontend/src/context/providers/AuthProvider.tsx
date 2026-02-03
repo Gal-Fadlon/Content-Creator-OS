@@ -141,16 +141,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     void initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         if (!isMounted) return;
-        
+
+        // IMPORTANT: Do NOT use async/await inside onAuthStateChange!
+        // It causes ALL other Supabase operations to hang.
+        // See: https://supabase.com/docs/reference/javascript/auth-onauthstatechange
+
         if (event === 'SIGNED_IN' && newSession?.user) {
           setSession(newSession);
-          const userProfile = await fetchUserProfile(newSession.user);
-          if (isMounted) {
-            setUser(userProfile);
-            setViewAsRole(null); // Reset view mode on login
-          }
+          // Defer async profile fetch to avoid blocking Supabase client
+          setTimeout(() => {
+            if (!isMounted) return;
+            fetchUserProfile(newSession.user).then((userProfile) => {
+              if (isMounted) {
+                setUser(userProfile);
+                setViewAsRole(null);
+              }
+            });
+          }, 0);
         } else if (event === 'SIGNED_OUT') {
           setSession(null);
           setUser(null);

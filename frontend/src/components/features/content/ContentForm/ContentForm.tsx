@@ -34,6 +34,7 @@ interface ContentFormProps {
   onCaptionChange: (caption: string) => void;
   onCreativeDescriptionChange: (description: string) => void;
   onFileClick: () => void;
+  onFileDrop?: (file: File) => void;
   onApprove: () => void;
   onReject: (reason?: string) => void;
 }
@@ -52,6 +53,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
   onCaptionChange,
   onCreativeDescriptionChange,
   onFileClick,
+  onFileDrop,
   onApprove,
   onReject,
 }) => {
@@ -100,6 +102,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
         existingMediaUrl={isEditing ? existingMediaUrl : undefined}
         isAdmin={isAdmin}
         onFileClick={onFileClick}
+        onFileDrop={onFileDrop}
       />
 
       {/* Creative Description */}

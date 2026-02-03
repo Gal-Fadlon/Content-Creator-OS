@@ -51,6 +51,7 @@ const ContentModal: React.FC = () => {
     handleReject,
     handleFileClick,
     handleFileChange,
+    handleFileDrop,
     handleSave,
     formatDate,
   } = useContentModal();
@@ -100,6 +101,7 @@ const ContentModal: React.FC = () => {
             onCaptionChange={setCaption}
             onCreativeDescriptionChange={setCreativeDescription}
             onFileClick={handleFileClick}
+            onFileDrop={handleFileDrop}
             onApprove={handleApprove}
             onReject={handleReject}
           />

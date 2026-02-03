@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Upload, Download } from 'lucide-react';
 import { MEDIA_UPLOAD } from '@/constants/strings.constants';
 import {
@@ -19,6 +19,7 @@ interface MediaUploadProps {
   existingMediaUrl?: string;
   isAdmin: boolean;
   onFileClick: () => void;
+  onFileDrop?: (file: File) => void;
 }
 
 const MediaUpload: React.FC<MediaUploadProps> = ({
@@ -26,8 +27,42 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
   existingMediaUrl,
   isAdmin,
   onFileClick,
+  onFileDrop,
 }) => {
+  const [isDragging, setIsDragging] = useState(false);
   const displayUrl = mediaPreview || existingMediaUrl;
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && onFileDrop) {
+      const file = files[0];
+      // Only accept images and videos
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+        onFileDrop(file);
+      }
+    }
+  }, [onFileDrop]);
 
   const handleDownload = useCallback(() => {
     if (!existingMediaUrl) return;
@@ -56,7 +91,15 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
   // Upload area for new content (admin only)
   if (isAdmin) {
     return (
-      <StyledUploadArea onClick={onFileClick} hasPreview={!!mediaPreview}>
+      <StyledUploadArea
+        onClick={onFileClick}
+        hasPreview={!!mediaPreview}
+        isDragging={isDragging}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         {mediaPreview ? (
           <StyledPreviewContainer>
             <StyledPreviewImage src={mediaPreview} alt="" />

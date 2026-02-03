@@ -176,14 +176,25 @@ export function useContentModal() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setMediaFile(file);
     const url = window.URL.createObjectURL(file);
     setMediaPreview(url);
-    
-    toast({ 
-      title: CONTENT_MODAL.file.selected, 
-      description: file.name 
+
+    toast({
+      title: CONTENT_MODAL.file.selected,
+      description: file.name
+    });
+  };
+
+  const handleFileDrop = (file: File) => {
+    setMediaFile(file);
+    const url = window.URL.createObjectURL(file);
+    setMediaPreview(url);
+
+    toast({
+      title: CONTENT_MODAL.file.selected,
+      description: file.name
     });
   };
   
@@ -464,6 +475,7 @@ export function useContentModal() {
     handleReject,
     handleFileClick,
     handleFileChange,
+    handleFileDrop,
     handleSave,
     formatDate,
   };

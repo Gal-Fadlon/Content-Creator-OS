@@ -54,11 +54,12 @@ export const StyledDownloadButton = styled(StyledMediaActionButton)(({ theme }) 
 
 interface StyledUploadAreaProps {
   hasPreview?: boolean;
+  isDragging?: boolean;
 }
 
 export const StyledUploadArea = styled(ButtonBase, {
-  shouldForwardProp: (prop) => prop !== 'hasPreview',
-})<StyledUploadAreaProps>(({ theme, hasPreview }) => ({
+  shouldForwardProp: (prop) => prop !== 'hasPreview' && prop !== 'isDragging',
+})<StyledUploadAreaProps>(({ theme, hasPreview, isDragging }) => ({
   width: '100%',
   border: `2px dashed rgba(200, 173, 127, 0.4)`,
   borderRadius: theme.shape.borderRadius,
@@ -81,6 +82,12 @@ export const StyledUploadArea = styled(ButtonBase, {
     borderStyle: 'solid',
     borderColor: theme.palette.secondary.main,
     backgroundColor: 'rgba(200, 173, 127, 0.05)',
+  }),
+
+  ...(isDragging && {
+    borderColor: theme.palette.secondary.main,
+    backgroundColor: 'rgba(200, 173, 127, 0.1)',
+    borderStyle: 'solid',
   }),
 }));
 
