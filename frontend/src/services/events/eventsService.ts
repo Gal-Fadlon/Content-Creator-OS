@@ -8,7 +8,7 @@ import type { EventItem, EventRequest } from '@/types/content';
 import type { CreateEventDTO, UpdateEventDTO, CreateEventRequestDTO } from '@/services/api/types';
 import { supabase } from '@/services/supabase/supabaseClient';
 import type { EventRow, EventRequestRow } from '@/services/supabase/supabaseTypes';
-import { withTimeout } from '@/helpers/timeout';
+import { withTimeout } from '@/helpers/timeout.helper';
 
 const QUERY_TIMEOUT = 15000; // 15 seconds for database queries
 

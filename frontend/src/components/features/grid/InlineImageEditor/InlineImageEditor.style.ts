@@ -1,5 +1,6 @@
 import { styled } from '@mui/material/styles';
 import { Box, Slider, IconButton } from '@mui/material';
+import { getCoverImageStyles } from '@/helpers/imageStyles.helper';
 
 export const StyledEditorContainer = styled(Box)({
   position: 'relative',
@@ -18,17 +19,15 @@ interface StyledImageProps {
   zoom: number;
   offsetX: number;
   offsetY: number;
+  imageAspectRatio: number | null;
+  containerAspectRatio: number | null;
 }
 
 export const StyledImage = styled('img', {
-  shouldForwardProp: (prop) => !['zoom', 'offsetX', 'offsetY'].includes(prop as string),
-})<StyledImageProps>(({ zoom, offsetX, offsetY }) => ({
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-  transform: `scale(${zoom}) translate(${offsetX}%, ${offsetY}%)`,
-  transition: 'transform 0.1s ease-out',
-}));
+  shouldForwardProp: (prop) => !['zoom', 'offsetX', 'offsetY', 'imageAspectRatio', 'containerAspectRatio'].includes(prop as string),
+})<StyledImageProps>(({ zoom, offsetX, offsetY, imageAspectRatio, containerAspectRatio }) =>
+  getCoverImageStyles({ zoom, offsetX, offsetY, imageAspectRatio, containerAspectRatio })
+);
 
 export const StyledDragOverlay = styled(Box)({
   position: 'absolute',

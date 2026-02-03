@@ -4,6 +4,7 @@
 
 ```
 hooks/
+├── useImageCover.ts    # Image aspect ratio tracking for cover-style display
 └── queries/
     ├── useClients.ts       # Client data hooks
     ├── useContent.ts       # Content CRUD hooks

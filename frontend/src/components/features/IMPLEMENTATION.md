@@ -25,7 +25,7 @@ Content and event creation/editing modal components.
 | `ContentForm` | Form with approve/reject buttons for clients |
 | `EventForm` | Event fields: title, description, color |
 | `StatusSelector` | Status dropdown (draft/pending/approved/rejected/published) |
-| `MediaUpload` | Image/video upload with preview |
+| `MultiMediaUpload` | Multi-image upload with drag-drop reordering |
 | `CommentsSection` | Threaded comments for content items |
 | `CommentItem` | Individual comment with user info and actions |
 

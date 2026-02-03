@@ -1,6 +1,32 @@
 import { styled } from '@mui/material/styles';
 import { Box, Typography, Popover } from '@mui/material';
 
+// Wrapper for badge
+export const StyledBadgeWrapper = styled(Box)({
+  position: 'relative',
+  display: 'inline-flex',
+});
+
+// Count badge showing number of images
+export const StyledImageCountBadge = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: -4,
+  right: -4,
+  minWidth: 14,
+  height: 14,
+  borderRadius: 7,
+  backgroundColor: theme.palette.info.main,
+  color: theme.palette.common.white,
+  fontSize: '0.6rem',
+  fontWeight: 700,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0 3px',
+  zIndex: 2,
+  boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+}));
+
 interface StyledBadgeContainerProps {
   hasThumbnail?: boolean;
   contentType?: 'reel' | 'carousel' | 'post' | 'story';
@@ -23,6 +49,8 @@ export const StyledBadgeContainer = styled(Box, {
   transition: theme.transitions.create(['transform', 'background-color']),
   opacity: isDragging ? 0.5 : 1,
   boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+  position: 'relative',
+  zIndex: 1,
 
   '&:hover': {
     transform: 'scale(1.1)',
@@ -83,6 +111,21 @@ export const StyledHoverImage = styled('img')(({ theme }) => ({
   maxHeight: 140,
   objectFit: 'cover',
   borderRadius: theme.spacing(0.5),
+}));
+
+// Grid for multiple images - 3 per row
+export const StyledHoverImageGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gap: theme.spacing(0.5),
+}));
+
+export const StyledHoverImageThumb = styled('img')(({ theme }) => ({
+  width: '100%',
+  aspectRatio: '1',
+  objectFit: 'cover',
+  borderRadius: theme.spacing(0.5),
+  border: `1px solid ${theme.palette.divider}`,
 }));
 
 export const StyledTypeRow = styled(Box)(({ theme }) => ({

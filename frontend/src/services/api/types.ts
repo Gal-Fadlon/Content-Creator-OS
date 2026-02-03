@@ -31,8 +31,6 @@ export interface CreateContentDTO {
   time?: string;
   caption: string;
   creativeDescription?: string;
-  mediaUrl?: string;
-  mediaType?: 'image' | 'video';
   coverImageUrl?: string;
   notes?: string;
   technicalInstructions?: string;

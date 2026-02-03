@@ -4,14 +4,29 @@
  * Now uses Supabase
  */
 
-import type { ContentItem } from '@/types/content';
+import type { ContentItem, ContentMedia } from '@/types/content';
 import type { CreateContentDTO, UpdateContentDTO } from '@/services/api/types';
 import { supabase } from '@/services/supabase/supabaseClient';
-import type { ContentRow } from '@/services/supabase/supabaseTypes';
+import type { ContentRow, ContentMediaRow } from '@/services/supabase/supabaseTypes';
 import { deleteFile } from '@/services/storage/uploadService';
-import { withTimeout } from '@/helpers/timeout';
+import { withTimeout } from '@/helpers/timeout.helper';
 
 const QUERY_TIMEOUT = 15000; // 15 seconds for database queries
+
+// Transform content_media row to frontend type
+const toContentMedia = (row: ContentMediaRow): ContentMedia => ({
+  id: row.id,
+  contentId: row.content_id,
+  mediaUrl: row.media_url,
+  mediaType: row.media_type,
+  storageKey: row.storage_key || undefined,
+  sortOrder: row.sort_order,
+  width: row.width || undefined,
+  height: row.height || undefined,
+  fileSize: row.file_size || undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
 
 export interface ContentService {
   getAll: (clientId: string) => Promise<ContentItem[]>;
@@ -33,8 +48,6 @@ const toContentItem = (row: ContentRow): ContentItem => ({
   time: row.scheduled_time || undefined,
   caption: row.caption || '',
   creativeDescription: row.creative_description || undefined,
-  mediaUrl: row.media_url || undefined,
-  mediaType: row.media_type || undefined,
   coverImageUrl: row.cover_image_url || undefined,
   thumbnailUrl: row.thumbnail_url || undefined,
   notes: row.notes || undefined,
@@ -48,11 +61,27 @@ const toContentItem = (row: ContentRow): ContentItem => ({
   updatedAt: row.updated_at,
 });
 
+// Transform row with nested media to ContentItem
+const toContentItemWithMedia = (row: ContentRow & { content_media?: ContentMediaRow[] }): ContentItem => {
+  const item = toContentItem(row);
+  // Add media array, sorted by sort_order
+  if (row.content_media && row.content_media.length > 0) {
+    item.media = row.content_media
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(toContentMedia);
+  }
+  return item;
+};
+
 export const contentService: ContentService = {
   async getAll(clientId: string) {
+    // Fetch content with related media using nested select
     const queryPromise = supabase
       .from('content')
-      .select('*')
+      .select(`
+        *,
+        content_media (*)
+      `)
       .eq('client_id', clientId)
       .order('scheduled_date', { ascending: true, nullsFirst: false })
       .order('grid_order', { ascending: true });
@@ -65,13 +94,16 @@ export const contentService: ContentService = {
 
     if (error) throw error;
 
-    return ((data || []) as ContentRow[]).map(toContentItem);
+    return ((data || []) as (ContentRow & { content_media?: ContentMediaRow[] })[]).map(toContentItemWithMedia);
   },
 
   async getById(id: string) {
     const queryPromise = supabase
       .from('content')
-      .select('*')
+      .select(`
+        *,
+        content_media (*)
+      `)
       .eq('id', id)
       .single();
 
@@ -83,7 +115,7 @@ export const contentService: ContentService = {
 
     if (error) throw error;
 
-    return toContentItem(data as ContentRow);
+    return toContentItemWithMedia(data as ContentRow & { content_media?: ContentMediaRow[] });
   },
 
   async create(data: CreateContentDTO) {
@@ -98,8 +130,6 @@ export const contentService: ContentService = {
         scheduled_date: data.date || null,
         caption: data.caption || null,
         creative_description: data.creativeDescription || null,
-        media_url: data.mediaUrl || null,
-        media_type: data.mediaType || null,
         grid_order: data.gridOrder || 0,
       })
       .select()
@@ -119,8 +149,6 @@ export const contentService: ContentService = {
     if (data.date !== undefined) update.scheduled_date = data.date;
     if (data.caption !== undefined) update.caption = data.caption;
     if (data.creativeDescription !== undefined) update.creative_description = data.creativeDescription;
-    if (data.mediaUrl !== undefined) update.media_url = data.mediaUrl;
-    if (data.mediaType !== undefined) update.media_type = data.mediaType;
     if (data.coverImageUrl !== undefined) update.cover_image_url = data.coverImageUrl;
     if (data.rejectionReason !== undefined) update.rejection_reason = data.rejectionReason;
     if (data.gridOrder !== undefined) update.grid_order = data.gridOrder;
@@ -141,29 +169,47 @@ export const contentService: ContentService = {
   },
 
   async delete(id: string, accessToken?: string) {
-    // Get the content item first to retrieve media URLs
+    // Get the content item first to retrieve media URLs for R2 cleanup
     const { data: contentData } = await supabase
       .from('content')
-      .select('media_url, cover_image_url, thumbnail_url')
+      .select(`
+        cover_image_url, thumbnail_url,
+        content_media (media_url, storage_key)
+      `)
       .eq('id', id)
       .single();
 
-    const content = contentData as { media_url: string | null; cover_image_url: string | null; thumbnail_url: string | null } | null;
+    const content = contentData as {
+      cover_image_url: string | null;
+      thumbnail_url: string | null;
+      content_media?: { media_url: string; storage_key: string | null }[];
+    } | null;
+
+    // Collect all URLs to delete from R2
+    const urlsToDelete: string[] = [];
+
+    if (content) {
+      if (content.cover_image_url) urlsToDelete.push(content.cover_image_url);
+      if (content.thumbnail_url) urlsToDelete.push(content.thumbnail_url);
+
+      // Add media from content_media table
+      if (content.content_media) {
+        for (const media of content.content_media) {
+          urlsToDelete.push(media.media_url);
+        }
+      }
+    }
 
     // Delete files from R2 (don't fail if file deletion fails)
-    if (content) {
-      const urlsToDelete = [content.media_url, content.cover_image_url, content.thumbnail_url].filter(Boolean) as string[];
-
-      for (const url of urlsToDelete) {
-        try {
-          // Extract key from URL (format: https://domain/clients/...)
-          const key = url.split('.r2.dev/')[1] || url.split('.com/')[1];
-          if (key) {
-            await deleteFile(key, accessToken);
-          }
-        } catch (err) {
-          console.warn('Failed to delete file from R2:', url, err);
+    for (const url of urlsToDelete) {
+      try {
+        // Extract key from URL (format: https://domain/clients/...)
+        const key = url.split('.r2.dev/')[1] || url.split('.com/')[1];
+        if (key) {
+          await deleteFile(key, accessToken);
         }
+      } catch (err) {
+        console.warn('Failed to delete file from R2:', url, err);
       }
     }
 
@@ -187,12 +233,113 @@ export const contentService: ContentService = {
       console.warn('Failed to delete related comments:', err);
     }
 
-    // Delete the database record
+    // Delete the database record (content_media is deleted via CASCADE)
     const { error } = await supabase
       .from('content')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
+  },
+};
+
+/**
+ * Content Media Service
+ * Manages multiple media items per content
+ */
+export interface ContentMediaService {
+  addMedia: (contentId: string, mediaUrl: string, mediaType: 'image' | 'video', storageKey?: string) => Promise<ContentMedia>;
+  removeMedia: (mediaId: string, accessToken?: string) => Promise<void>;
+  reorderMedia: (contentId: string, mediaIds: string[]) => Promise<void>;
+  getMediaForContent: (contentId: string) => Promise<ContentMedia[]>;
+}
+
+export const contentMediaService: ContentMediaService = {
+  async addMedia(contentId: string, mediaUrl: string, mediaType: 'image' | 'video', storageKey?: string) {
+    // Get current max sort_order for this content
+    const { data: existing } = await supabase
+      .from('content_media')
+      .select('sort_order')
+      .eq('content_id', contentId)
+      .order('sort_order', { ascending: false })
+      .limit(1);
+
+    const nextOrder = existing && existing.length > 0 ? (existing[0] as { sort_order: number }).sort_order + 1 : 0;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('content_media') as any)
+      .insert({
+        content_id: contentId,
+        media_url: mediaUrl,
+        media_type: mediaType,
+        storage_key: storageKey || null,
+        sort_order: nextOrder,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return toContentMedia(data as ContentMediaRow);
+  },
+
+  async removeMedia(mediaId: string, accessToken?: string) {
+    // Get the media item first to retrieve URL for R2 deletion
+    const { data: mediaData } = await supabase
+      .from('content_media')
+      .select('media_url, storage_key')
+      .eq('id', mediaId)
+      .single();
+
+    const media = mediaData as { media_url: string; storage_key: string | null } | null;
+
+    // Delete from R2
+    if (media) {
+      try {
+        const key = media.storage_key || media.media_url.split('.r2.dev/')[1] || media.media_url.split('.com/')[1];
+        if (key) {
+          await deleteFile(key, accessToken);
+        }
+      } catch (err) {
+        console.warn('Failed to delete media file from R2:', err);
+      }
+    }
+
+    // Delete from database
+    const { error } = await supabase
+      .from('content_media')
+      .delete()
+      .eq('id', mediaId);
+
+    if (error) throw error;
+  },
+
+  async reorderMedia(_contentId: string, mediaIds: string[]) {
+    // Update sort_order for each media item
+    const updates = mediaIds.map((id, index) => ({
+      id,
+      sort_order: index,
+    }));
+
+    for (const update of updates) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from('content_media') as any)
+        .update({ sort_order: update.sort_order })
+        .eq('id', update.id);
+
+      if (error) throw error;
+    }
+  },
+
+  async getMediaForContent(contentId: string) {
+    const { data, error } = await supabase
+      .from('content_media')
+      .select('*')
+      .eq('content_id', contentId)
+      .order('sort_order', { ascending: true });
+
+    if (error) throw error;
+
+    return ((data || []) as ContentMediaRow[]).map(toContentMedia);
   },
 };

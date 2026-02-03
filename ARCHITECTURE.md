@@ -31,7 +31,9 @@ frontend/src/
 ├── pages/               # Page components (Dashboard, NotFound)
 ├── services/            # API layer with mock toggle
 ├── theme/               # MUI theme (palette, typography, components)
-└── types/               # TypeScript definitions
+├── types/               # TypeScript definitions
+├── hooks/               # Shared hooks (used across features)
+└── helpers/             # Shared helper functions
 ```
 
 ## Import Alias
@@ -185,13 +187,13 @@ Use `@/` for absolute imports: `import { useAuth } from '@/context/providers/Aut
 │ id (UUID) PK    │──────►│ id (UUID) PK/FK │       │ id (UUID) PK    │
 │ email           │       │ email           │       │ name            │
 │ encrypted_pass  │       │ full_name       │◄──────│ slug            │
-│ created_at      │       │ role            │       │ avatar_url      │
-│                 │       │ client_id FK    │───────│ brand_color     │
-└────────┬────────┘       │ avatar_url      │       │ owner_id FK ────┼──► (admin user)
-         │                │ created_at      │       │ created_at      │
+│ created_at      │       │ role            │       │ description     │
+│                 │       │ client_id FK    │───────│ avatar_url      │
+└────────┬────────┘       │ avatar_url      │       │ brand_color     │
+         │                │ created_at      │       │ owner_id FK ────┼──► (admin user)
+         │                │ updated_at      │       │ created_at      │
          │                └─────────────────┘       │ updated_at      │
-         │                                          └────────┬────────┘
-         └───────────────────────────────────────────────────┘
+         └───────────────────────────────────────────────────────────┘
                                                              │
                           ┌──────────────────────────────────┼──────────────────┐
                           │                                  │                  │
@@ -201,41 +203,56 @@ Use `@/` for absolute imports: `import { useAuth } from '@/context/providers/Aut
                ├─────────────────┤              ├─────────────────┤  ├─────────────────┤
                │ id (UUID) PK    │              │ id (UUID) PK    │  │ id (UUID) PK    │
                │ client_id FK    │              │ client_id FK    │  │ client_id FK    │
-               │ type            │              │ title           │  │ month (INT)     │
-               │ status          │              │ description     │  │ year (INT)      │
-               │ scheduled_date  │              │ event_date      │  │ theme_text      │
-               │ caption         │              │ color           │  │ backdrop_url    │
-               │ media_url       │              │ created_by FK   │  │ created_at      │
-               │ media_type      │              │ created_at      │  └─────────────────┘
-               │ creative_desc   │              │ updated_at      │
-               │ display_order   │              └─────────────────┘
-               │ zoom_level      │
-               │ offset_x        │              ┌─────────────────┐
-               │ offset_y        │              │  event_requests │
-               │ created_by FK   │              ├─────────────────┤
-               │ approved_by FK  │              │ id (UUID) PK    │
-               │ approved_at     │              │ client_id FK    │
-               │ created_at      │              │ requested_by FK │
-               │ updated_at      │              │ title           │
-               └─────────────────┘              │ description     │
-                                                │ requested_date  │
-               ┌─────────────────┐              │ status          │
-               │   stickers      │              │ reviewed_by FK  │
-               ├─────────────────┤              │ reviewed_at     │
-               │ id (UUID) PK    │              │ created_at      │
-               │ client_id FK    │              └─────────────────┘
-               │ month (INT)     │
-               │ year (INT)      │              ┌─────────────────┐
-               │ sticker_type    │              │  notifications  │
-               │ position_x      │              ├─────────────────┤
-               │ position_y      │              │ id (UUID) PK    │
-               │ custom_url      │              │ user_id FK      │
-               │ created_at      │              │ type            │
-               └─────────────────┘              │ title           │
-                                                │ message         │
-                                                │ reference_id    │
-                                                │ reference_type  │
-                                                │ is_read         │
+               │ type            │              │ title           │  │ month, year     │
+               │ status          │              │ description     │  │ theme_text      │
+               │ scheduled_date  │              │ event_date      │  │ backdrop_url    │
+               │ scheduled_time  │              │ color           │  │ created_at      │
+               │ caption         │              │ created_by FK   │  └─────────────────┘
+               │ platform        │              │ created_at      │
+               │ cover_image_url │              │ updated_at      │
+               │ thumbnail_url   │              └─────────────────┘
+               │ grid_zoom       │
+               │ grid_offset_x/y │              ┌─────────────────┐
+               │ grid_order      │              │  content_media  │
+               │ source          │              ├─────────────────┤
+               │ created_by FK   │              │ id (UUID) PK    │
+               │ approved_by FK  │              │ content_id FK   │
+               │ approved_at     │              │ media_url       │
+               │ rejection_reason│              │ media_type      │
+               │ created_at      │              │ sort_order      │
+               │ updated_at      │              │ storage_key     │
+               └────────┬────────┘              │ file_size       │
+                        │                       │ width, height   │
+                        │ 1:N                   │ created_at      │
+                        └──────────────────────►└─────────────────┘
+
+               ┌─────────────────┐              ┌─────────────────┐
+               │content_comments │              │  event_requests │
+               ├─────────────────┤              ├─────────────────┤
+               │ id (UUID) PK    │              │ id (UUID) PK    │
+               │ content_id FK   │              │ client_id FK    │
+               │ user_id FK      │              │ requested_by FK │
+               │ author_name     │              │ title           │
+               │ author_role     │              │ description     │
+               │ message         │              │ requested_date  │
+               │ created_at      │              │ status          │
+               └─────────────────┘              │ reviewed_by FK  │
+                                                │ reviewed_at     │
+               ┌─────────────────┐              │ created_at      │
+               │   stickers      │              └─────────────────┘
+               ├─────────────────┤
+               │ id (UUID) PK    │              ┌─────────────────┐
+               │ client_id FK    │              │  notifications  │
+               │ month, year     │              ├─────────────────┤
+               │ sticker_type    │              │ id (UUID) PK    │
+               │ icon_type       │              │ user_id FK      │
+               │ lucide_icon     │              │ client_id FK    │
+               │ label, color    │              │ type            │
+               │ position_x/y    │              │ title, message  │
+               │ rotation, scale │              │ content_id FK   │
+               │ custom_image_url│              │ event_request_id│
+               │ created_at      │              │ comment_id FK   │
+               └─────────────────┘              │ is_read         │
                                                 │ created_at      │
                                                 └─────────────────┘
 ```

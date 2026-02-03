@@ -6,7 +6,7 @@
 import type { ContentComment, UserRole } from '@/types/content';
 import { supabase } from '@/services/supabase/supabaseClient';
 import type { ContentCommentRow, ProfileRow } from '@/services/supabase/supabaseTypes';
-import { withTimeout } from '@/helpers/timeout';
+import { withTimeout } from '@/helpers/timeout.helper';
 
 const QUERY_TIMEOUT = 15000; // 15 seconds for database queries
 

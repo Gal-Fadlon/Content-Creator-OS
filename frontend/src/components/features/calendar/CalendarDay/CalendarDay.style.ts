@@ -1,5 +1,6 @@
 import { styled, keyframes } from '@mui/material/styles';
 import { Box, Typography, ButtonBase } from '@mui/material';
+import { getCoverImageStyles } from '@/helpers/imageStyles.helper';
 
 const shimmer = keyframes`
   0% {
@@ -63,7 +64,7 @@ export const StyledDayCell = styled(ButtonBase, {
   justifyContent: 'flex-start',
   opacity: isCurrentMonth ? 1 : 0.3,
   pointerEvents: isCurrentMonth ? 'auto' : 'none',
-  
+
   '&:hover': {
     borderColor: isCurrentMonth ? theme.palette.secondary.main : theme.palette.divider,
     // Show edit button on hover when admin with thumbnail
@@ -79,7 +80,7 @@ export const StyledDayCell = styled(ButtonBase, {
       },
     }),
   },
-  
+
   ...(isDragOver && {
     boxShadow: `0 0 0 2px ${theme.palette.secondary.main}`,
     borderColor: theme.palette.secondary.main,
@@ -102,17 +103,15 @@ interface StyledBackgroundImageProps {
   zoom: number;
   offsetX: number;
   offsetY: number;
+  imageAspectRatio?: number | null;
+  containerAspectRatio?: number | null;
 }
 
 export const StyledBackgroundImage = styled('img', {
-  shouldForwardProp: (prop) => !['zoom', 'offsetX', 'offsetY'].includes(prop as string),
-})<StyledBackgroundImageProps>(({ zoom, offsetX, offsetY }) => ({
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-  transform: `scale(${zoom}) translate(${offsetX}%, ${offsetY}%)`,
-  transition: 'transform 0.2s ease-out',
-}));
+  shouldForwardProp: (prop) => !['zoom', 'offsetX', 'offsetY', 'imageAspectRatio', 'containerAspectRatio'].includes(prop as string),
+})<StyledBackgroundImageProps>(({ zoom, offsetX, offsetY, imageAspectRatio, containerAspectRatio }) =>
+  getCoverImageStyles({ zoom, offsetX, offsetY, imageAspectRatio, containerAspectRatio, transitionDuration: '0.2s' })
+);
 
 const BaseActionButton = styled(Box)(({ theme }) => ({
   position: 'absolute',

@@ -3,12 +3,17 @@ import MovieIcon from '@mui/icons-material/Movie';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import ImageIcon from '@mui/icons-material/Image';
 import type { ContentItem } from '@/types/content';
+import { getPrimaryMediaUrl, getMediaCount } from '@/helpers/media.helper';
 import { CONTENT_TYPE_LABELS_HE, CONTENT_BADGE } from '@/constants/strings.constants';
 import {
+  StyledBadgeWrapper,
   StyledBadgeContainer,
+  StyledImageCountBadge,
   StyledHoverCard,
   StyledHoverContent,
   StyledHoverImage,
+  StyledHoverImageGrid,
+  StyledHoverImageThumb,
   StyledTypeRow,
   StyledTypeLabel,
   StyledDescriptionSection,
@@ -65,7 +70,7 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({
     };
   }, []);
 
-  const imageUrl = item.coverImageUrl || item.thumbnailUrl || item.mediaUrl;
+  const imageUrl = getPrimaryMediaUrl(item);
 
   const handleMouseEnter = useCallback((event: React.MouseEvent<HTMLElement>) => {
     if (item.creativeDescription || item.caption || imageUrl) {
@@ -108,22 +113,30 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({
   const isOpen = Boolean(anchorEl) && !draggedItemId;
   const isDragging = draggedItemId === item.id;
 
+  const imageCount = getMediaCount(item);
+
   return (
     <>
-      <StyledBadgeContainer
-        draggable={isAdmin}
-        onDragStart={handleDragStart}
-        onDragEnd={onDragEnd}
-        onClick={handleClick}
+      <StyledBadgeWrapper
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        hasThumbnail={hasThumbnail}
-        contentType={item.type}
-        isAdmin={isAdmin}
-        isDragging={isDragging}
       >
-        {getTypeIcon(item.type)}
-      </StyledBadgeContainer>
+        <StyledBadgeContainer
+          draggable={isAdmin}
+          onDragStart={handleDragStart}
+          onDragEnd={onDragEnd}
+          onClick={handleClick}
+          hasThumbnail={hasThumbnail}
+          contentType={item.type}
+          isAdmin={isAdmin}
+          isDragging={isDragging}
+        >
+          {getTypeIcon(item.type)}
+        </StyledBadgeContainer>
+        {imageCount > 1 && (
+          <StyledImageCountBadge>{imageCount}</StyledImageCountBadge>
+        )}
+      </StyledBadgeWrapper>
 
       <StyledHoverCard
         open={isOpen}
@@ -143,9 +156,16 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({
         sx={{ pointerEvents: 'none' }}
       >
         <StyledHoverContent>
-          {imageUrl && (
+          {/* Show all images if multiple, otherwise show single large image */}
+          {imageCount > 1 && item.media ? (
+            <StyledHoverImageGrid>
+              {item.media.map((media) => (
+                <StyledHoverImageThumb key={media.id} src={media.mediaUrl} alt="" />
+              ))}
+            </StyledHoverImageGrid>
+          ) : imageUrl ? (
             <StyledHoverImage src={imageUrl} alt="" />
-          )}
+          ) : null}
           <StyledTypeRow>
             {getTypeIcon(item.type)}
             <StyledTypeLabel>{getTypeLabel(item.type)}</StyledTypeLabel>

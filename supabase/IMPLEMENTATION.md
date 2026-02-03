@@ -12,7 +12,9 @@ supabase/
 │   ├── 005_notification_triggers.sql # Auto-notifications
 │   ├── 006_content_comments.sql    # Comments table & triggers
 │   ├── 007_comment_notification_link.sql # Links comments to notifications
-│   └── 008_separate_grid_calendar.sql # Separates grid and calendar content
+│   ├── 008_separate_grid_calendar.sql # Separates grid and calendar content
+│   ├── 009_content_media.sql          # Multi-image support table
+│   └── 010_remove_legacy_media_columns.sql # Removes deprecated media_url/media_type
 ├── functions/
 │   ├── generate-upload-url/        # Edge Function for R2 signed URLs
 │   └── delete-file/                # Edge Function for R2 file deletion
@@ -37,6 +39,10 @@ Migration 007 adds `comment_id` column to notifications with `ON DELETE CASCADE`
 ## Grid/Calendar Separation (008)
 
 Migration 008 adds `source` column to content table with values 'calendar' or 'grid'. This completely separates grid and calendar content - they are now independent systems with no shared data.
+
+## Multi-Image Support (009, 010)
+
+Migration 009 adds `content_media` table for multi-image support per content item. Migration 010 removes legacy `media_url`/`media_type` columns from content table.
 
 ## Multi-Admin Support
 

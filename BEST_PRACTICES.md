@@ -318,7 +318,7 @@ If a helper is used by multiple components within a feature, consider:
 
 ```tsx
 // ✅ CORRECT - Type guard in parent component's helper (ContentForm is child of ContentModal)
-// ContentModal/ContentModal.helper.ts
+// ContentModal/contentModal.helper.ts
 export const isContentItem = (item: CalendarItem): item is ContentItem => { ... };
 
 // ContentForm/ContentForm.tsx

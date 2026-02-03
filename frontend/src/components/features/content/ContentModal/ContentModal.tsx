@@ -7,7 +7,7 @@ import EventForm from '../EventForm/EventForm';
 import CommentsSection from '../CommentsSection/CommentsSection';
 import { useContentModal } from './useContentModal';
 import { useAuth } from '@/context/providers/AuthProvider';
-import { isContentItem, isEventItem } from './ContentModal.helper';
+import { isContentItem, isEventItem } from './contentModal.helper.ts';
 import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
 import {
   StyledDialog,
@@ -33,7 +33,8 @@ const ContentModal: React.FC = () => {
     status,
     caption,
     creativeDescription,
-    mediaPreview,
+    existingMedia,
+    pendingMedia,
     eventTitle,
     eventDescription,
     eventColor,
@@ -49,9 +50,12 @@ const ContentModal: React.FC = () => {
     handleDelete,
     handleApprove,
     handleReject,
-    handleFileClick,
     handleFileChange,
-    handleFileDrop,
+    handleAddFiles,
+    handleRemoveExisting,
+    handleRemovePending,
+    handleReorderExisting,
+    handleReorderPending,
     handleSave,
     formatDate,
   } = useContentModal();
@@ -95,13 +99,17 @@ const ContentModal: React.FC = () => {
             status={status}
             caption={caption}
             creativeDescription={creativeDescription}
-            mediaPreview={mediaPreview}
+            existingMedia={existingMedia}
+            pendingMedia={pendingMedia}
             onContentTypeChange={setContentType}
             onStatusChange={setStatus}
             onCaptionChange={setCaption}
             onCreativeDescriptionChange={setCreativeDescription}
-            onFileClick={handleFileClick}
-            onFileDrop={handleFileDrop}
+            onAddFiles={handleAddFiles}
+            onRemoveExisting={handleRemoveExisting}
+            onRemovePending={handleRemovePending}
+            onReorderExisting={handleReorderExisting}
+            onReorderPending={handleReorderPending}
             onApprove={handleApprove}
             onReject={handleReject}
           />

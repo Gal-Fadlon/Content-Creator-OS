@@ -5,6 +5,7 @@ import GridItemOverlay from '../GridItemOverlay/GridItemOverlay';
 import GridItemEditControls from '../GridItemEditControls/GridItemEditControls';
 import ContentTypeBadge from '../ContentTypeBadge/ContentTypeBadge';
 import type { ContentItem } from '@/types/content';
+import { getFirstMediaUrl } from '@/helpers/media.helper';
 import { GRID_ITEM } from '@/constants/strings.constants';
 import {
   StyledGridItemContainer,
@@ -76,7 +77,7 @@ const GridItem: React.FC<GridItemProps> = ({
       {/* Media display with zoom and positioning */}
       <StyledMediaWrapper>
         <GridItemMedia
-          mediaUrl={item.mediaUrl}
+          mediaUrl={getFirstMediaUrl(item)}
           coverImageUrl={item.coverImageUrl}
           type={item.type}
           zoom={zoom}
@@ -95,7 +96,7 @@ const GridItem: React.FC<GridItemProps> = ({
       {/* Editing controls - shown when editing */}
       {isEditing && !showLoadingOverlay && (
         <GridItemEditControls
-          imageUrl={item.coverImageUrl || item.mediaUrl || ''}
+          imageUrl={item.coverImageUrl || getFirstMediaUrl(item) || ''}
           zoom={zoom}
           offsetX={offsetX}
           offsetY={offsetY}

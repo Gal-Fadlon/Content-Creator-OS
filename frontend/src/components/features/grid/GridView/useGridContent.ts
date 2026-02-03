@@ -3,6 +3,7 @@ import { useContentItems, useCreateContent, useUpdateContent, useDeleteContent, 
 import { useSelectedClientId, getLastSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import { uploadFile } from '@/services/storage/uploadService';
+import { services } from '@/services/services';
 import { useToast } from '@/context/SnackbarContext';
 import type { ContentType, ContentItem } from '@/types/content';
 
@@ -62,7 +63,13 @@ export function useGridContent() {
       platform: 'instagram',
       date: null,
       caption: '',
-      mediaUrl: pending.localPreviewUrl,
+      media: [{
+        id: `pending-media-${pending.id}`,
+        contentId: pending.id,
+        mediaUrl: pending.localPreviewUrl,
+        mediaType: 'image',
+        sortOrder: 0,
+      }],
       gridOrder: realContent.length + pendingUploads.indexOf(pending),
       gridZoom: pending.gridZoom,
       gridOffsetX: pending.gridOffsetX,
@@ -153,13 +160,23 @@ export function useGridContent() {
         platform: 'instagram',
         date: null,
         caption: '',
-        mediaUrl: result.url,
         gridOrder: realContent.length,
         gridZoom: zoom,
         gridOffsetX: offsetX,
         gridOffsetY: offsetY,
       }, {
-        onSuccess: () => {
+        onSuccess: async (newContent) => {
+          // Add media to content_media table
+          try {
+            await services.contentMedia.addMedia(
+              newContent.id,
+              result.url,
+              'image',
+              result.key
+            );
+          } catch (err) {
+            console.error('Failed to add media to content:', err);
+          }
           toast({ title: 'הצלחה', description: 'התמונה הועלתה בהצלחה' });
         },
         onError: (error) => {

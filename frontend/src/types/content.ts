@@ -10,6 +10,21 @@ export type Platform = 'instagram' | 'tiktok' | 'facebook';
 export type MarkerColor = 'red' | 'blue' | 'beige' | 'brown' | 'black';
 export type ContentSource = 'calendar' | 'grid';
 
+// Media item for multi-image support
+export interface ContentMedia {
+  id: string;
+  contentId: string;
+  mediaUrl: string;
+  mediaType: 'image' | 'video';
+  storageKey?: string; // R2 storage key for deletion
+  sortOrder: number;
+  width?: number;
+  height?: number;
+  fileSize?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ContentItem {
   id: string;
   clientId: string;
@@ -21,8 +36,7 @@ export interface ContentItem {
   time?: string; // HH:mm format
   caption: string;
   creativeDescription?: string; // תיאור הקריאייטיב - internal description for client
-  mediaUrl?: string;
-  mediaType?: 'image' | 'video';
+  media?: ContentMedia[]; // Array of media items, sorted by sortOrder
   coverImageUrl?: string; // Separate cover image for grid preview
   thumbnailUrl?: string;
   notes?: string;

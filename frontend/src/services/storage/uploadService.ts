@@ -4,11 +4,23 @@
  */
 
 import { supabase } from '@/services/supabase/supabaseClient';
-import { withTimeout, fetchWithTimeout } from '@/helpers/timeout';
+import { withTimeout, fetchWithTimeout } from '@/helpers/timeout.helper';
 
 // Timeouts for different operations
 const SIGNED_URL_TIMEOUT = 15000; // 15 seconds for getting signed URL
-const UPLOAD_TIMEOUT = 60000; // 60 seconds for actual upload
+const UPLOAD_BASE_TIMEOUT = 30000; // 30 seconds base timeout
+const UPLOAD_TIMEOUT_PER_MB = 15000; // Additional 15 seconds per MB
+
+/**
+ * Calculate dynamic upload timeout based on file size
+ * Larger files get more time to upload
+ */
+const getUploadTimeout = (fileSizeBytes: number): number => {
+  const fileSizeMB = fileSizeBytes / (1024 * 1024);
+  const timeout = UPLOAD_BASE_TIMEOUT + (fileSizeMB * UPLOAD_TIMEOUT_PER_MB);
+  // Cap at 5 minutes max, minimum 30 seconds
+  return Math.min(Math.max(timeout, 30000), 300000);
+};
 
 export interface UploadResult {
   url: string;
@@ -124,7 +136,8 @@ export const uploadFile = async (
   options: UploadOptions,
   onProgress?: (progress: number) => void
 ): Promise<UploadResult> => {
-  console.log('[Upload] Starting upload for file:', file.name, 'size:', file.size);
+  const uploadTimeout = getUploadTimeout(file.size);
+  console.log('[Upload] Starting upload for file:', file.name, 'size:', file.size, 'timeout:', uploadTimeout);
 
   // Get signed URL
   const { uploadUrl, publicUrl, key } = await getSignedUploadUrl(
@@ -135,7 +148,7 @@ export const uploadFile = async (
 
   console.log('[Upload] Got signed URL, uploading to R2...');
 
-  // Upload file directly to R2 with timeout
+  // Upload file directly to R2 with dynamic timeout based on file size
   const response = await fetchWithTimeout(
     uploadUrl,
     {
@@ -145,7 +158,7 @@ export const uploadFile = async (
         'Content-Type': file.type,
       },
     },
-    UPLOAD_TIMEOUT
+    uploadTimeout
   );
 
   console.log('[Upload] R2 response status:', response.status);

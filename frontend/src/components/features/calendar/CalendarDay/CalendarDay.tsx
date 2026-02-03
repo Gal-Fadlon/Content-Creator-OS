@@ -1,11 +1,13 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef } from 'react';
 import { Crop, Plus } from 'lucide-react';
 import { Tooltip, CircularProgress } from '@mui/material';
 import ContentBadge from '../ContentBadge/ContentBadge';
 import EventBadge from '../EventBadge/EventBadge';
 import InlineImageEditor from '@/components/features/grid/InlineImageEditor/InlineImageEditor';
 import { useUploadingState } from '@/context/providers/ModalProvider';
+import { useImageCover } from '@/hooks/useImageCover';
 import type { CalendarDayData } from '@/types/content';
+import { getPrimaryMediaUrl } from '@/helpers/media.helper';
 import { CALENDAR } from '@/constants/strings.constants';
 import {
   StyledDayCell,
@@ -68,6 +70,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   onOffsetChange,
 }) => {
   const { isDateUploading, isDateDeleting } = useUploadingState();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const dateStr = day.date.toISOString().split('T')[0];
   const isUploading = isDateUploading(dateStr);
@@ -76,16 +79,13 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   const contentWithMedia = useMemo(
     () =>
       day.content.find(
-        (item) => item.mediaUrl || item.coverImageUrl || item.thumbnailUrl
+        (item) => getPrimaryMediaUrl(item)
       ),
     [day.content]
   );
 
   const thumbnailUrl = useMemo(
-    () =>
-      contentWithMedia?.coverImageUrl ||
-      contentWithMedia?.thumbnailUrl ||
-      contentWithMedia?.mediaUrl,
+    () => contentWithMedia ? getPrimaryMediaUrl(contentWithMedia) : undefined,
     [contentWithMedia]
   );
 
@@ -160,6 +160,8 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   const hasItems = day.content.length > 0 || day.events.length > 0;
   const showAddOnHover = isAdmin && day.isCurrentMonth && !isEditingThisDay && hasItems;
 
+  const { imageAspectRatio, containerAspectRatio } = useImageCover(thumbnailUrl, containerRef);
+
   return (
     <StyledDayCell
       onClick={handleDayClick}
@@ -205,19 +207,21 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
             </StyledEditorContainer>
           ) : (
             <>
-              <StyledBackgroundImageContainer>
+              <StyledBackgroundImageContainer ref={containerRef}>
                 <StyledBackgroundImage
                   src={thumbnailUrl!}
                   alt=""
                   zoom={cropSettings.zoom}
                   offsetX={cropSettings.offsetX}
                   offsetY={cropSettings.offsetY}
+                  imageAspectRatio={imageAspectRatio}
+                  containerAspectRatio={containerAspectRatio}
                 />
               </StyledBackgroundImageContainer>
               {isAdmin && (
                 <StyledEditButton className="edit-button" onClick={handleEditClick}>
                   <Crop size={12} />
-                  </StyledEditButton>
+                </StyledEditButton>
               )}
             </>
           )}

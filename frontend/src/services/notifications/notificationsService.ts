@@ -20,24 +20,34 @@ export interface NotificationsService {
 interface NotificationWithContent extends NotificationRow {
   content?: {
     scheduled_date: string | null;
-    media_url: string | null;
+    cover_image_url: string | null;
+    thumbnail_url: string | null;
+    content_media?: { media_url: string }[];
   } | null;
 }
 
 // Transform database row to frontend type
-const toNotification = (row: NotificationWithContent): Notification => ({
-  id: row.id,
-  type: row.type,
-  title: row.title,
-  message: row.message || '',
-  contentId: row.content_id || undefined,
-  eventRequestId: row.event_request_id || undefined,
-  clientId: row.client_id || undefined,
-  read: row.is_read,
-  createdAt: row.created_at,
-  contentDate: row.content?.scheduled_date || undefined,
-  contentMediaUrl: row.content?.media_url || undefined,
-});
+const toNotification = (row: NotificationWithContent): Notification => {
+  // Get media URL: prefer cover/thumbnail, fallback to first content_media
+  const contentMediaUrl = row.content?.cover_image_url
+    || row.content?.thumbnail_url
+    || row.content?.content_media?.[0]?.media_url
+    || undefined;
+
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    message: row.message || '',
+    contentId: row.content_id || undefined,
+    eventRequestId: row.event_request_id || undefined,
+    clientId: row.client_id || undefined,
+    read: row.is_read,
+    createdAt: row.created_at,
+    contentDate: row.content?.scheduled_date || undefined,
+    contentMediaUrl,
+  };
+};
 
 export const notificationsService: NotificationsService = {
   async getAll() {
@@ -51,7 +61,9 @@ export const notificationsService: NotificationsService = {
         *,
         content:content_id (
           scheduled_date,
-          media_url
+          cover_image_url,
+          thumbnail_url,
+          content_media (media_url)
         )
       `)
       .eq('user_id', user.id)

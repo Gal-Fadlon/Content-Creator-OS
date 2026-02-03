@@ -82,8 +82,6 @@ export interface Database {
           scheduled_time: string | null;
           caption: string | null;
           creative_description: string | null;
-          media_url: string | null;
-          media_type: 'image' | 'video' | null;
           cover_image_url: string | null;
           thumbnail_url: string | null;
           notes: string | null;
@@ -110,8 +108,6 @@ export interface Database {
           scheduled_time?: string | null;
           caption?: string | null;
           creative_description?: string | null;
-          media_url?: string | null;
-          media_type?: 'image' | 'video' | null;
           cover_image_url?: string | null;
           thumbnail_url?: string | null;
           notes?: string | null;
@@ -137,8 +133,6 @@ export interface Database {
           scheduled_time?: string | null;
           caption?: string | null;
           creative_description?: string | null;
-          media_url?: string | null;
-          media_type?: 'image' | 'video' | null;
           cover_image_url?: string | null;
           thumbnail_url?: string | null;
           notes?: string | null;
@@ -377,6 +371,44 @@ export interface Database {
           updated_at?: string;
         };
       };
+      content_media: {
+        Row: {
+          id: string;
+          content_id: string;
+          media_url: string;
+          media_type: 'image' | 'video';
+          storage_key: string | null;
+          sort_order: number;
+          width: number | null;
+          height: number | null;
+          file_size: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          content_id: string;
+          media_url: string;
+          media_type?: 'image' | 'video';
+          storage_key?: string | null;
+          sort_order?: number;
+          width?: number | null;
+          height?: number | null;
+          file_size?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          media_url?: string;
+          media_type?: 'image' | 'video';
+          storage_key?: string | null;
+          sort_order?: number;
+          width?: number | null;
+          height?: number | null;
+          file_size?: number | null;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -412,6 +444,7 @@ export type Tables<T extends keyof Database['public']['Tables']> =
 export type ClientRow = Tables<'clients'>;
 export type ProfileRow = Tables<'profiles'>;
 export type ContentRow = Tables<'content'>;
+export type ContentMediaRow = Tables<'content_media'>;
 export type EventRow = Tables<'events'>;
 export type EventRequestRow = Tables<'event_requests'>;
 export type NotificationRow = Tables<'notifications'>;

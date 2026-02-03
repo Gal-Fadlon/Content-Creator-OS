@@ -3,7 +3,7 @@ import { Check, X } from 'lucide-react';
 import { Button } from '@mui/material';
 import ContentTypeSelector from '../ContentTypeSelector/ContentTypeSelector';
 import StatusSelector from '../StatusSelector/StatusSelector';
-import MediaUpload from '../MediaUpload/MediaUpload';
+import MultiMediaUpload, { type PendingMedia } from '../MultiMediaUpload/MultiMediaUpload';
 import CaptionField from '../CaptionField/CaptionField';
 import CreativeDescriptionField from '../CreativeDescriptionField/CreativeDescriptionField';
 import {
@@ -16,8 +16,8 @@ import {
   StyledRejectTextField,
   StyledRejectDialogActions,
 } from './ContentForm.style';
-import { isContentItem } from '../ContentModal/ContentModal.helper';
-import type { ContentItem, ContentType, ContentStatus } from '@/types/content';
+import { isContentItem } from '../ContentModal/contentModal.helper.ts';
+import type { ContentItem, ContentType, ContentStatus, ContentMedia } from '@/types/content';
 import { CONTENT_FORM } from '@/constants/strings.constants';
 
 interface ContentFormProps {
@@ -28,13 +28,17 @@ interface ContentFormProps {
   status: ContentStatus;
   caption: string;
   creativeDescription: string;
-  mediaPreview: string | null;
+  existingMedia?: ContentMedia[];
+  pendingMedia?: PendingMedia[];
   onContentTypeChange: (type: ContentType) => void;
   onStatusChange: (status: ContentStatus) => void;
   onCaptionChange: (caption: string) => void;
   onCreativeDescriptionChange: (description: string) => void;
-  onFileClick: () => void;
-  onFileDrop?: (file: File) => void;
+  onAddFiles: (files: File[]) => void;
+  onRemoveExisting?: (mediaId: string) => void;
+  onRemovePending?: (pendingId: string) => void;
+  onReorderExisting?: (mediaIds: string[]) => void;
+  onReorderPending?: (pendingIds: string[]) => void;
   onApprove: () => void;
   onReject: (reason?: string) => void;
 }
@@ -47,13 +51,17 @@ const ContentForm: React.FC<ContentFormProps> = ({
   status,
   caption,
   creativeDescription,
-  mediaPreview,
+  existingMedia = [],
+  pendingMedia = [],
   onContentTypeChange,
   onStatusChange,
   onCaptionChange,
   onCreativeDescriptionChange,
-  onFileClick,
-  onFileDrop,
+  onAddFiles,
+  onRemoveExisting,
+  onRemovePending,
+  onReorderExisting,
+  onReorderPending,
   onApprove,
   onReject,
 }) => {
@@ -61,7 +69,6 @@ const ContentForm: React.FC<ContentFormProps> = ({
   const [rejectionReason, setRejectionReason] = useState('');
 
   const contentItem = item && isContentItem(item) ? item : null;
-  const existingMediaUrl = contentItem?.mediaUrl;
   const showClientActions = !isAdmin && isEditing && contentItem?.status === 'pending';
 
   const handleOpenRejectDialog = useCallback(() => {
@@ -96,13 +103,17 @@ const ContentForm: React.FC<ContentFormProps> = ({
         />
       )}
 
-      {/* Media preview or upload */}
-      <MediaUpload
-        mediaPreview={mediaPreview}
-        existingMediaUrl={isEditing ? existingMediaUrl : undefined}
+      {/* Media upload (supports multiple images) */}
+      <MultiMediaUpload
+        existingMedia={existingMedia}
+        pendingMedia={pendingMedia}
         isAdmin={isAdmin}
-        onFileClick={onFileClick}
-        onFileDrop={onFileDrop}
+        maxImages={10}
+        onAddFiles={onAddFiles}
+        onRemoveExisting={onRemoveExisting}
+        onRemovePending={onRemovePending}
+        onReorderExisting={onReorderExisting}
+        onReorderPending={onReorderPending}
       />
 
       {/* Creative Description */}

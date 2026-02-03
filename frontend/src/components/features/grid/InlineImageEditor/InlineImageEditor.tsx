@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import CheckIcon from '@mui/icons-material/Check';
+import { useImageCover } from '@/hooks/useImageCover';
 import {
   StyledEditorContainer,
   StyledImageContainer,
@@ -46,32 +47,64 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
   const lastPosition = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate max pan offset based on zoom level (Instagram-style mask behavior)
-  // When zoomed in, we can pan more. At zoom=1, no panning allowed (image exactly fills container)
-  const getMaxOffset = useCallback((currentZoom: number) => {
-    // At zoom 1, max offset is 0 (image exactly covers container)
-    // At zoom 2, we can pan up to 25% in each direction (half of the extra 100%)
-    // Formula: maxOffset = ((zoom - 1) / zoom) * 50
-    if (currentZoom <= 1) return 0;
-    return ((currentZoom - 1) / currentZoom) * 50;
-  }, []);
+  const { imageAspectRatio, containerAspectRatio } = useImageCover(imageUrl, containerRef);
 
-  // Constrain offset values based on current zoom
-  const constrainOffset = useCallback((offset: number, currentZoom: number) => {
-    const maxOffset = getMaxOffset(currentZoom);
+  // Calculate max pan offset based on zoom level AND image/container aspect ratio mismatch
+  // Offset is in percentage of CONTAINER size
+  // The image must always cover the container - calculate how much we can move
+  const getMaxOffset = useCallback((currentZoom: number, axis: 'x' | 'y') => {
+    if (!imageAspectRatio || !containerAspectRatio) {
+      return 0;
+    }
+
+    // Calculate image size relative to container (as percentage of container)
+    // At zoom=1, the image covers the container
+    const fitToHeight = imageAspectRatio > containerAspectRatio;
+
+    let imageWidthPercent: number;
+    let imageHeightPercent: number;
+
+    if (fitToHeight) {
+      // Image is wider, fit to height (100%), width is larger
+      imageHeightPercent = 100;
+      imageWidthPercent = (imageAspectRatio / containerAspectRatio) * 100;
+    } else {
+      // Image is taller, fit to width (100%), height is larger
+      imageWidthPercent = 100;
+      imageHeightPercent = (containerAspectRatio / imageAspectRatio) * 100;
+    }
+
+    // Apply zoom
+    imageWidthPercent *= currentZoom;
+    imageHeightPercent *= currentZoom;
+
+    // Calculate how much we can move (half of overflow on each side)
+    // The image is centered, so we can move by half the overflow in each direction
+    if (axis === 'x') {
+      const overflowX = imageWidthPercent - 100;
+      return Math.max(0, overflowX / 2);
+    } else {
+      const overflowY = imageHeightPercent - 100;
+      return Math.max(0, overflowY / 2);
+    }
+  }, [imageAspectRatio, containerAspectRatio]);
+
+  // Constrain offset values based on current zoom and axis
+  const constrainOffset = useCallback((offset: number, currentZoom: number, axis: 'x' | 'y') => {
+    const maxOffset = getMaxOffset(currentZoom, axis);
     return Math.max(-maxOffset, Math.min(maxOffset, offset));
   }, [getMaxOffset]);
 
-  // Constrain offsets when zoom changes (bounce-back effect)
+  // Constrain offsets when zoom changes or image loads (bounce-back effect)
   useEffect(() => {
-    const constrainedX = constrainOffset(offsetX, zoom);
-    const constrainedY = constrainOffset(offsetY, zoom);
+    const constrainedX = constrainOffset(offsetX, zoom, 'x');
+    const constrainedY = constrainOffset(offsetY, zoom, 'y');
 
     if (constrainedX !== offsetX || constrainedY !== offsetY) {
       setOffsetX(constrainedX);
       setOffsetY(constrainedY);
     }
-  }, [zoom, offsetX, offsetY, constrainOffset]);
+  }, [zoom, offsetX, offsetY, constrainOffset, imageAspectRatio]);
 
   // Auto-save when values change (for dialog use case)
   useEffect(() => {
@@ -117,9 +150,9 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
     const percentX = (deltaX / containerRect.width) * 100 / zoom;
     const percentY = (deltaY / containerRect.height) * 100 / zoom;
 
-    // Apply Instagram-style constraints: can only pan within zoomed area
-    setOffsetX((prev) => constrainOffset(prev + percentX, zoom));
-    setOffsetY((prev) => constrainOffset(prev + percentY, zoom));
+    // Apply constraints: can pan within zoomed area AND natural overflow area
+    setOffsetX((prev) => constrainOffset(prev + percentX, zoom, 'x'));
+    setOffsetY((prev) => constrainOffset(prev + percentY, zoom, 'y'));
     lastPosition.current = { x: e.clientX, y: e.clientY };
   }, [zoom, constrainOffset]);
 
@@ -159,6 +192,8 @@ const InlineImageEditor: React.FC<InlineImageEditorProps> = ({
           zoom={zoom}
           offsetX={offsetX}
           offsetY={offsetY}
+          imageAspectRatio={imageAspectRatio}
+          containerAspectRatio={containerAspectRatio}
           draggable={false}
         />
       </StyledImageContainer>

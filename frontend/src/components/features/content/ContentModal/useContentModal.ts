@@ -1,23 +1,28 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useContentModal as useContentModalContext, useUploadingState } from '@/context/providers/ModalProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import { useContentItems, useCreateContent, useUpdateContent, useDeleteContent } from '@/hooks/queries/useContent';
 import { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent } from '@/hooks/queries/useEvents';
 import { useToast } from '@/context/SnackbarContext';
-import { isContentItem, isEventItem } from './ContentModal.helper';
+import { isContentItem, isEventItem } from './contentModal.helper.ts';
 import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
-import { uploadFile, deleteFile } from '@/services/storage/uploadService';
-import type { ContentType, ContentStatus, MarkerColor, ModalMode } from '@/types/content';
+import { uploadFile } from '@/services/storage/uploadService';
+import { services } from '@/services/services';
+import { queryKeys } from '@/services/queryKeys';
+import type { ContentType, ContentStatus, MarkerColor, ModalMode, ContentMedia } from '@/types/content';
+import type { PendingMedia } from '../MultiMediaUpload/MultiMediaUpload';
 
 export function useContentModal() {
+  const queryClient = useQueryClient();
   const { isOpen, selectedDate, editItemId, close } = useContentModalContext();
   const { isAdmin, isLoading: isAuthLoading, isAuthenticated, session } = useAuth();
   const [selectedClientId] = useSelectedClientId();
   const { addUploadingDate, removeUploadingDate, addDeletingDate, removeDeletingDate } = useUploadingState();
   const { data: contentItems = [] } = useContentItems(selectedClientId);
   const { data: events = [] } = useEvents(selectedClientId);
-  
+
   const createContent = useCreateContent();
   const updateContent = useUpdateContent();
   const deleteContent = useDeleteContent();
@@ -42,14 +47,17 @@ export function useContentModal() {
   const [status, setStatus] = useState<ContentStatus>('draft');
   const [caption, setCaption] = useState('');
   const [creativeDescription, setCreativeDescription] = useState('');
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  
+
+  // Multi-media state
+  const [existingMedia, setExistingMedia] = useState<ContentMedia[]>([]);
+  const [pendingMedia, setPendingMedia] = useState<PendingMedia[]>([]);
+  const [mediaToRemove, setMediaToRemove] = useState<string[]>([]); // IDs of existing media to delete
+
   // Event form state
   const [eventTitle, setEventTitle] = useState('');
   const [eventDescription, setEventDescription] = useState('');
   const [eventColor, setEventColor] = useState<MarkerColor>('black');
-  
+
   // Upload state
   const [isUploading] = useState(false);
   
@@ -64,7 +72,10 @@ export function useContentModal() {
         setStatus(item.status);
         setCaption(item.caption || '');
         setCreativeDescription(item.creativeDescription || '');
-        setMediaPreview(item.mediaUrl || null);
+        // Load existing media
+        setExistingMedia(item.media || []);
+        setPendingMedia([]);
+        setMediaToRemove([]);
       } else if (isEventItem(item)) {
         setMode('event');
         setEventTitle(item.title);
@@ -73,14 +84,15 @@ export function useContentModal() {
       }
     }
   }, [item]);
-  
+
   const resetForm = () => {
     setCaption('');
     setCreativeDescription('');
     setEventTitle('');
     setEventDescription('');
-    setMediaFile(null);
-    setMediaPreview(null);
+    setExistingMedia([]);
+    setPendingMedia([]);
+    setMediaToRemove([]);
     setMode('media');
     setContentType('reel');
     setStatus('draft');
@@ -187,35 +199,59 @@ export function useContentModal() {
     }
   };
   
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  };
-  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    handleAddFiles(Array.from(files));
+  };
 
-    setMediaFile(file);
-    const url = window.URL.createObjectURL(file);
-    setMediaPreview(url);
+  // Multi-media handlers
+  const handleAddFiles = useCallback((files: File[]) => {
+    const newPending: PendingMedia[] = files.map(file => ({
+      id: `pending-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      file,
+      previewUrl: window.URL.createObjectURL(file),
+      isUploading: false,
+    }));
+
+    setPendingMedia(prev => [...prev, ...newPending]);
 
     toast({
       title: CONTENT_MODAL.file.selected,
-      description: file.name
+      description: files.length === 1 ? files[0].name : `${files.length} קבצים נבחרו`
     });
-  };
+  }, [toast]);
 
-  const handleFileDrop = (file: File) => {
-    setMediaFile(file);
-    const url = window.URL.createObjectURL(file);
-    setMediaPreview(url);
+  const handleRemoveExisting = useCallback((mediaId: string) => {
+    setMediaToRemove(prev => [...prev, mediaId]);
+    setExistingMedia(prev => prev.filter(m => m.id !== mediaId));
+  }, []);
 
-    toast({
-      title: CONTENT_MODAL.file.selected,
-      description: file.name
+  const handleRemovePending = useCallback((pendingId: string) => {
+    setPendingMedia(prev => {
+      const item = prev.find(p => p.id === pendingId);
+      if (item) {
+        // Revoke the object URL to free memory
+        window.URL.revokeObjectURL(item.previewUrl);
+      }
+      return prev.filter(p => p.id !== pendingId);
     });
-  };
-  
+  }, []);
+
+  const handleReorderExisting = useCallback((mediaIds: string[]) => {
+    setExistingMedia(prev => {
+      const mediaMap = new Map(prev.map(m => [m.id, m]));
+      return mediaIds.map(id => mediaMap.get(id)).filter((m): m is ContentMedia => !!m);
+    });
+  }, []);
+
+  const handleReorderPending = useCallback((pendingIds: string[]) => {
+    setPendingMedia(prev => {
+      const mediaMap = new Map(prev.map(p => [p.id, p]));
+      return pendingIds.map(id => mediaMap.get(id)).filter((p): p is PendingMedia => !!p);
+    });
+  }, []);
+
   const handleSave = () => {
     if (!selectedClientId) {
       toast({ title: COMMON.error, description: CONTENT_MODAL.save.noClientSelected, variant: 'destructive' });
@@ -227,27 +263,30 @@ export function useContentModal() {
       toast({ title: COMMON.error, description: 'יש להמתין לטעינת המערכת', variant: 'destructive' });
       return;
     }
-    
+
     if (mode === 'media') {
       // Store values before closing (they'll be reset)
-      const currentMediaFile = mediaFile;
+      const currentPendingMedia = [...pendingMedia];
+      const currentExistingMedia = [...existingMedia]; // Store current order for reordering
+      const currentMediaToRemove = [...mediaToRemove];
       const currentContentType = contentType;
       const currentStatus = status;
       const currentCaption = caption;
       const currentCreativeDescription = creativeDescription;
       const currentItem = item;
       const currentIsEditing = isEditing;
-      const oldMediaUrl = currentIsEditing && isContentItem(currentItem!) ? currentItem.mediaUrl : null;
 
       // Use the item's date when editing, otherwise use selectedDate or today
       const itemDate = currentIsEditing && isContentItem(currentItem!) ? currentItem.date : null;
       const dateStr = itemDate || selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
-      
+
       // Close modal immediately for better UX
       handleClose();
-      
-      // If there's a file to upload, show skeleton and run in background
-      if (currentMediaFile) {
+
+      // If there are files to upload, show skeleton and run in background
+      const hasFilesToUpload = currentPendingMedia.length > 0;
+
+      if (hasFilesToUpload) {
         addUploadingDate(dateStr);
 
         // Failsafe: Remove uploading state after max 90 seconds no matter what
@@ -268,39 +307,48 @@ export function useContentModal() {
           }
         };
 
-        // Run upload in background
-        console.log('Starting upload for date:', dateStr);
+        // Run uploads in background
         const accessToken = session?.access_token;
-        uploadFile(currentMediaFile, {
-          clientId: selectedClientId,
-          folder: 'content',
-          accessToken,
-        })
-          .then(async (result) => {
-            console.log('Upload successful, URL:', result.url);
-            const finalMediaUrl = result.url;
 
-            // Validate we got a URL
-            if (!finalMediaUrl) {
-              throw new Error('No URL returned from upload');
-            }
+        // Upload files SEQUENTIALLY to avoid connection issues
+        // Concurrent uploads can hang due to browser connection limits or network issues
+        const uploadFilesSequentially = async () => {
+          const results: { url: string; key: string; mediaType: 'image' | 'video' }[] = [];
 
-            // Delete old file from R2 only after successful upload
-            if (oldMediaUrl && finalMediaUrl) {
+          for (const pending of currentPendingMedia) {
+            console.log('[Upload] Uploading file:', pending.file.name);
+            const result = await uploadFile(pending.file, {
+              clientId: selectedClientId,
+              folder: 'content',
+              accessToken,
+            });
+            results.push({
+              url: result.url,
+              key: result.key,
+              mediaType: pending.file.type.startsWith('video') ? 'video' as const : 'image' as const,
+            });
+            console.log('[Upload] File completed:', pending.file.name);
+          }
+
+          return results;
+        };
+
+        uploadFilesSequentially()
+          .then(async (uploadedMedia) => {
+            console.log('All uploads successful:', uploadedMedia.length, 'files');
+
+            // Delete removed media from R2
+            for (const mediaId of currentMediaToRemove) {
               try {
-                const urlParts = new URL(oldMediaUrl);
-                const key = urlParts.pathname.startsWith('/')
-                  ? urlParts.pathname.slice(1)
-                  : urlParts.pathname;
-                await deleteFile(key, accessToken);
-                console.log('Successfully deleted old file from R2:', key);
-              } catch (deleteError) {
-                console.error('Failed to delete old file from R2:', deleteError);
+                await services.contentMedia.removeMedia(mediaId, accessToken);
+              } catch (err) {
+                console.warn('Failed to remove media:', mediaId, err);
               }
             }
 
-            // Save content with uploaded URL
+            // Save content
             if (currentIsEditing && isContentItem(currentItem!)) {
+              // Update existing content
               updateContent.mutate(
                 {
                   id: currentItem.id,
@@ -309,11 +357,41 @@ export function useContentModal() {
                     status: currentStatus,
                     caption: currentCaption,
                     creativeDescription: currentCreativeDescription,
-                    mediaUrl: finalMediaUrl,
                   },
                 },
                 {
-                  onSuccess: () => cleanupUpload(true),
+                  onSuccess: async () => {
+                    // Reorder existing media if order changed
+                    if (currentExistingMedia.length > 0) {
+                      try {
+                        await services.contentMedia.reorderMedia(
+                          currentItem.id,
+                          currentExistingMedia.map(m => m.id)
+                        );
+                      } catch (err) {
+                        console.error('Failed to reorder media:', err);
+                      }
+                    }
+
+                    // Add new media to content_media table
+                    for (const media of uploadedMedia) {
+                      try {
+                        await services.contentMedia.addMedia(
+                          currentItem.id,
+                          media.url,
+                          media.mediaType,
+                          media.key
+                        );
+                      } catch (err) {
+                        console.error('Failed to add media to content:', err);
+                      }
+                    }
+                    // Invalidate cache AFTER media is added so it includes the media
+                    await queryClient.invalidateQueries({
+                      queryKey: queryKeys.content.all(currentItem.clientId),
+                    });
+                    cleanupUpload(true);
+                  },
                   onError: (error) => {
                     console.error('Failed to update content:', error);
                     cleanupUpload(false, CONTENT_MODAL.save.contentSaveFailed);
@@ -321,6 +399,7 @@ export function useContentModal() {
                 }
               );
             } else {
+              // Create new content
               createContent.mutate(
                 {
                   clientId: selectedClientId,
@@ -331,11 +410,28 @@ export function useContentModal() {
                   date: dateStr,
                   caption: currentCaption,
                   creativeDescription: currentCreativeDescription,
-                  mediaUrl: finalMediaUrl,
-                  mediaType: currentMediaFile.type.startsWith('video') ? 'video' : 'image',
                 },
                 {
-                  onSuccess: () => cleanupUpload(true),
+                  onSuccess: async (newContent) => {
+                    // Add media to content_media table
+                    for (const media of uploadedMedia) {
+                      try {
+                        await services.contentMedia.addMedia(
+                          newContent.id,
+                          media.url,
+                          media.mediaType,
+                          media.key
+                        );
+                      } catch (err) {
+                        console.error('Failed to add media to content:', err);
+                      }
+                    }
+                    // Invalidate cache AFTER media is added so it includes the media
+                    await queryClient.invalidateQueries({
+                      queryKey: queryKeys.content.all(newContent.clientId),
+                    });
+                    cleanupUpload(true);
+                  },
                   onError: (error) => {
                     console.error('Failed to create content:', error);
                     cleanupUpload(false, CONTENT_MODAL.save.contentCreateFailed);
@@ -345,11 +441,38 @@ export function useContentModal() {
             }
           })
           .catch((error) => {
-            console.error('Failed to upload file:', error);
-            cleanupUpload(false, error?.message || 'העלאת הקובץ נכשלה');
+            console.error('Failed to upload files:', error);
+            cleanupUpload(false, error?.message || 'העלאת הקבצים נכשלה');
           });
       } else {
-        // No file to upload, just save the content
+        // No files to upload, just save the content (update metadata, remove media, or reorder)
+        const accessToken = session?.access_token;
+
+        // Delete removed media from R2
+        const deleteRemovedMedia = async () => {
+          for (const mediaId of currentMediaToRemove) {
+            try {
+              await services.contentMedia.removeMedia(mediaId, accessToken);
+            } catch (err) {
+              console.warn('Failed to remove media:', mediaId, err);
+            }
+          }
+        };
+
+        // Reorder existing media
+        const reorderExistingMedia = async (contentId: string) => {
+          if (currentExistingMedia.length > 0) {
+            try {
+              await services.contentMedia.reorderMedia(
+                contentId,
+                currentExistingMedia.map(m => m.id)
+              );
+            } catch (err) {
+              console.warn('Failed to reorder media:', err);
+            }
+          }
+        };
+
         if (currentIsEditing && isContentItem(currentItem!)) {
           updateContent.mutate(
             {
@@ -359,11 +482,16 @@ export function useContentModal() {
                 status: currentStatus,
                 caption: currentCaption,
                 creativeDescription: currentCreativeDescription,
-                mediaUrl: currentItem.mediaUrl,
               },
             },
             {
-              onSuccess: () => {
+              onSuccess: async () => {
+                await deleteRemovedMedia();
+                await reorderExistingMedia(currentItem.id);
+                // Invalidate cache to reflect reordering
+                await queryClient.invalidateQueries({
+                  queryKey: queryKeys.content.all(currentItem.clientId),
+                });
                 toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.contentSaved });
               },
               onError: (error) => {
@@ -463,20 +591,22 @@ export function useContentModal() {
     mode,
     displayDate,
     fileInputRef,
-    
+
     // Content form state
     contentType,
     status,
     caption,
     creativeDescription,
-    mediaFile,
-    mediaPreview,
-    
+
+    // Multi-media state
+    existingMedia,
+    pendingMedia,
+
     // Event form state
     eventTitle,
     eventDescription,
     eventColor,
-    
+
     // Setters
     setMode,
     setContentType,
@@ -486,16 +616,19 @@ export function useContentModal() {
     setEventTitle,
     setEventDescription,
     setEventColor,
-    
+
     // Handlers
     handleClose,
     handleDelete,
     handleCopyCaption,
     handleApprove,
     handleReject,
-    handleFileClick,
     handleFileChange,
-    handleFileDrop,
+    handleAddFiles,
+    handleRemoveExisting,
+    handleRemovePending,
+    handleReorderExisting,
+    handleReorderPending,
     handleSave,
     formatDate,
   };
