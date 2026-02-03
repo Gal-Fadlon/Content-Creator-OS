@@ -80,8 +80,8 @@ const ContentForm: React.FC<ContentFormProps> = ({
 
   return (
     <>
-      {/* Type selector (admin only for new) */}
-      {isAdmin && !isEditing && (
+      {/* Type selector (admin only) */}
+      {isAdmin && (
         <ContentTypeSelector
           selectedType={contentType}
           onTypeChange={onContentTypeChange}
@@ -91,7 +91,7 @@ const ContentForm: React.FC<ContentFormProps> = ({
       {/* Status selector (admin only) */}
       {isAdmin && (
         <StatusSelector
-          value={isEditing && contentItem ? contentItem.status : status}
+          value={status}
           onChange={onStatusChange}
         />
       )}

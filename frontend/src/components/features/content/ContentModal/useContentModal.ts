@@ -287,6 +287,7 @@ export function useContentModal() {
                 {
                   id: currentItem.id,
                   data: {
+                    type: currentContentType,
                     status: currentStatus,
                     caption: currentCaption,
                     creativeDescription: currentCreativeDescription,
@@ -336,6 +337,7 @@ export function useContentModal() {
             {
               id: currentItem.id,
               data: {
+                type: currentContentType,
                 status: currentStatus,
                 caption: currentCaption,
                 creativeDescription: currentCreativeDescription,
