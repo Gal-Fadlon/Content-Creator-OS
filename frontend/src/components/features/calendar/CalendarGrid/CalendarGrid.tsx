@@ -15,6 +15,7 @@ interface CalendarGridProps {
   dragOverDate: string | null;
   isDropDisabled: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
   editingItemId: string | null;
   onDayClick: (date: Date) => void;
   onAddClick: (date: Date) => void;
@@ -37,6 +38,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   dragOverDate,
   isDropDisabled,
   isAdmin,
+  isLoading,
   editingItemId,
   onDayClick,
   onAddClick,
@@ -69,6 +71,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             dragOverDate={dragOverDate}
             isDropDisabled={isDropDisabled}
             isAdmin={isAdmin}
+            isLoading={isLoading}
             editingItemId={editingItemId}
             onDayClick={onDayClick}
             onAddClick={onAddClick}

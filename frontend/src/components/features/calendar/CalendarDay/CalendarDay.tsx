@@ -28,6 +28,7 @@ interface CalendarDayProps {
   dragOverDate: string | null;
   isDropDisabled: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
   editingItemId: string | null;
   onDayClick: (date: Date) => void;
   onAddClick: (date: Date) => void;
@@ -49,6 +50,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   draggedItemId,
   dragOverDate,
   isAdmin,
+  isLoading,
   editingItemId,
   onDayClick,
   onAddClick,
@@ -169,7 +171,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
       showEditOnHover={showEditOnHover}
       showAddOnHover={showAddOnHover}
     >
-      {isUploading && <StyledSkeletonOverlay />}
+      {(isUploading || (isLoading && day.isCurrentMonth)) && <StyledSkeletonOverlay />}
 
       {showAddOnHover && (
         <Tooltip title={CALENDAR.addItem} placement="top">

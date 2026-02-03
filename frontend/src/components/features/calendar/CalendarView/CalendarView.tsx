@@ -19,7 +19,7 @@ const CalendarView: React.FC = () => {
   const { isAdmin } = useAuth();
   const { openForDate, openForEdit } = useContentModal();
   const [selectedClientId] = useSelectedClientId();
-  const { calendarDays } = useCalendarData();
+  const { calendarDays, isLoading } = useCalendarData();
   const updateContent = useUpdateContent();
   
   // Inline image editing state
@@ -120,6 +120,7 @@ const CalendarView: React.FC = () => {
           dragOverDate={dragOverDate}
           isDropDisabled={isDropDisabled}
           isAdmin={isAdmin}
+          isLoading={isLoading}
           editingItemId={editingItemId}
           onDayClick={handleDayClick}
           onAddClick={handleAddClick}

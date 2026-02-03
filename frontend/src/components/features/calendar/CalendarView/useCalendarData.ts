@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 import { useSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import { useCalendarNav } from '@/context/providers/CalendarNavProvider';
 import { useFilters } from '@/context/providers/FilterProvider';
+import { useAuth } from '@/context/providers/AuthProvider';
 import { useContentItems } from '@/hooks/queries/useContent';
 import { useEvents } from '@/hooks/queries/useEvents';
 import { applyContentFilters, generateCalendarDates, isInMonth, formatDateISO } from './CalendarView.helper';
@@ -16,8 +17,19 @@ export function useCalendarData() {
   const [selectedClientId] = useSelectedClientId();
   const { filters } = useFilters();
   const { currentMonth } = useCalendarNav();
-  const { data: contentItems = [] } = useContentItems(selectedClientId);
-  const { data: events = [] } = useEvents(selectedClientId);
+  const { isLoading: isAuthLoading } = useAuth();
+  const { data: contentItems = [], isLoading: isContentLoading, isPlaceholderData: isContentPlaceholder } = useContentItems(selectedClientId);
+  const { data: events = [], isLoading: isEventsLoading, isPlaceholderData: isEventsPlaceholder } = useEvents(selectedClientId);
+
+  // Show loading when:
+  // 1. Auth is still initializing (hard refresh)
+  // 2. No client selected yet (waiting for client list)
+  // 3. Fetching fresh data without cached data
+  const isLoading =
+    isAuthLoading ||
+    !selectedClientId ||
+    (isContentLoading && !isContentPlaceholder) ||
+    (isEventsLoading && !isEventsPlaceholder);
 
   // Apply filters to content (only calendar source)
   const filteredContent = useMemo(() => {
@@ -59,5 +71,6 @@ export function useCalendarData() {
     pendingCount,
     allContent: filteredContent,
     allEvents: events,
+    isLoading,
   };
 }
