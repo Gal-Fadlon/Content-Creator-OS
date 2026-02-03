@@ -31,7 +31,7 @@ interface CalendarNavProviderProps {
 
 export function CalendarNavProvider({
   children,
-  defaultMonth = new Date(2026, 0, 1), // January 2026 for demo
+  defaultMonth = new Date(),
 }: CalendarNavProviderProps) {
   const [currentMonth, setCurrentMonthState] = useState(() => startOfMonth(defaultMonth));
 

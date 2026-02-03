@@ -144,15 +144,15 @@ export const contentService: ContentService = {
     // Get the content item first to retrieve media URLs
     const { data: contentData } = await supabase
       .from('content')
-      .select('media_url, cover_image_url')
+      .select('media_url, cover_image_url, thumbnail_url')
       .eq('id', id)
       .single();
 
-    const content = contentData as { media_url: string | null; cover_image_url: string | null } | null;
+    const content = contentData as { media_url: string | null; cover_image_url: string | null; thumbnail_url: string | null } | null;
 
     // Delete files from R2 (don't fail if file deletion fails)
     if (content) {
-      const urlsToDelete = [content.media_url, content.cover_image_url].filter(Boolean) as string[];
+      const urlsToDelete = [content.media_url, content.cover_image_url, content.thumbnail_url].filter(Boolean) as string[];
 
       for (const url of urlsToDelete) {
         try {
@@ -165,6 +165,26 @@ export const contentService: ContentService = {
           console.warn('Failed to delete file from R2:', url, err);
         }
       }
+    }
+
+    // Delete related notifications (don't fail if this fails)
+    try {
+      await supabase
+        .from('notifications')
+        .delete()
+        .eq('content_id', id);
+    } catch (err) {
+      console.warn('Failed to delete related notifications:', err);
+    }
+
+    // Delete related comments (don't fail if this fails)
+    try {
+      await supabase
+        .from('content_comments')
+        .delete()
+        .eq('content_id', id);
+    } catch (err) {
+      console.warn('Failed to delete related comments:', err);
     }
 
     // Delete the database record

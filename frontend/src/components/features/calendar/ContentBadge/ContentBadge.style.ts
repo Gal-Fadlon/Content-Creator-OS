@@ -78,6 +78,13 @@ export const StyledHoverContent = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
+export const StyledHoverImage = styled('img')(({ theme }) => ({
+  width: '100%',
+  maxHeight: 140,
+  objectFit: 'cover',
+  borderRadius: theme.spacing(0.5),
+}));
+
 export const StyledTypeRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',

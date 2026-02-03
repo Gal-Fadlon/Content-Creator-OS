@@ -8,6 +8,7 @@ import {
   StyledBadgeContainer,
   StyledHoverCard,
   StyledHoverContent,
+  StyledHoverImage,
   StyledTypeRow,
   StyledTypeLabel,
   StyledDescriptionSection,
@@ -64,15 +65,17 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({
     };
   }, []);
 
+  const imageUrl = item.coverImageUrl || item.thumbnailUrl || item.mediaUrl;
+
   const handleMouseEnter = useCallback((event: React.MouseEvent<HTMLElement>) => {
-    if (item.creativeDescription || item.caption) {
+    if (item.creativeDescription || item.caption || imageUrl) {
       const target = event.currentTarget;
       // Add delay before showing popover to allow drag to start
       hoverTimeoutRef.current = window.setTimeout(() => {
         setAnchorEl(target);
       }, HOVER_DELAY);
     }
-  }, [item.creativeDescription, item.caption]);
+  }, [item.creativeDescription, item.caption, imageUrl]);
 
   const handleMouseLeave = useCallback(() => {
     if (hoverTimeoutRef.current) {
@@ -140,6 +143,9 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({
         sx={{ pointerEvents: 'none' }}
       >
         <StyledHoverContent>
+          {imageUrl && (
+            <StyledHoverImage src={imageUrl} alt="" />
+          )}
           <StyledTypeRow>
             {getTypeIcon(item.type)}
             <StyledTypeLabel>{getTypeLabel(item.type)}</StyledTypeLabel>

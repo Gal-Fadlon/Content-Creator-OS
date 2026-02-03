@@ -77,6 +77,13 @@ const CalendarView: React.FC = () => {
     [openForEdit]
   );
 
+  const handleAddClick = useCallback(
+    (date: Date) => {
+      openForDate(date);
+    },
+    [openForDate]
+  );
+
   // Inline image editing handlers
   const handleEditImageClick = useCallback((itemId: string) => {
     setEditingItemId(itemId);
@@ -115,6 +122,7 @@ const CalendarView: React.FC = () => {
           isAdmin={isAdmin}
           editingItemId={editingItemId}
           onDayClick={handleDayClick}
+          onAddClick={handleAddClick}
           onItemClick={handleItemClick}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}

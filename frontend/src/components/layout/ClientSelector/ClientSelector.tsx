@@ -13,6 +13,7 @@ import {
   StyledClientList,
   StyledClientItem,
   StyledClientAvatar,
+  StyledTriggerLogo,
   StyledClientInfo,
   StyledClientName,
   StyledClientMeta,
@@ -38,11 +39,16 @@ const ClientSelector: React.FC = () => {
     <>
       <StyledTriggerContainer>
         <StyledTriggerButton
-          startIcon={<GroupIcon />}
+          startIcon={!selectedClient?.avatarUrl ? <GroupIcon /> : undefined}
           onClick={() => setIsOpen(true)}
           disabled={isLoading}
+          sx={selectedClient?.avatarUrl ? { px: 1 } : undefined}
         >
-          {selectedClient ? selectedClient.name : CLIENT_SELECTOR.selectClient}
+          {selectedClient?.avatarUrl ? (
+            <StyledTriggerLogo src={selectedClient.avatarUrl} alt={selectedClient.name} />
+          ) : (
+            selectedClient ? selectedClient.name : CLIENT_SELECTOR.selectClient
+          )}
         </StyledTriggerButton>
       </StyledTriggerContainer>
 

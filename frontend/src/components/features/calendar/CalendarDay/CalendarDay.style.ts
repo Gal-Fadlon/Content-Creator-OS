@@ -35,8 +35,8 @@ interface StyledDayCellProps {
 
 export const StyledDayCell = styled(ButtonBase, {
   shouldForwardProp: (prop) =>
-    !['isCurrentMonth', 'isToday', 'isDragOver', 'hasThumbnail', 'showEditOnHover'].includes(prop as string),
-})<StyledDayCellProps>(({ theme, isCurrentMonth, isDragOver, showEditOnHover }) => ({
+    !['isCurrentMonth', 'isToday', 'isDragOver', 'hasThumbnail', 'showEditOnHover', 'showAddOnHover'].includes(prop as string),
+})<StyledDayCellProps & { showAddOnHover?: boolean }>(({ theme, isCurrentMonth, isDragOver, showEditOnHover, showAddOnHover }) => ({
   minHeight: 110,
   padding: theme.spacing(1),
   borderRadius: theme.spacing(1.5),
@@ -58,6 +58,12 @@ export const StyledDayCell = styled(ButtonBase, {
     // Show edit button on hover when admin with thumbnail
     ...(showEditOnHover && {
       '& .edit-button': {
+        opacity: 1,
+      },
+    }),
+    // Show add button on hover when admin
+    ...(showAddOnHover && {
+      '& .add-button': {
         opacity: 1,
       },
     }),
@@ -97,10 +103,8 @@ export const StyledBackgroundImage = styled('img', {
   transition: 'transform 0.2s ease-out',
 }));
 
-export const StyledEditButton = styled(Box)(({ theme }) => ({
+const BaseActionButton = styled(Box)(({ theme }) => ({
   position: 'absolute',
-  bottom: theme.spacing(0.5),
-  insetInlineEnd: theme.spacing(0.5),
   width: 22,
   height: 22,
   borderRadius: '50%',
@@ -118,6 +122,16 @@ export const StyledEditButton = styled(Box)(({ theme }) => ({
     transform: 'scale(1.1)',
     backgroundColor: theme.palette.common.white,
   },
+}));
+
+export const StyledEditButton = styled(BaseActionButton)(({ theme }) => ({
+  bottom: theme.spacing(0.5),
+  insetInlineEnd: theme.spacing(0.5),
+}));
+
+export const StyledAddButton = styled(BaseActionButton)(({ theme }) => ({
+  top: theme.spacing(0.5),
+  insetInlineEnd: theme.spacing(0.5),
 }));
 
 export const StyledEditorContainer = styled(Box)({
@@ -169,9 +183,14 @@ export const StyledDayNumber = styled(Typography, {
   }),
 }));
 
-export const StyledContentBadgesContainer = styled(Box)(({ theme }) => ({
+interface StyledContentBadgesContainerProps {
+  hasEvents?: boolean;
+}
+
+export const StyledContentBadgesContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'hasEvents',
+})<StyledContentBadgesContainerProps>(({ theme, hasEvents }) => ({
   position: 'absolute',
-  bottom: theme.spacing(0.5),
   insetInlineStart: theme.spacing(0.5),
   display: 'flex',
   flexWrap: 'wrap',
@@ -179,6 +198,11 @@ export const StyledContentBadgesContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(0.5),
   maxWidth: '70%',
   zIndex: 2,
+  ...(hasEvents ? {
+    top: theme.spacing(7.5),
+  } : {
+    bottom: theme.spacing(0.5),
+  }),
 }));
 
 export const StyledEventsContainer = styled(Box)(({ theme }) => ({

@@ -17,6 +17,7 @@ interface CalendarGridProps {
   isAdmin: boolean;
   editingItemId: string | null;
   onDayClick: (date: Date) => void;
+  onAddClick: (date: Date) => void;
   onItemClick: (itemId: string, e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent, itemId: string, itemType: 'content' | 'event') => void;
   onDragOver: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
@@ -38,6 +39,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   isAdmin,
   editingItemId,
   onDayClick,
+  onAddClick,
   onItemClick,
   onDragStart,
   onDragOver,
@@ -69,6 +71,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             isAdmin={isAdmin}
             editingItemId={editingItemId}
             onDayClick={onDayClick}
+            onAddClick={onAddClick}
             onItemClick={onItemClick}
             onDragStart={onDragStart}
             onDragOver={onDragOver}

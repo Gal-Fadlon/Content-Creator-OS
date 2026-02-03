@@ -14,7 +14,7 @@ export const StyledEventChip = styled(Chip, {
   fontFamily: '"Heebo", sans-serif',
   cursor: 'grab',
   transition: theme.transitions.create(['transform', 'opacity']),
-  maxWidth: '100%',
+  maxWidth: 140,
   opacity: isDragging ? 0.5 : 1,
 
   '&:hover': {

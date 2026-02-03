@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import { Crop } from 'lucide-react';
+import { Crop, Plus } from 'lucide-react';
+import { Tooltip } from '@mui/material';
 import ContentBadge from '../ContentBadge/ContentBadge';
 import EventBadge from '../EventBadge/EventBadge';
 import InlineImageEditor from '@/components/features/grid/InlineImageEditor/InlineImageEditor';
@@ -11,6 +12,7 @@ import {
   StyledBackgroundImageContainer,
   StyledBackgroundImage,
   StyledEditButton,
+  StyledAddButton,
   StyledEditorContainer,
   StyledSkeletonOverlay,
   StyledDayContent,
@@ -28,6 +30,7 @@ interface CalendarDayProps {
   isAdmin: boolean;
   editingItemId: string | null;
   onDayClick: (date: Date) => void;
+  onAddClick: (date: Date) => void;
   onItemClick: (itemId: string, e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent, itemId: string, itemType: 'content' | 'event') => void;
   onDragOver: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
@@ -48,6 +51,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   isAdmin,
   editingItemId,
   onDayClick,
+  onAddClick,
   onItemClick,
   onDragStart,
   onDragOver,
@@ -143,7 +147,14 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
     }
   }, [contentWithMedia, onZoomChange, onOffsetChange, onEditImageDone]);
 
+  const handleAddClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddClick(day.date);
+  }, [day.date, onAddClick]);
+
   const showEditOnHover = isAdmin && hasThumbnail && !isEditingThisDay;
+  const hasItems = day.content.length > 0 || day.events.length > 0;
+  const showAddOnHover = isAdmin && day.isCurrentMonth && !isEditingThisDay && hasItems;
 
   return (
     <StyledDayCell
@@ -156,9 +167,18 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
       isDragOver={isDragOver}
       hasThumbnail={hasThumbnail}
       showEditOnHover={showEditOnHover}
+      showAddOnHover={showAddOnHover}
     >
       {isUploading && <StyledSkeletonOverlay />}
-      
+
+      {showAddOnHover && (
+        <Tooltip title={CALENDAR.addItem} placement="top">
+          <StyledAddButton className="add-button" onClick={handleAddClick}>
+            <Plus size={14} />
+          </StyledAddButton>
+        </Tooltip>
+      )}
+
       {hasThumbnail && (
         <>
           {isEditingThisDay ? (
@@ -201,7 +221,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
       </StyledDayContent>
 
       {day.content.length > 0 && (
-        <StyledContentBadgesContainer>
+        <StyledContentBadgesContainer hasEvents={day.events.length > 0}>
           {day.content.slice(0, 3).map((item) => (
             <ContentBadge
               key={item.id}

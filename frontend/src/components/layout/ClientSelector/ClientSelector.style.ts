@@ -51,9 +51,19 @@ export const StyledClientItem = styled(ButtonBase, {
   },
 }));
 
-export const StyledClientAvatar = styled(Avatar)({
+export const StyledClientAvatar = styled(Avatar)(({ theme }) => ({
   width: 40,
   height: 40,
+  backgroundColor: theme.palette.grey[100],
+  '& img': {
+    objectFit: 'contain',
+    padding: 4,
+  },
+}));
+
+export const StyledTriggerLogo = styled('img')({
+  height: 26,
+  objectFit: 'contain',
 });
 
 export const StyledClientInfo = styled(Box)({

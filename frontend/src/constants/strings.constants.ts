@@ -285,6 +285,7 @@ export const UPLOAD_STICKER = {
 
 export const CALENDAR = {
   moreEvents: (count: number) => `+${count} אירועים`,
+  addItem: 'הוסף פריט',
 } as const;
 
 // ============================================================================
