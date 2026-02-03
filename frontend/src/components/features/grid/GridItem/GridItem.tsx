@@ -4,7 +4,7 @@ import GridItemMedia from '../GridItemMedia/GridItemMedia';
 import GridItemOverlay from '../GridItemOverlay/GridItemOverlay';
 import GridItemEditControls from '../GridItemEditControls/GridItemEditControls';
 import ContentTypeBadge from '../ContentTypeBadge/ContentTypeBadge';
-import type { ContentItem } from '@/types/content';
+import type { ContentItem, ContentType } from '@/types/content';
 import { getFirstMediaUrl } from '@/helpers/media.helper';
 import { GRID_ITEM } from '@/constants/strings.constants';
 import {
@@ -33,6 +33,7 @@ interface GridItemProps {
   onEditCancel: () => void;
   onZoomChange: (zoom: number) => void;
   onOffsetChange: (offsetX: number, offsetY: number) => void;
+  onTypeChange: (type: ContentType) => void;
 }
 
 const GridItem: React.FC<GridItemProps> = ({
@@ -54,6 +55,7 @@ const GridItem: React.FC<GridItemProps> = ({
   onEditCancel,
   onZoomChange,
   onOffsetChange,
+  onTypeChange,
 }) => {
   const zoom = item.gridZoom ?? 1;
   const offsetX = item.gridOffsetX ?? 0;
@@ -117,8 +119,14 @@ const GridItem: React.FC<GridItemProps> = ({
         <StyledCoverBadge label={GRID_ITEM.coverBadge} size="small" />
       )}
 
-      {/* Content type badge */}
-      {!isEditing && !showLoadingOverlay && <ContentTypeBadge type={item.type} />}
+      {/* Content type badge - clickable for admin */}
+      {!isEditing && !showLoadingOverlay && (
+        <ContentTypeBadge
+          type={item.type}
+          editable={isAdmin}
+          onTypeChange={onTypeChange}
+        />
+      )}
     </StyledGridItemContainer>
   );
 };

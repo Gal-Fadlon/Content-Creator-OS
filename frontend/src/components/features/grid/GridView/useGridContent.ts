@@ -1,9 +1,11 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useContentItems, useCreateContent, useUpdateContent, useDeleteContent, getStoredGridCount } from '@/hooks/queries/useContent';
 import { useSelectedClientId, getLastSelectedClientId } from '@/context/providers/SelectedClientProvider';
 import { useAuth } from '@/context/providers/AuthProvider';
 import { uploadFile } from '@/services/storage/uploadService';
 import { services } from '@/services/services';
+import { queryKeys } from '@/services/queryKeys';
 import { useToast } from '@/context/SnackbarContext';
 import type { ContentType, ContentItem } from '@/types/content';
 
@@ -22,6 +24,7 @@ export function useGridContent() {
   const { data: contentItems = [], isLoading: isContentLoading, isPlaceholderData } = useContentItems(selectedClientId);
   const { isAdmin, isLoading: isAuthLoading, isAuthenticated, session } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const createContent = useCreateContent();
   const updateContent = useUpdateContent();
   const deleteContent = useDeleteContent();
@@ -119,7 +122,11 @@ export function useGridContent() {
   const handleOffsetChange = (itemId: string, offsetX: number, offsetY: number) => {
     updateContent.mutate({ id: itemId, data: { gridOffsetX: offsetX, gridOffsetY: offsetY }, clientId: selectedClientId || undefined });
   };
-  
+
+  const handleTypeChange = (itemId: string, type: ContentType) => {
+    updateContent.mutate({ id: itemId, data: { type }, clientId: selectedClientId || undefined });
+  };
+
   const handleAddNewImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedClientId) return;
@@ -148,10 +155,7 @@ export function useGridContent() {
     try {
       const result = await uploadFile(file, { clientId, folder: 'content', accessToken });
 
-      // Remove from pending uploads
-      setPendingUploads(prev => prev.filter(p => p.id !== tempId));
-
-      // Create the real content item
+      // Create the real content item (keep pending upload visible until media is attached)
       createContent.mutate({
         clientId,
         type,
@@ -174,12 +178,20 @@ export function useGridContent() {
               'image',
               result.key
             );
+            // Invalidate cache AFTER media is attached so it includes the media
+            await queryClient.invalidateQueries({
+              queryKey: queryKeys.content.all(clientId),
+            });
           } catch (err) {
             console.error('Failed to add media to content:', err);
           }
+          // Only remove pending upload AFTER media is attached
+          setPendingUploads(prev => prev.filter(p => p.id !== tempId));
           toast({ title: 'הצלחה', description: 'התמונה הועלתה בהצלחה' });
         },
         onError: (error) => {
+          // Remove pending upload on error
+          setPendingUploads(prev => prev.filter(p => p.id !== tempId));
           console.error('Failed to create content:', error);
           toast({ title: 'שגיאה', description: 'יצירת התוכן נכשלה', variant: 'destructive' });
         },
@@ -190,7 +202,7 @@ export function useGridContent() {
       console.error('Failed to upload image:', error);
       toast({ title: 'שגיאה', description: 'העלאת התמונה נכשלה', variant: 'destructive' });
     }
-  }, [createContent, realContent.length, toast]);
+  }, [createContent, realContent.length, toast, queryClient]);
 
   const handleConfirmAddImage = (type: ContentType, zoom = 1, offsetX = 0, offsetY = 0) => {
     if (!newImageFile || !selectedClientId || !newImagePreview) return;
@@ -258,6 +270,51 @@ export function useGridContent() {
     );
   };
 
+  // Handle multiple files dropped from file system
+  const handleFilesDrop = useCallback((files: File[]) => {
+    if (!isAdmin || !selectedClientId) return;
+
+    // Check if auth is ready
+    if (isAuthLoading || !isAuthenticated) {
+      toast({ title: 'שגיאה', description: 'יש להמתין לטעינת המערכת', variant: 'destructive' });
+      return;
+    }
+
+    // Filter for image files only
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+      toast({ title: 'שגיאה', description: 'יש לגרור קבצי תמונה בלבד', variant: 'destructive' });
+      return;
+    }
+
+    const clientId = selectedClientId;
+    const accessToken = session?.access_token;
+
+    // Process each image file
+    imageFiles.forEach((file, index) => {
+      const tempId = `pending-${Date.now()}-${index}`;
+      const localPreviewUrl = window.URL.createObjectURL(file);
+
+      // Add to pending uploads immediately (optimistic UI)
+      setPendingUploads(prev => [...prev, {
+        id: tempId,
+        localPreviewUrl,
+        type: 'post', // Default type for drag & drop
+        gridZoom: 1,
+        gridOffsetX: 0,
+        gridOffsetY: 0,
+      }]);
+
+      // Fire upload in background
+      void uploadInBackground(tempId, file, clientId, 'post', 1, 0, 0, accessToken);
+    });
+
+    toast({
+      title: 'מעלה תמונות...',
+      description: `${imageFiles.length} תמונות בהעלאה`
+    });
+  }, [isAdmin, selectedClientId, isAuthLoading, isAuthenticated, session?.access_token, uploadInBackground, toast]);
+
   // Skeleton count for loading state (from localStorage on hard refresh)
   const skeletonCount = useMemo(() => {
     // Use current client ID, or fall back to last selected (for hard refresh)
@@ -293,10 +350,12 @@ export function useGridContent() {
     handleFileChange,
     handleZoomChange,
     handleOffsetChange,
+    handleTypeChange,
     handleAddNewImage,
     handleConfirmAddImage,
     handleCancelAdd,
     handleAddButtonClick,
     handleDeleteItem,
+    handleFilesDrop,
   };
 }

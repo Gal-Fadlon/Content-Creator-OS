@@ -330,6 +330,7 @@ export const CLIENT_EVENT_REQUEST = {
 export const GRID_VIEW = {
   helpText: '',
   emptyMessage: 'אין תוכן מאושר להצגה',
+  dropZoneMessage: 'שחרר תמונות כאן להוספה לגריד',
 } as const;
 
 // ============================================================================

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import GridItem from '../GridItem/GridItem';
 import GridItemSkeleton from '../GridItemSkeleton/GridItemSkeleton';
 import AddImageButton from '../AddImageButton/AddImageButton';
@@ -11,6 +11,7 @@ import {
   StyledHiddenInput,
   StyledGrid,
   StyledEmptyMessage,
+  StyledDropZoneOverlay,
 } from './GridView.style';
 
 const InteractiveGridView: React.FC = () => {
@@ -29,11 +30,13 @@ const InteractiveGridView: React.FC = () => {
     handleFileChange,
     handleZoomChange,
     handleOffsetChange,
+    handleTypeChange,
     handleAddNewImage,
     handleConfirmAddImage,
     handleCancelAdd,
     handleAddButtonClick,
     handleDeleteItem,
+    handleFilesDrop,
   } = useGridContent();
 
   const {
@@ -49,6 +52,10 @@ const InteractiveGridView: React.FC = () => {
   // Inline editing state
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
+  // File drop zone state
+  const [isFileDragOver, setIsFileDragOver] = useState(false);
+  const dragCounter = useRef(0);
+
   const handleEditClick = useCallback((itemId: string) => {
     setEditingItemId(itemId);
   }, []);
@@ -62,8 +69,60 @@ const InteractiveGridView: React.FC = () => {
     setEditingItemId(null);
   }, []);
 
+  // File drop handlers (for dropping files from OS)
+  const handleFileDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    // Only show overlay if dragging files (not internal grid items)
+    if (e.dataTransfer.types.includes('Files') && isAdmin) {
+      setIsFileDragOver(true);
+    }
+  }, [isAdmin]);
+
+  const handleFileDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsFileDragOver(false);
+    }
+  }, []);
+
+  const handleFileDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleFileDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current = 0;
+    setIsFileDragOver(false);
+
+    // Only process if it's a file drop (not internal drag)
+    if (!e.dataTransfer.types.includes('Files')) return;
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFilesDrop(files);
+    }
+  }, [handleFilesDrop]);
+
   return (
-    <StyledGridViewContainer>
+    <StyledGridViewContainer
+      onDragEnter={handleFileDragEnter}
+      onDragLeave={handleFileDragLeave}
+      onDragOver={handleFileDragOver}
+      onDrop={handleFileDrop}
+    >
+      {/* Drop zone overlay */}
+      {isFileDragOver && (
+        <StyledDropZoneOverlay>
+          {GRID_VIEW.dropZoneMessage}
+        </StyledDropZoneOverlay>
+      )}
+
       {/* Hidden file inputs */}
       <StyledHiddenInput
         ref={fileInputRef}
@@ -110,6 +169,7 @@ const InteractiveGridView: React.FC = () => {
             onEditCancel={handleEditCancel}
             onZoomChange={(zoom) => handleZoomChange(item.id, zoom)}
             onOffsetChange={(x, y) => handleOffsetChange(item.id, x, y)}
+            onTypeChange={(type) => handleTypeChange(item.id, type)}
           />
         ))}
 

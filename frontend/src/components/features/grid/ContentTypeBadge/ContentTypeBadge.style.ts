@@ -1,13 +1,15 @@
 import { styled } from '@mui/material/styles';
-import { Chip } from '@mui/material';
+import { Chip, MenuItem } from '@mui/material';
+import type { ContentType } from '@/types/content';
 
 interface StyledContentTypeBadgeProps {
-  contentType?: 'reel' | 'story' | 'post' | 'carousel';
+  contentType?: ContentType;
+  clickable?: boolean;
 }
 
 export const StyledContentTypeBadge = styled(Chip, {
-  shouldForwardProp: (prop) => prop !== 'contentType',
-})<StyledContentTypeBadgeProps>(({ theme, contentType }) => ({
+  shouldForwardProp: (prop) => !['contentType', 'clickable'].includes(prop as string),
+})<StyledContentTypeBadgeProps>(({ theme, contentType, clickable }) => ({
   position: 'absolute',
   bottom: theme.spacing(0.5),
   insetInlineStart: theme.spacing(0.5),
@@ -22,6 +24,17 @@ export const StyledContentTypeBadge = styled(Chip, {
   '& .MuiChip-label': {
     padding: theme.spacing(0.25, 0.5),
   },
+
+  ...(clickable && {
+    cursor: 'pointer',
+    '&:hover': {
+      filter: 'brightness(1.1)',
+      transform: 'scale(1.05)',
+    },
+    transition: theme.transitions.create(['filter', 'transform'], {
+      duration: theme.transitions.duration.short,
+    }),
+  }),
 
   ...(contentType === 'reel' && {
     backgroundColor: theme.palette.info.main,
@@ -42,4 +55,45 @@ export const StyledContentTypeBadge = styled(Chip, {
     backgroundColor: theme.palette.success.main,
     color: theme.palette.common.white,
   }),
+}));
+
+interface StyledMenuItemProps {
+  contentType?: ContentType;
+}
+
+export const StyledMenuItem = styled(MenuItem, {
+  shouldForwardProp: (prop) => prop !== 'contentType',
+})<StyledMenuItemProps>(({ theme, contentType }) => ({
+  fontFamily: '"Heebo", sans-serif',
+  fontSize: '0.75rem',
+  fontWeight: 500,
+  minHeight: 32,
+  paddingRight: theme.spacing(2),
+  paddingLeft: theme.spacing(2),
+
+  '&::before': {
+    content: '""',
+    display: 'inline-block',
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    marginLeft: theme.spacing(1),
+
+    ...(contentType === 'post' && {
+      backgroundColor: theme.palette.primary.main,
+    }),
+    ...(contentType === 'reel' && {
+      backgroundColor: theme.palette.info.main,
+    }),
+    ...(contentType === 'carousel' && {
+      backgroundColor: theme.palette.success.main,
+    }),
+    ...(contentType === 'story' && {
+      backgroundColor: theme.palette.secondary.main,
+    }),
+  },
+
+  '&.Mui-selected': {
+    backgroundColor: theme.palette.action.selected,
+  },
 }));
