@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { Crop, Plus } from 'lucide-react';
-import { Tooltip } from '@mui/material';
+import { Tooltip, CircularProgress } from '@mui/material';
 import ContentBadge from '../ContentBadge/ContentBadge';
 import EventBadge from '../EventBadge/EventBadge';
 import InlineImageEditor from '@/components/features/grid/InlineImageEditor/InlineImageEditor';
@@ -15,6 +15,7 @@ import {
   StyledAddButton,
   StyledEditorContainer,
   StyledSkeletonOverlay,
+  StyledLoaderOverlay,
   StyledDayContent,
   StyledDayNumber,
   StyledContentBadgesContainer,
@@ -66,10 +67,11 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   onZoomChange,
   onOffsetChange,
 }) => {
-  const { isDateUploading } = useUploadingState();
-  
+  const { isDateUploading, isDateDeleting } = useUploadingState();
+
   const dateStr = day.date.toISOString().split('T')[0];
   const isUploading = isDateUploading(dateStr);
+  const isDeleting = isDateDeleting(dateStr);
   
   const contentWithMedia = useMemo(
     () =>
@@ -172,6 +174,12 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
       showAddOnHover={showAddOnHover}
     >
       {(isUploading || (isLoading && day.isCurrentMonth)) && <StyledSkeletonOverlay />}
+
+      {isDeleting && (
+        <StyledLoaderOverlay>
+          <CircularProgress size={24} sx={{ color: 'white' }} />
+        </StyledLoaderOverlay>
+      )}
 
       {showAddOnHover && (
         <Tooltip title={CALENDAR.addItem} placement="top">

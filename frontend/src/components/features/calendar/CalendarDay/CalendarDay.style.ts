@@ -25,6 +25,17 @@ export const StyledSkeletonOverlay = styled(Box)(({ theme }) => ({
   animation: `${shimmer} 1.5s infinite ease-in-out`,
 }));
 
+export const StyledLoaderOverlay = styled(Box)({
+  position: 'absolute',
+  inset: 0,
+  zIndex: 5,
+  borderRadius: 'inherit',
+  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
 interface StyledDayCellProps {
   isCurrentMonth?: boolean;
   isToday?: boolean;

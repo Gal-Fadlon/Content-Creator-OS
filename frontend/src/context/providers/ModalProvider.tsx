@@ -13,6 +13,7 @@ interface ContentModalState {
 
 interface UploadingState {
   uploadingDates: string[];
+  deletingDates: string[];
 }
 
 interface EventRequestModalState {
@@ -37,6 +38,9 @@ interface ModalActions {
   // Uploading state
   addUploadingDate: (dateStr: string) => void;
   removeUploadingDate: (dateStr: string) => void;
+  // Deleting state
+  addDeletingDate: (dateStr: string) => void;
+  removeDeletingDate: (dateStr: string) => void;
 }
 
 type ModalContextValue = ModalState & ModalActions;
@@ -60,6 +64,7 @@ const initialEventRequestModal: EventRequestModalState = {
 
 const initialUploading: UploadingState = {
   uploadingDates: [],
+  deletingDates: [],
 };
 
 export function ModalProvider({ children }: ModalProviderProps) {
@@ -103,13 +108,30 @@ export function ModalProvider({ children }: ModalProviderProps) {
   // Uploading state actions
   const addUploadingDate = useCallback((dateStr: string) => {
     setUploading(prev => ({
+      ...prev,
       uploadingDates: [...prev.uploadingDates, dateStr],
     }));
   }, []);
 
   const removeUploadingDate = useCallback((dateStr: string) => {
     setUploading(prev => ({
+      ...prev,
       uploadingDates: prev.uploadingDates.filter(d => d !== dateStr),
+    }));
+  }, []);
+
+  // Deleting state actions
+  const addDeletingDate = useCallback((dateStr: string) => {
+    setUploading(prev => ({
+      ...prev,
+      deletingDates: [...prev.deletingDates, dateStr],
+    }));
+  }, []);
+
+  const removeDeletingDate = useCallback((dateStr: string) => {
+    setUploading(prev => ({
+      ...prev,
+      deletingDates: prev.deletingDates.filter(d => d !== dateStr),
     }));
   }, []);
 
@@ -124,6 +146,8 @@ export function ModalProvider({ children }: ModalProviderProps) {
     closeEventRequestModal,
     addUploadingDate,
     removeUploadingDate,
+    addDeletingDate,
+    removeDeletingDate,
   }), [
     contentModal,
     eventRequestModal,
@@ -135,6 +159,8 @@ export function ModalProvider({ children }: ModalProviderProps) {
     closeEventRequestModal,
     addUploadingDate,
     removeUploadingDate,
+    addDeletingDate,
+    removeDeletingDate,
   ]);
 
   return (
@@ -203,12 +229,17 @@ export function useUploadingState() {
     uploading,
     addUploadingDate,
     removeUploadingDate,
+    addDeletingDate,
+    removeDeletingDate,
   } = useModals();
 
   return {
     ...uploading,
     addUploadingDate,
     removeUploadingDate,
+    addDeletingDate,
+    removeDeletingDate,
     isDateUploading: (dateStr: string) => uploading.uploadingDates.includes(dateStr),
+    isDateDeleting: (dateStr: string) => uploading.deletingDates.includes(dateStr),
   };
 }

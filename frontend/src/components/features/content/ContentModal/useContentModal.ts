@@ -14,7 +14,7 @@ export function useContentModal() {
   const { isOpen, selectedDate, editItemId, close } = useContentModalContext();
   const { isAdmin, isLoading: isAuthLoading, isAuthenticated, session } = useAuth();
   const [selectedClientId] = useSelectedClientId();
-  const { addUploadingDate, removeUploadingDate } = useUploadingState();
+  const { addUploadingDate, removeUploadingDate, addDeletingDate, removeDeletingDate } = useUploadingState();
   const { data: contentItems = [] } = useContentItems(selectedClientId);
   const { data: events = [] } = useEvents(selectedClientId);
   
@@ -98,22 +98,38 @@ export function useContentModal() {
   
   const handleDelete = () => {
     if (!item || !selectedClientId) return;
-    
-    // Optimistic UI: Close modal immediately
+
+    // Get the date for the skeleton overlay
     const isContent = isContentItem(item);
     const itemId = item.id;
-    
+    const itemDate = isContent ? item.date : (item as { date: string }).date;
+
+    // Add deleting state for the calendar day
+    if (itemDate) {
+      addDeletingDate(itemDate);
+    }
+
+    // Close modal immediately
     handleClose();
-    
-    // Run deletion in background, show toast only when complete
+
+    // Helper to cleanup deleting state
+    const cleanup = () => {
+      if (itemDate) {
+        removeDeletingDate(itemDate);
+      }
+    };
+
+    // Run deletion in background
     if (isContent) {
       deleteContent.mutate(
         { id: itemId, clientId: selectedClientId, accessToken: session?.access_token },
         {
           onSuccess: () => {
+            cleanup();
             toast({ title: CONTENT_MODAL.delete.success, description: CONTENT_MODAL.delete.contentDeleted });
           },
           onError: (error) => {
+            cleanup();
             console.error('Failed to delete content:', error);
             toast({ title: COMMON.error, description: 'המחיקה נכשלה', variant: 'destructive' });
           },
@@ -124,9 +140,11 @@ export function useContentModal() {
         { id: itemId, clientId: selectedClientId },
         {
           onSuccess: () => {
+            cleanup();
             toast({ title: CONTENT_MODAL.delete.success, description: CONTENT_MODAL.delete.eventDeleted });
           },
           onError: (error) => {
+            cleanup();
             console.error('Failed to delete event:', error);
             toast({ title: COMMON.error, description: 'המחיקה נכשלה', variant: 'destructive' });
           },
