@@ -1,14 +1,13 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React from 'react';
 import { Crop, Plus } from 'lucide-react';
 import { Tooltip, CircularProgress } from '@mui/material';
 import ContentBadge from '../ContentBadge/ContentBadge';
 import EventBadge from '../EventBadge/EventBadge';
+import HiddenEventsPopover from '../HiddenEventsPopover/HiddenEventsPopover';
 import InlineImageEditor from '@/components/features/grid/InlineImageEditor/InlineImageEditor';
-import { useUploadingState } from '@/context/providers/ModalProvider';
-import { useImageCover } from '@/hooks/useImageCover';
 import type { CalendarDayData } from '@/types/content';
-import { getPrimaryMediaUrl } from '@/helpers/media.helper';
 import { CALENDAR } from '@/constants/strings.constants';
+import { useCalendarDay } from './useCalendarDay';
 import {
   StyledDayCell,
   StyledBackgroundImageContainer,
@@ -69,98 +68,47 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   onZoomChange,
   onOffsetChange,
 }) => {
-  const { isDateUploading, isDateDeleting } = useUploadingState();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const dateStr = day.date.toISOString().split('T')[0];
-  const isUploading = isDateUploading(dateStr);
-  const isDeleting = isDateDeleting(dateStr);
-  
-  const contentWithMedia = useMemo(
-    () =>
-      day.content.find(
-        (item) => getPrimaryMediaUrl(item)
-      ),
-    [day.content]
-  );
-
-  const thumbnailUrl = useMemo(
-    () => contentWithMedia ? getPrimaryMediaUrl(contentWithMedia) : undefined,
-    [contentWithMedia]
-  );
-
-  // Get crop settings from the content with media
-  const cropSettings = useMemo(() => ({
-    zoom: contentWithMedia?.gridZoom ?? 1,
-    offsetX: contentWithMedia?.gridOffsetX ?? 0,
-    offsetY: contentWithMedia?.gridOffsetY ?? 0,
-  }), [contentWithMedia]);
-
-  const isToday = day.date.toDateString() === new Date().toDateString();
-  const isDragOver = dragOverDate === day.date.toISOString().split('T')[0];
-  const hasThumbnail = !!thumbnailUrl && day.isCurrentMonth;
-  
-  // Check if there's an event OTHER than the one being dragged
-  const hasOtherEventOnDate = useMemo(() => {
-    if (!draggedItemId) {
-      return day.events.length > 0;
-    }
-    return day.events.some((event) => event.id !== draggedItemId);
-  }, [day.events, draggedItemId]);
-
-  // Check if this day's content is being edited
-  const isEditingThisDay = useMemo(() => {
-    return contentWithMedia && editingItemId === contentWithMedia.id;
-  }, [contentWithMedia, editingItemId]);
-
-  const handleContentDragStart = useCallback(
-    (e: React.DragEvent, itemId: string) => {
-      onDragStart(e, itemId, 'content');
-    },
-    [onDragStart]
-  );
-
-  const handleEventDragStart = useCallback(
-    (e: React.DragEvent, itemId: string) => {
-      onDragStart(e, itemId, 'event');
-    },
-    [onDragStart]
-  );
-
-  const handleDayClick = useCallback(() => {
-    // Don't open modal when in edit mode
-    if (isEditingThisDay) return;
-    
-    if (day.isCurrentMonth) {
-      onDayClick(day.date);
-    }
-  }, [day.isCurrentMonth, day.date, onDayClick, isEditingThisDay]);
-
-  const handleEditClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (contentWithMedia) {
-      onEditImageClick(contentWithMedia.id);
-    }
-  }, [contentWithMedia, onEditImageClick]);
-
-  const handleEditorSave = useCallback((zoom: number, offsetX: number, offsetY: number) => {
-    if (contentWithMedia) {
-      onZoomChange(contentWithMedia.id, zoom);
-      onOffsetChange(contentWithMedia.id, offsetX, offsetY);
-      onEditImageDone();
-    }
-  }, [contentWithMedia, onZoomChange, onOffsetChange, onEditImageDone]);
-
-  const handleAddClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAddClick(day.date);
-  }, [day.date, onAddClick]);
-
-  const showEditOnHover = isAdmin && hasThumbnail && !isEditingThisDay;
-  const hasItems = day.content.length > 0 || day.events.length > 0;
-  const showAddOnHover = isAdmin && day.isCurrentMonth && !isEditingThisDay && hasItems;
-
-  const { imageAspectRatio, containerAspectRatio } = useImageCover(thumbnailUrl, containerRef);
+  const {
+    containerRef,
+    hiddenEventsAnchor,
+    isUploading,
+    isDeleting,
+    thumbnailUrl,
+    cropSettings,
+    isToday,
+    isDragOver,
+    hasThumbnail,
+    hasOtherEventOnDate,
+    isEditingThisDay,
+    hiddenEvents,
+    showEditOnHover,
+    showAddOnHover,
+    imageAspectRatio,
+    containerAspectRatio,
+    handleContentDragStart,
+    handleEventDragStart,
+    handleDayClick,
+    handleEditClick,
+    handleEditorSave,
+    handleAddClick,
+    handleMoreEventsClick,
+    handleHiddenEventsClose,
+    handleHiddenEventClick,
+  } = useCalendarDay({
+    day,
+    draggedItemId,
+    dragOverDate,
+    editingItemId,
+    isAdmin,
+    onDayClick,
+    onAddClick,
+    onItemClick,
+    onDragStart,
+    onEditImageClick,
+    onEditImageDone,
+    onZoomChange,
+    onOffsetChange,
+  });
 
   return (
     <StyledDayCell
@@ -235,7 +183,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
       </StyledDayContent>
 
       {day.content.length > 0 && (
-        <StyledContentBadgesContainer hasEvents={day.events.length > 0}>
+        <StyledContentBadgesContainer eventCount={day.events.length}>
           {day.content.slice(0, 3).map((item) => (
             <ContentBadge
               key={item.id}
@@ -270,12 +218,23 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
             />
           ))}
           {day.events.length > 2 && (
-            <StyledMoreText hasThumbnail={hasThumbnail}>
+            <StyledMoreText
+              hasThumbnail={hasThumbnail}
+              isClickable
+              onClick={handleMoreEventsClick}
+            >
               {CALENDAR.moreEvents(day.events.length - 2)}
             </StyledMoreText>
           )}
         </StyledEventsContainer>
       )}
+
+      <HiddenEventsPopover
+        anchorEl={hiddenEventsAnchor}
+        events={hiddenEvents}
+        onClose={handleHiddenEventsClose}
+        onEventClick={handleHiddenEventClick}
+      />
     </StyledDayCell>
   );
 };

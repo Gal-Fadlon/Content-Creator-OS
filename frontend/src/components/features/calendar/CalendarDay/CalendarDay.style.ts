@@ -49,7 +49,7 @@ export const StyledDayCell = styled(ButtonBase, {
   shouldForwardProp: (prop) =>
     !['isCurrentMonth', 'isToday', 'isDragOver', 'hasThumbnail', 'showEditOnHover', 'showAddOnHover'].includes(prop as string),
 })<StyledDayCellProps & { showAddOnHover?: boolean }>(({ theme, isCurrentMonth, isDragOver, showEditOnHover, showAddOnHover }) => ({
-  minHeight: 110,
+  minHeight: 130,
   padding: theme.spacing(1),
   borderRadius: theme.spacing(1.5),
   border: `1px solid ${theme.palette.divider}`,
@@ -88,7 +88,7 @@ export const StyledDayCell = styled(ButtonBase, {
   }),
 
   [theme.breakpoints.down('md')]: {
-    minHeight: 90,
+    minHeight: 110,
   },
 }));
 
@@ -152,14 +152,12 @@ export const StyledEditorContainer = styled(Box)({
   overflow: 'hidden',
 });
 
-export const StyledDayContent = styled(Box)({
-  position: 'relative',
+export const StyledDayContent = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(0.5),
+  insetInlineStart: theme.spacing(0.5),
   zIndex: 1,
-  width: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start', // In RTL, flex-start = right side
-});
+}));
 
 interface StyledDayNumberProps {
   isToday?: boolean;
@@ -169,10 +167,10 @@ interface StyledDayNumberProps {
 export const StyledDayNumber = styled(Typography, {
   shouldForwardProp: (prop) => !['isToday', 'hasThumbnail'].includes(prop as string),
 })<StyledDayNumberProps>(({ theme, isToday, hasThumbnail }) => ({
-  fontSize: '0.875rem',
+  fontSize: '0.75rem',
   fontWeight: 500,
-  width: 24,
-  height: 24,
+  width: 22,
+  height: 22,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -194,12 +192,22 @@ export const StyledDayNumber = styled(Typography, {
 }));
 
 interface StyledContentBadgesContainerProps {
-  hasEvents?: boolean;
+  eventCount?: number;
 }
 
+// Calculate bottom spacing based on visible events
+// Gap between content badges and events should match gap between events (0.25 = 2px)
+// Event chip height: ~18px, "+X" text: ~16px, events gap: 2px, container bottom: 4px
+const getContentBadgesBottom = (eventCount: number): number => {
+  if (eventCount === 0) return 0.5;  // At the bottom (4px)
+  if (eventCount === 1) return 3;    // 4px + 18px + 2px gap = 24px
+  if (eventCount === 2) return 5.5;  // 4px + 18px + 2px + 18px + 2px gap = 44px
+  return 7.75;                        // 4px + 18px + 2px + 18px + 2px + 16px + 2px gap = 62px
+};
+
 export const StyledContentBadgesContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'hasEvents',
-})<StyledContentBadgesContainerProps>(({ theme, hasEvents }) => ({
+  shouldForwardProp: (prop) => prop !== 'eventCount',
+})<StyledContentBadgesContainerProps>(({ theme, eventCount }) => ({
   position: 'absolute',
   insetInlineStart: theme.spacing(0.5),
   display: 'flex',
@@ -208,11 +216,7 @@ export const StyledContentBadgesContainer = styled(Box, {
   gap: theme.spacing(0.5),
   maxWidth: '70%',
   zIndex: 2,
-  ...(hasEvents ? {
-    top: theme.spacing(7.5),
-  } : {
-    bottom: theme.spacing(0.5),
-  }),
+  bottom: theme.spacing(getContentBadgesBottom(eventCount ?? 0)),
 }));
 
 export const StyledEventsContainer = styled(Box)(({ theme }) => ({
@@ -229,12 +233,21 @@ export const StyledEventsContainer = styled(Box)(({ theme }) => ({
 
 interface StyledMoreTextProps {
   hasThumbnail?: boolean;
+  isClickable?: boolean;
 }
 
 export const StyledMoreText = styled(Typography, {
-  shouldForwardProp: (prop) => prop !== 'hasThumbnail',
-})<StyledMoreTextProps>(({ theme, hasThumbnail }) => ({
+  shouldForwardProp: (prop) => !['hasThumbnail', 'isClickable'].includes(prop as string),
+})<StyledMoreTextProps>(({ theme, hasThumbnail, isClickable }) => ({
   fontSize: '0.625rem',
   padding: theme.spacing(0, 0.5),
   color: hasThumbnail ? theme.palette.common.white : theme.palette.text.secondary,
+  ...(isClickable && {
+    cursor: 'pointer',
+    borderRadius: theme.spacing(0.5),
+    transition: theme.transitions.create(['background-color']),
+    '&:hover': {
+      backgroundColor: hasThumbnail ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)',
+    },
+  }),
 }));

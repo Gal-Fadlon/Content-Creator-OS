@@ -14,6 +14,7 @@ Monthly calendar view for content scheduling.
 | `CalendarHeader` | Month/year with prev/next navigation |
 | `ContentBadge` | Content type icon with hover popover |
 | `EventBadge` | Colored event chip with description |
+| `HiddenEventsPopover` | Popover listing overflow events ("+X אירועים") |
 
 ## content/
 
