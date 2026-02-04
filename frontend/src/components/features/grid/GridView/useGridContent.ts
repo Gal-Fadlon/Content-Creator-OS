@@ -9,6 +9,66 @@ import { queryKeys } from '@/services/queryKeys';
 import { useToast } from '@/context/SnackbarContext';
 import type { ContentType, ContentItem } from '@/types/content';
 
+// Constants for batch upload
+const MAX_CONCURRENT_UPLOADS = 5;
+const MAX_RETRIES = 3;
+const BASE_RETRY_DELAY = 500; // ms
+
+// Retry wrapper with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = MAX_RETRIES,
+  baseDelay: number = BASE_RETRY_DELAY
+): Promise<T> {
+  let lastError: Error | unknown;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxRetries) break;
+
+      // Exponential backoff with jitter
+      const backoff = baseDelay * Math.pow(2, attempt);
+      const jitter = Math.random() * 100;
+      const delay = backoff + jitter;
+
+      console.log(`[Retry] Attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
+// Process items in batches with concurrency limit
+async function processBatch<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  concurrency: number = MAX_CONCURRENT_UPLOADS
+): Promise<{ results: R[]; errors: Array<{ item: T; error: unknown }> }> {
+  const results: R[] = [];
+  const errors: Array<{ item: T; error: unknown }> = [];
+
+  // Process in chunks
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    const batchPromises = batch.map(async (item) => {
+      try {
+        const result = await processor(item);
+        results.push(result);
+      } catch (error) {
+        errors.push({ item, error });
+      }
+    });
+
+    await Promise.all(batchPromises);
+  }
+
+  return { results, errors };
+}
+
 // Pending upload item shown optimistically in the grid
 interface PendingUpload {
   id: string;
@@ -141,8 +201,8 @@ export function useGridContent() {
     }
   };
   
-  // Background upload function
-  const uploadInBackground = useCallback(async (
+  // Single file upload - returns success/failure, no side effects (no toast, no cache invalidation)
+  const uploadSingleFile = useCallback(async (
     tempId: string,
     file: File,
     clientId: string,
@@ -151,12 +211,13 @@ export function useGridContent() {
     offsetX: number,
     offsetY: number,
     accessToken?: string
-  ) => {
+  ): Promise<boolean> => {
     try {
+      // Step 1: Upload file to R2
       const result = await uploadFile(file, { clientId, folder: 'content', accessToken });
 
-      // Create the real content item (keep pending upload visible until media is attached)
-      createContent.mutate({
+      // Step 2: Create content record
+      const newContent = await createContent.mutateAsync({
         clientId,
         type,
         source: 'grid',
@@ -168,41 +229,27 @@ export function useGridContent() {
         gridZoom: zoom,
         gridOffsetX: offsetX,
         gridOffsetY: offsetY,
-      }, {
-        onSuccess: async (newContent) => {
-          // Add media to content_media table
-          try {
-            await services.contentMedia.addMedia(
-              newContent.id,
-              result.url,
-              'image',
-              result.key
-            );
-            // Invalidate cache AFTER media is attached so it includes the media
-            await queryClient.invalidateQueries({
-              queryKey: queryKeys.content.all(clientId),
-            });
-          } catch (err) {
-            console.error('Failed to add media to content:', err);
-          }
-          // Only remove pending upload AFTER media is attached
-          setPendingUploads(prev => prev.filter(p => p.id !== tempId));
-          toast({ title: 'הצלחה', description: 'התמונה הועלתה בהצלחה' });
-        },
-        onError: (error) => {
-          // Remove pending upload on error
-          setPendingUploads(prev => prev.filter(p => p.id !== tempId));
-          console.error('Failed to create content:', error);
-          toast({ title: 'שגיאה', description: 'יצירת התוכן נכשלה', variant: 'destructive' });
-        },
       });
-    } catch (error) {
-      // Remove from pending uploads on error
+
+      // Step 3: Add media with retry
+      await retryWithBackoff(async () => {
+        await services.contentMedia.addMedia(
+          newContent.id,
+          result.url,
+          'image',
+          result.key
+        );
+      });
+
+      // Success - remove from pending
       setPendingUploads(prev => prev.filter(p => p.id !== tempId));
-      console.error('Failed to upload image:', error);
-      toast({ title: 'שגיאה', description: 'העלאת התמונה נכשלה', variant: 'destructive' });
+      return true;
+    } catch (error) {
+      console.error(`[Upload] Failed for ${file.name}:`, error);
+      setPendingUploads(prev => prev.filter(p => p.id !== tempId));
+      return false;
     }
-  }, [createContent, realContent.length, toast, queryClient]);
+  }, [createContent, realContent.length]);
 
   const handleConfirmAddImage = (type: ContentType, zoom = 1, offsetX = 0, offsetY = 0) => {
     if (!newImageFile || !selectedClientId || !newImagePreview) return;
@@ -234,8 +281,20 @@ export function useGridContent() {
     setNewImageFile(null);
     setShowAddDialog(false);
 
-    // Fire upload in background (don't await - intentional fire-and-forget)
-    void uploadInBackground(tempId, file, clientId, type, zoom, offsetX, offsetY, session?.access_token);
+    // Upload in background, then invalidate cache and show toast
+    void (async () => {
+      const success = await uploadSingleFile(tempId, file, clientId, type, zoom, offsetX, offsetY, session?.access_token);
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.content.all(clientId),
+      });
+
+      if (success) {
+        toast({ title: 'הצלחה', description: 'התמונה הועלתה בהצלחה' });
+      } else {
+        toast({ title: 'שגיאה', description: 'העלאת התמונה נכשלה', variant: 'destructive' });
+      }
+    })();
   };
   
   const handleCancelAdd = () => {
@@ -289,31 +348,72 @@ export function useGridContent() {
 
     const clientId = selectedClientId;
     const accessToken = session?.access_token;
+    const baseTime = Date.now();
 
-    // Process each image file
-    imageFiles.forEach((file, index) => {
-      const tempId = `pending-${Date.now()}-${index}`;
+    // Prepare upload items with unique IDs and preview URLs
+    const uploadItems = imageFiles.map((file, index) => {
+      const tempId = `pending-${baseTime}-${index}`;
       const localPreviewUrl = window.URL.createObjectURL(file);
+      return { file, tempId, localPreviewUrl };
+    });
 
-      // Add to pending uploads immediately (optimistic UI)
-      setPendingUploads(prev => [...prev, {
-        id: tempId,
-        localPreviewUrl,
-        type: 'post', // Default type for drag & drop
+    // Add all to pending uploads immediately (optimistic UI)
+    setPendingUploads(prev => [
+      ...prev,
+      ...uploadItems.map(item => ({
+        id: item.tempId,
+        localPreviewUrl: item.localPreviewUrl,
+        type: 'post' as ContentType,
         gridZoom: 1,
         gridOffsetX: 0,
         gridOffsetY: 0,
-      }]);
-
-      // Fire upload in background
-      void uploadInBackground(tempId, file, clientId, 'post', 1, 0, 0, accessToken);
-    });
+      })),
+    ]);
 
     toast({
       title: 'מעלה תמונות...',
       description: `${imageFiles.length} תמונות בהעלאה`
     });
-  }, [isAdmin, selectedClientId, isAuthLoading, isAuthenticated, session?.access_token, uploadInBackground, toast]);
+
+    // Process uploads in batches, then invalidate cache ONCE at the end
+    void (async () => {
+      let successCount = 0;
+      let failCount = 0;
+
+      await processBatch(
+        uploadItems,
+        async (item) => {
+          const success = await uploadSingleFile(
+            item.tempId,
+            item.file,
+            clientId,
+            'post',
+            1,
+            0,
+            0,
+            accessToken
+          );
+          if (success) successCount++;
+          else failCount++;
+        },
+        MAX_CONCURRENT_UPLOADS
+      );
+
+      // Invalidate cache ONCE after all uploads complete
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.content.all(clientId),
+      });
+
+      // Show single summary toast
+      if (failCount === 0) {
+        toast({ title: 'הצלחה', description: `${successCount} תמונות הועלו בהצלחה` });
+      } else if (successCount === 0) {
+        toast({ title: 'שגיאה', description: `כל ${failCount} התמונות נכשלו`, variant: 'destructive' });
+      } else {
+        toast({ title: 'הושלם', description: `${successCount} הצליחו, ${failCount} נכשלו`, variant: 'destructive' });
+      }
+    })();
+  }, [isAdmin, selectedClientId, isAuthLoading, isAuthenticated, session?.access_token, uploadSingleFile, toast, queryClient]);
 
   // Skeleton count for loading state (from localStorage on hard refresh)
   const skeletonCount = useMemo(() => {

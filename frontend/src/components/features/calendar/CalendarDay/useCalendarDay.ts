@@ -6,7 +6,6 @@ import { getPrimaryMediaUrl } from '@/helpers/media.helper';
 
 interface UseCalendarDayProps {
   day: CalendarDayData;
-  draggedItemId: string | null;
   dragOverDate: string | null;
   editingItemId: string | null;
   isAdmin: boolean;
@@ -22,7 +21,6 @@ interface UseCalendarDayProps {
 
 export function useCalendarDay({
   day,
-  draggedItemId,
   dragOverDate,
   editingItemId,
   isAdmin,
@@ -65,13 +63,6 @@ export function useCalendarDay({
   const isToday = day.date.toDateString() === new Date().toDateString();
   const isDragOver = dragOverDate === dateStr;
   const hasThumbnail = !!thumbnailUrl && day.isCurrentMonth;
-
-  const hasOtherEventOnDate = useMemo(() => {
-    if (!draggedItemId) {
-      return day.events.length > 0;
-    }
-    return day.events.some((event) => event.id !== draggedItemId);
-  }, [day.events, draggedItemId]);
 
   const isEditingThisDay = useMemo(
     () => contentWithMedia && editingItemId === contentWithMedia.id,
@@ -170,7 +161,6 @@ export function useCalendarDay({
     isToday,
     isDragOver,
     hasThumbnail,
-    hasOtherEventOnDate,
     isEditingThisDay,
     hiddenEvents,
     showEditOnHover,

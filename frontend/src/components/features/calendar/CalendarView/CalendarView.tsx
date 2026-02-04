@@ -28,7 +28,6 @@ const CalendarView: React.FC = () => {
   const {
     draggedItemId,
     dragOverDate,
-    isDropDisabled,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -118,7 +117,6 @@ const CalendarView: React.FC = () => {
           calendarDays={calendarDays}
           draggedItemId={draggedItemId}
           dragOverDate={dragOverDate}
-          isDropDisabled={isDropDisabled}
           isAdmin={isAdmin}
           isLoading={isLoading}
           editingItemId={editingItemId}

@@ -28,7 +28,6 @@ interface CalendarDayProps {
   day: CalendarDayData;
   draggedItemId: string | null;
   dragOverDate: string | null;
-  isDropDisabled: boolean;
   isAdmin: boolean;
   isLoading: boolean;
   editingItemId: string | null;
@@ -36,9 +35,9 @@ interface CalendarDayProps {
   onAddClick: (date: Date) => void;
   onItemClick: (itemId: string, e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent, itemId: string, itemType: 'content' | 'event') => void;
-  onDragOver: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
+  onDragOver: (e: React.DragEvent, date: Date) => void;
   onDragLeave: () => void;
-  onDrop: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
+  onDrop: (e: React.DragEvent, date: Date) => void;
   onDragEnd: () => void;
   onEditImageClick: (itemId: string) => void;
   onEditImageDone: () => void;
@@ -78,7 +77,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
     isToday,
     isDragOver,
     hasThumbnail,
-    hasOtherEventOnDate,
     isEditingThisDay,
     hiddenEvents,
     showEditOnHover,
@@ -96,7 +94,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
     handleHiddenEventClick,
   } = useCalendarDay({
     day,
-    draggedItemId,
     dragOverDate,
     editingItemId,
     isAdmin,
@@ -113,9 +110,9 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   return (
     <StyledDayCell
       onClick={handleDayClick}
-      onDragOver={(e) => onDragOver(e as unknown as React.DragEvent, day.date, hasOtherEventOnDate)}
+      onDragOver={(e) => onDragOver(e as unknown as React.DragEvent, day.date)}
       onDragLeave={onDragLeave}
-      onDrop={(e) => onDrop(e as unknown as React.DragEvent, day.date, hasOtherEventOnDate)}
+      onDrop={(e) => onDrop(e as unknown as React.DragEvent, day.date)}
       isCurrentMonth={day.isCurrentMonth}
       isToday={isToday}
       isDragOver={isDragOver}

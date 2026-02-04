@@ -13,7 +13,6 @@ interface CalendarGridProps {
   calendarDays: CalendarDayData[];
   draggedItemId: string | null;
   dragOverDate: string | null;
-  isDropDisabled: boolean;
   isAdmin: boolean;
   isLoading: boolean;
   editingItemId: string | null;
@@ -21,9 +20,9 @@ interface CalendarGridProps {
   onAddClick: (date: Date) => void;
   onItemClick: (itemId: string, e: React.MouseEvent) => void;
   onDragStart: (e: React.DragEvent, itemId: string, itemType: 'content' | 'event') => void;
-  onDragOver: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
+  onDragOver: (e: React.DragEvent, date: Date) => void;
   onDragLeave: () => void;
-  onDrop: (e: React.DragEvent, date: Date, hasEventOnDate: boolean) => void;
+  onDrop: (e: React.DragEvent, date: Date) => void;
   onDragEnd: () => void;
   onEditImageClick: (itemId: string) => void;
   onEditImageDone: () => void;
@@ -36,7 +35,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   calendarDays,
   draggedItemId,
   dragOverDate,
-  isDropDisabled,
   isAdmin,
   isLoading,
   editingItemId,
@@ -69,7 +67,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             day={day}
             draggedItemId={draggedItemId}
             dragOverDate={dragOverDate}
-            isDropDisabled={isDropDisabled}
             isAdmin={isAdmin}
             isLoading={isLoading}
             editingItemId={editingItemId}
