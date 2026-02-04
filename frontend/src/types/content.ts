@@ -9,6 +9,7 @@ export type ContentStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'pub
 export type Platform = 'instagram' | 'tiktok' | 'facebook';
 export type MarkerColor = 'red' | 'blue' | 'beige' | 'brown' | 'black';
 export type ContentSource = 'calendar' | 'grid';
+export type EventItemType = 'event' | 'task';
 
 // Media item for multi-image support
 export interface ContentMedia {
@@ -60,6 +61,8 @@ export interface EventItem {
   description?: string;
   date: string;
   color: MarkerColor;
+  itemType?: EventItemType;  // 'event' | 'task', default 'event'
+  isCompleted?: boolean;      // only for tasks
   createdAt: string;
   updatedAt: string;
 }
@@ -148,11 +151,12 @@ export interface ContentFilters {
   status?: ContentStatus[];
   platform?: Platform[];
   pendingApprovalOnly?: boolean;
+  showTasksOnly?: boolean;
 }
 
 // View types
 export type CalendarView = 'calendar' | 'grid';
-export type ModalMode = 'media' | 'event';
+export type ModalMode = 'media' | 'event' | 'task';
 
 // Calendar day data for calendar grid rendering
 export interface CalendarDayData {

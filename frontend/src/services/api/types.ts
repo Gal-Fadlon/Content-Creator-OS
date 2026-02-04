@@ -55,6 +55,8 @@ export interface CreateEventDTO {
   description?: string;
   date: string;
   color: 'red' | 'blue' | 'beige' | 'brown' | 'black';
+  itemType?: 'event' | 'task';
+  isCompleted?: boolean;
 }
 
 export type UpdateEventDTO = Partial<CreateEventDTO>;

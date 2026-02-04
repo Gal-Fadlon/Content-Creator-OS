@@ -207,10 +207,12 @@ Use `@/` for absolute imports: `import { useAuth } from '@/context/providers/Aut
                │ status          │              │ description     │  │ theme_text      │
                │ scheduled_date  │              │ event_date      │  │ backdrop_url    │
                │ scheduled_time  │              │ color           │  │ created_at      │
-               │ caption         │              │ created_by FK   │  └─────────────────┘
-               │ platform        │              │ created_at      │
-               │ cover_image_url │              │ updated_at      │
-               │ thumbnail_url   │              └─────────────────┘
+               │ caption         │              │ item_type       │  └─────────────────┘
+               │ platform        │              │ is_completed    │
+               │ cover_image_url │              │ created_by FK   │
+               │ thumbnail_url   │              │ created_at      │
+               │ grid_zoom       │              │ updated_at      │
+               │ grid_offset_x/y │              └─────────────────┘
                │ grid_zoom       │
                │ grid_offset_x/y │              ┌─────────────────┐
                │ grid_order      │              │  content_media  │

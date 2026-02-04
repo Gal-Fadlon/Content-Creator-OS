@@ -96,6 +96,7 @@ const EventBadge: React.FC<EventBadgeProps> = ({
           label={event.title}
           eventColor={event.color}
           isDragging={isDragging}
+          isCompleted={event.itemType === 'task' && event.isCompleted}
           size="small"
           sx={{ pointerEvents: 'none' }}
         />

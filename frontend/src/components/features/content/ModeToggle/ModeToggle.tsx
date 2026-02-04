@@ -27,6 +27,7 @@ const ModeToggle: React.FC<ModeToggleProps> = ({ mode, onModeChange }) => {
       <StyledToggleGroup value={mode} exclusive onChange={handleChange}>
         <StyledToggleButton value="media">{MODE_TOGGLE.media}</StyledToggleButton>
         <StyledToggleButton value="event">{MODE_TOGGLE.event}</StyledToggleButton>
+        <StyledToggleButton value="task">{MODE_TOGGLE.task}</StyledToggleButton>
       </StyledToggleGroup>
     </StyledModeToggleContainer>
   );

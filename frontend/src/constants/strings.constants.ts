@@ -123,16 +123,20 @@ export const CONTENT_MODAL = {
     success: 'נשמר!',
     contentSaved: 'התוכן נשמר בהצלחה',
     eventSaved: 'האירוע נשמר בהצלחה',
+    taskSaved: 'המשימה נשמרה בהצלחה',
     noClientSelected: 'לא נבחר לקוח',
     contentSaveFailed: 'שמירת התוכן נכשלה',
     eventSaveFailed: 'שמירת האירוע נכשלה',
+    taskSaveFailed: 'שמירת המשימה נכשלה',
     contentCreateFailed: 'יצירת התוכן נכשלה',
     eventCreateFailed: 'יצירת האירוע נכשלה',
+    taskCreateFailed: 'יצירת המשימה נכשלה',
   },
   delete: {
     success: 'נמחק!',
     contentDeleted: 'התוכן נמחק בהצלחה',
     eventDeleted: 'האירוע נמחק בהצלחה',
+    taskDeleted: 'המשימה נמחקה בהצלחה',
   },
   copy: {
     success: 'הועתק!',
@@ -158,6 +162,7 @@ export const CONTENT_MODAL = {
 export const MODE_TOGGLE: Record<ModalMode, string> = {
   media: 'תוכן מדיה',
   event: 'אירוע / הערה',
+  task: 'משימה',
 } as const;
 
 // ============================================================================
@@ -241,6 +246,18 @@ export const EVENT_FORM = {
 } as const;
 
 // ============================================================================
+// Task Form
+// ============================================================================
+
+export const TASK_FORM = {
+  titleLabel: 'כותרת המשימה',
+  titlePlaceholder: 'למשל: להכין תוכן לקמפיין',
+  descriptionLabel: 'תיאור / הערות',
+  descriptionPlaceholder: 'פרטים נוספים...',
+  completedLabel: 'משימה הושלמה',
+} as const;
+
+// ============================================================================
 // Color Picker
 // ============================================================================
 
@@ -298,6 +315,7 @@ export const FILTER_BAR = {
   stories: 'Story',
   reels: 'Reel',
   all: 'הכל',
+  tasks: 'משימות',
 } as const;
 
 // ============================================================================

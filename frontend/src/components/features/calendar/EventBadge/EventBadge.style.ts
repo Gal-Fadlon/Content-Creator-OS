@@ -4,11 +4,12 @@ import { Chip, Popover, Box, Typography } from '@mui/material';
 interface StyledEventChipProps {
   eventColor?: 'red' | 'blue' | 'beige' | 'brown' | 'black';
   isDragging?: boolean;
+  isCompleted?: boolean;
 }
 
 export const StyledEventChip = styled(Chip, {
-  shouldForwardProp: (prop) => prop !== 'eventColor' && prop !== 'isDragging',
-})<StyledEventChipProps>(({ theme, eventColor, isDragging }) => ({
+  shouldForwardProp: (prop) => !['eventColor', 'isDragging', 'isCompleted'].includes(prop as string),
+})<StyledEventChipProps>(({ theme, eventColor, isDragging, isCompleted }) => ({
   height: 'auto',
   fontSize: '0.5625rem',
   fontFamily: '"Heebo", sans-serif',
@@ -55,6 +56,11 @@ export const StyledEventChip = styled(Chip, {
   ...(eventColor === 'black' && {
     backgroundColor: theme.palette.text.primary,
     color: theme.palette.background.default,
+  }),
+
+  ...(isCompleted && {
+    textDecoration: 'line-through',
+    opacity: 0.6,
   }),
 }));
 

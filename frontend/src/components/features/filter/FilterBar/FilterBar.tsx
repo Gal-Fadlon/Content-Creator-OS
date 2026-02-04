@@ -9,8 +9,8 @@ const FilterBar: React.FC = () => {
   const { filters, setFilters } = useFilters();
 
   const isAllActive = useMemo(
-    () => !filters.type?.length && !filters.pendingApprovalOnly,
-    [filters.type, filters.pendingApprovalOnly]
+    () => !filters.type?.length && !filters.pendingApprovalOnly && !filters.showTasksOnly,
+    [filters.type, filters.pendingApprovalOnly, filters.showTasksOnly]
   );
 
   const isReelsActive = useMemo(
@@ -33,8 +33,13 @@ const FilterBar: React.FC = () => {
     [filters.pendingApprovalOnly]
   );
 
+  const isTasksActive = useMemo(
+    () => filters.showTasksOnly === true,
+    [filters.showTasksOnly]
+  );
+
   const handleAllClick = useCallback(() => {
-    setFilters({});
+    setFilters({ showTasksOnly: false });
   }, [setFilters]);
 
   const handleTypeFilter = useCallback(
@@ -42,7 +47,7 @@ const FilterBar: React.FC = () => {
       if (filters.type?.includes(type) && filters.type.length === 1) {
         setFilters({ ...filters, type: undefined });
       } else {
-        setFilters({ ...filters, type: [type], pendingApprovalOnly: false });
+        setFilters({ ...filters, type: [type], pendingApprovalOnly: false, showTasksOnly: false });
       }
     },
     [filters, setFilters]
@@ -53,6 +58,16 @@ const FilterBar: React.FC = () => {
       ...filters,
       pendingApprovalOnly: !filters.pendingApprovalOnly,
       type: undefined,
+      showTasksOnly: false,
+    });
+  }, [filters, setFilters]);
+
+  const handleTasksClick = useCallback(() => {
+    setFilters({
+      ...filters,
+      showTasksOnly: !filters.showTasksOnly,
+      type: undefined,
+      pendingApprovalOnly: false,
     });
   }, [filters, setFilters]);
 
@@ -88,6 +103,13 @@ const FilterBar: React.FC = () => {
         label={FILTER_BAR.posts}
         active={isPostsActive}
         onClick={() => handleTypeFilter('post')}
+      />
+
+      {/* Tasks filter */}
+      <FilterPill
+        label={FILTER_BAR.tasks}
+        active={isTasksActive}
+        onClick={handleTasksClick}
       />
     </StyledFilterBarContainer>
   );

@@ -6,7 +6,7 @@ import { useSelectedClientId } from '@/context/providers/SelectedClientProvider'
 import { useContentItems, useCreateContent, useUpdateContent, useDeleteContent } from '@/hooks/queries/useContent';
 import { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent } from '@/hooks/queries/useEvents';
 import { useToast } from '@/context/SnackbarContext';
-import { isContentItem, isEventItem } from './contentModal.helper.ts';
+import { isContentItem, isEventItem, isTaskItem } from './contentModal.helper.ts';
 import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
 import { uploadFile } from '@/services/storage/uploadService';
 import { services } from '@/services/services';
@@ -58,6 +58,12 @@ export function useContentModal() {
   const [eventDescription, setEventDescription] = useState('');
   const [eventColor, setEventColor] = useState<MarkerColor>('black');
 
+  // Task form state
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [taskColor, setTaskColor] = useState<MarkerColor>('black');
+  const [isCompleted, setIsCompleted] = useState(false);
+
   // Upload state
   const [isUploading] = useState(false);
   
@@ -76,11 +82,19 @@ export function useContentModal() {
         setExistingMedia(item.media || []);
         setPendingMedia([]);
         setMediaToRemove([]);
+      } else if (isTaskItem(item)) {
+        const taskItem = item as import('@/types/content').EventItem;
+        setMode('task');
+        setTaskTitle(taskItem.title);
+        setTaskDescription(taskItem.description || '');
+        setTaskColor(taskItem.color);
+        setIsCompleted(taskItem.isCompleted || false);
       } else if (isEventItem(item)) {
+        const eventItem = item as import('@/types/content').EventItem;
         setMode('event');
-        setEventTitle(item.title);
-        setEventDescription(item.description || '');
-        setEventColor(item.color);
+        setEventTitle(eventItem.title);
+        setEventDescription(eventItem.description || '');
+        setEventColor(eventItem.color);
       }
     }
   }, [item]);
@@ -90,6 +104,9 @@ export function useContentModal() {
     setCreativeDescription('');
     setEventTitle('');
     setEventDescription('');
+    setTaskTitle('');
+    setTaskDescription('');
+    setIsCompleted(false);
     setExistingMedia([]);
     setPendingMedia([]);
     setMediaToRemove([]);
@@ -97,6 +114,7 @@ export function useContentModal() {
     setContentType('reel');
     setStatus('draft');
     setEventColor('black');
+    setTaskColor('black');
   };
   
   const handleClose = () => {
@@ -524,13 +542,66 @@ export function useContentModal() {
           );
         }
       }
-    } else {
+    } else if (mode === 'task') {
+      // Task mode
       const dateStr = selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
-      
-      if (isEditing && isEventItem(item!)) {
+      const taskItem = item as import('@/types/content').EventItem | null;
+
+      if (isEditing && taskItem && isTaskItem(taskItem)) {
         updateEvent.mutate(
           {
-            id: item.id,
+            id: taskItem.id,
+            data: {
+              title: taskTitle,
+              description: taskDescription,
+              color: taskColor,
+              itemType: 'task',
+              isCompleted,
+            },
+          },
+          {
+            onSuccess: () => {
+              toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.taskSaved });
+              handleClose();
+            },
+            onError: (error) => {
+              console.error('Failed to update task:', error);
+              toast({ title: COMMON.error, description: CONTENT_MODAL.save.taskSaveFailed, variant: 'destructive' });
+            },
+          }
+        );
+      } else {
+        createEvent.mutate(
+          {
+            clientId: selectedClientId,
+            title: taskTitle,
+            description: taskDescription,
+            date: dateStr,
+            color: taskColor,
+            itemType: 'task',
+            isCompleted,
+          },
+          {
+            onSuccess: () => {
+              toast({ title: CONTENT_MODAL.save.success, description: CONTENT_MODAL.save.taskSaved });
+              handleClose();
+            },
+            onError: (error) => {
+              console.error('Failed to create task:', error);
+              toast({ title: COMMON.error, description: CONTENT_MODAL.save.taskCreateFailed, variant: 'destructive' });
+            },
+          }
+        );
+      }
+    } else {
+      // Event mode
+      const dateStr = selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
+      const eventItem = item as import('@/types/content').EventItem | null;
+
+      if (isEditing && eventItem && isEventItem(eventItem)) {
+        updateEvent.mutate(
+          {
+            id: eventItem.id,
             data: {
               title: eventTitle,
               description: eventDescription,
@@ -607,6 +678,12 @@ export function useContentModal() {
     eventDescription,
     eventColor,
 
+    // Task form state
+    taskTitle,
+    taskDescription,
+    taskColor,
+    isCompleted,
+
     // Setters
     setMode,
     setContentType,
@@ -616,6 +693,10 @@ export function useContentModal() {
     setEventTitle,
     setEventDescription,
     setEventColor,
+    setTaskTitle,
+    setTaskDescription,
+    setTaskColor,
+    setIsCompleted,
 
     // Handlers
     handleClose,

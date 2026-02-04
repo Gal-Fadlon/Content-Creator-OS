@@ -4,10 +4,11 @@ import ModalHeader from '../ModalHeader/ModalHeader';
 import ModeToggle from '../ModeToggle/ModeToggle';
 import ContentForm from '../ContentForm/ContentForm';
 import EventForm from '../EventForm/EventForm';
+import TaskForm from '../TaskForm/TaskForm';
 import CommentsSection from '../CommentsSection/CommentsSection';
 import { useContentModal } from './useContentModal';
 import { useAuth } from '@/context/providers/AuthProvider';
-import { isContentItem, isEventItem } from './contentModal.helper.ts';
+import { isContentItem, isEventItem, isTaskItem } from './contentModal.helper.ts';
 import { CONTENT_MODAL, COMMON } from '@/constants/strings.constants';
 import {
   StyledDialog,
@@ -38,6 +39,10 @@ const ContentModal: React.FC = () => {
     eventTitle,
     eventDescription,
     eventColor,
+    taskTitle,
+    taskDescription,
+    taskColor,
+    isCompleted,
     setMode,
     setContentType,
     setStatus,
@@ -46,6 +51,10 @@ const ContentModal: React.FC = () => {
     setEventTitle,
     setEventDescription,
     setEventColor,
+    setTaskTitle,
+    setTaskDescription,
+    setTaskColor,
+    setIsCompleted,
     handleClose,
     handleDelete,
     handleApprove,
@@ -62,6 +71,7 @@ const ContentModal: React.FC = () => {
 
   const showContentForm = mode === 'media' || (isEditing && item && isContentItem(item));
   const showEventForm = mode === 'event' || (isEditing && item && isEventItem(item));
+  const showTaskForm = mode === 'task' || (isEditing && item && isTaskItem(item));
   const contentItem = item && isContentItem(item) ? item : null;
   const showComments = isEditing && contentItem && user;
 
@@ -133,6 +143,21 @@ const ContentModal: React.FC = () => {
             onTitleChange={setEventTitle}
             onDescriptionChange={setEventDescription}
             onColorChange={setEventColor}
+          />
+        )}
+
+        {/* Task form */}
+        {showTaskForm && (
+          <TaskForm
+            taskTitle={taskTitle}
+            taskDescription={taskDescription}
+            taskColor={taskColor}
+            isCompleted={isCompleted}
+            isAdmin={isAdmin}
+            onTitleChange={setTaskTitle}
+            onDescriptionChange={setTaskDescription}
+            onColorChange={setTaskColor}
+            onCompletedChange={setIsCompleted}
           />
         )}
 

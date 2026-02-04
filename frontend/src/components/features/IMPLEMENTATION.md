@@ -13,7 +13,7 @@ Monthly calendar view for content scheduling.
 | `CalendarDay` | Day cell with content/event badges |
 | `CalendarHeader` | Month/year with prev/next navigation |
 | `ContentBadge` | Content type icon with hover popover |
-| `EventBadge` | Colored event chip with description |
+| `EventBadge` | Colored event/task chip with description (strikethrough for completed tasks) |
 | `HiddenEventsPopover` | Popover listing overflow events ("+X אירועים") |
 
 ## content/
@@ -22,9 +22,10 @@ Content and event creation/editing modal components.
 
 | Component | Purpose |
 |-----------|---------|
-| `ContentModal` | Main dialog for creating/editing |
+| `ContentModal` | Main dialog for creating/editing content, events, and tasks |
 | `ContentForm` | Form with approve/reject buttons for clients |
 | `EventForm` | Event fields: title, description, color |
+| `TaskForm` | Task fields: title, description, color, completed checkbox |
 | `StatusSelector` | Status dropdown (draft/pending/approved/rejected/published) |
 | `MultiMediaUpload` | Multi-image upload with drag-drop reordering |
 | `CommentsSection` | Threaded comments for content items |
@@ -63,5 +64,5 @@ Decorative stickers overlay system.
 
 | Component | Purpose |
 |-----------|---------|
-| `FilterBar` | Horizontal bar with filter pills |
+| `FilterBar` | Horizontal bar with filter pills (content types, pending, tasks) |
 | `FilterPill` | Toggle for filter options |

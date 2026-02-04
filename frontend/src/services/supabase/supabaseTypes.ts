@@ -155,6 +155,8 @@ export interface Database {
           description: string | null;
           event_date: string;
           color: 'red' | 'blue' | 'beige' | 'brown' | 'black';
+          item_type: 'event' | 'task';
+          is_completed: boolean;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -166,6 +168,8 @@ export interface Database {
           description?: string | null;
           event_date: string;
           color?: 'red' | 'blue' | 'beige' | 'brown' | 'black';
+          item_type?: 'event' | 'task';
+          is_completed?: boolean;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -176,6 +180,8 @@ export interface Database {
           description?: string | null;
           event_date?: string;
           color?: 'red' | 'blue' | 'beige' | 'brown' | 'black';
+          item_type?: 'event' | 'task';
+          is_completed?: boolean;
           updated_at?: string;
         };
       };

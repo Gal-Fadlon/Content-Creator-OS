@@ -33,25 +33,37 @@ export function useCalendarData() {
 
   // Apply filters to content (only calendar source)
   const filteredContent = useMemo(() => {
+    // When showing tasks only, hide all content
+    if (filters.showTasksOnly) {
+      return [];
+    }
     const calendarContent = contentItems.filter(item => item.source === 'calendar' || !item.source);
     return applyContentFilters(calendarContent, filters);
   }, [contentItems, filters]);
 
+  // Filter events (tasks filter)
+  const filteredEvents = useMemo(() => {
+    if (filters.showTasksOnly) {
+      return events.filter(event => event.itemType === 'task');
+    }
+    return events;
+  }, [events, filters.showTasksOnly]);
+
   // Get calendar grid data
   const calendarDays = useMemo<CalendarDayData[]>(() => {
     const dates = generateCalendarDates(currentMonth);
-    
+
     return dates.map(date => {
       const dateStr = formatDateISO(date);
-      
+
       return {
         date,
         isCurrentMonth: isInMonth(date, currentMonth),
         content: filteredContent.filter(item => item.date === dateStr),
-        events: events.filter(event => event.date === dateStr),
+        events: filteredEvents.filter(event => event.date === dateStr),
       };
     });
-  }, [currentMonth, filteredContent, events]);
+  }, [currentMonth, filteredContent, filteredEvents]);
 
   // Get content for grid view (only posts/reels for Instagram feed preview)
   const gridContent = useMemo(() => {
@@ -70,7 +82,7 @@ export function useCalendarData() {
     gridContent,
     pendingCount,
     allContent: filteredContent,
-    allEvents: events,
+    allEvents: filteredEvents,
     isLoading,
   };
 }

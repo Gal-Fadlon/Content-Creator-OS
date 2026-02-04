@@ -25,13 +25,15 @@ export interface EventsService {
 }
 
 // Transform database row to frontend type
-const toEventItem = (row: EventRow): EventItem => ({
+const toEventItem = (row: EventRow & { item_type?: string; is_completed?: boolean }): EventItem => ({
   id: row.id,
   clientId: row.client_id,
   title: row.title,
   description: row.description || undefined,
   date: row.event_date,
   color: row.color,
+  itemType: (row.item_type as 'event' | 'task') || 'event',
+  isCompleted: row.is_completed || false,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -92,6 +94,8 @@ export const eventsService: EventsService = {
         description: data.description || null,
         event_date: data.date,
         color: data.color || 'red',
+        item_type: data.itemType || 'event',
+        is_completed: data.isCompleted || false,
       })
       .select()
       .single();
@@ -107,6 +111,8 @@ export const eventsService: EventsService = {
     if (data.description !== undefined) update.description = data.description;
     if (data.date !== undefined) update.event_date = data.date;
     if (data.color !== undefined) update.color = data.color;
+    if (data.itemType !== undefined) update.item_type = data.itemType;
+    if (data.isCompleted !== undefined) update.is_completed = data.isCompleted;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: updated, error } = await (supabase.from('events') as any)

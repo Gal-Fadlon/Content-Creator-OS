@@ -352,21 +352,21 @@ All React hooks must be called before any early return statements. This prevents
 
 ```tsx
 // ✅ CORRECT
-const MyComponent: React.FC = () => {
+const MyComponent = () => {
   const { isAdmin } = useAuth();
   const [state, setState] = useState(false);
-  
+
   if (!isAdmin) return null;
-  
+
   return <div>...</div>;
 };
 
 // ❌ INCORRECT
-const MyComponent: React.FC = () => {
+const MyComponent = () => {
   const { isAdmin } = useAuth();
-  
+
   if (!isAdmin) return null; // Early return BEFORE all hooks!
-  
+
   const [state, setState] = useState(false); // This causes the error
   return <div>...</div>;
 };
