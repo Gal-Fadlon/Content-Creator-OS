@@ -25,6 +25,23 @@ export const ProtectedRoute: React.FC<AuthGuardProps> = ({ children }) => {
 };
 
 /**
+ * AdminRoute - Redirects to dashboard if user is not an actual admin
+ */
+export const AdminRoute: React.FC<AuthGuardProps> = ({ children }) => {
+  const { isActualAdmin, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!isActualAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+/**
  * PublicRoute - Redirects to dashboard if user is already authenticated
  */
 export const PublicRoute: React.FC<AuthGuardProps> = ({ children }) => {

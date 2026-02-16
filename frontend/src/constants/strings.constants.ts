@@ -5,6 +5,7 @@
 
 import type { ContentStatus, ContentType } from '@/types/content';
 import type { ModalMode } from '@/types/content';
+import type { AdminTaskStatus, AdminTaskPriority } from '@/types/adminTask';
 
 // ============================================================================
 // Common / Shared
@@ -443,6 +444,85 @@ export const LOGIN = {
     emailRequired: 'נא להזין אימייל',
     passwordRequired: 'נא להזין סיסמה',
   },
+} as const;
+
+// ============================================================================
+// Comments Section
+// ============================================================================
+
+// ============================================================================
+// Side Menu
+// ============================================================================
+
+export const SIDE_MENU = {
+  dashboard: 'לוח בקרה',
+  taskManager: 'מנהל משימות',
+  collapse: 'כווץ תפריט',
+  expand: 'הרחב תפריט',
+} as const;
+
+// ============================================================================
+// Task Manager
+// ============================================================================
+
+export const TASK_MANAGER = {
+  title: 'מנהל משימות',
+  addTask: 'משימה חדשה',
+  searchPlaceholder: 'חיפוש משימות...',
+  emptyColumn: 'אין משימות',
+  deleteConfirm: 'האם למחוק את המשימה?',
+  success: {
+    created: 'המשימה נוצרה בהצלחה',
+    updated: 'המשימה עודכנה בהצלחה',
+    deleted: 'המשימה נמחקה בהצלחה',
+  },
+  error: {
+    createFailed: 'יצירת המשימה נכשלה',
+    updateFailed: 'עדכון המשימה נכשל',
+    deleteFailed: 'מחיקת המשימה נכשלה',
+  },
+} as const;
+
+// ============================================================================
+// Kanban Columns
+// ============================================================================
+
+export const KANBAN_COLUMNS: Record<AdminTaskStatus, string> = {
+  todo: 'לביצוע',
+  in_progress: 'בתהליך',
+  on_hold: 'בהשהיה',
+  done: 'הושלם',
+} as const;
+
+// ============================================================================
+// Task Priority
+// ============================================================================
+
+export const TASK_PRIORITY: Record<AdminTaskPriority, string> = {
+  low: 'נמוכה',
+  medium: 'בינונית',
+  high: 'גבוהה',
+  urgent: 'דחוף',
+} as const;
+
+// ============================================================================
+// Task Modal
+// ============================================================================
+
+export const TASK_MODAL = {
+  createTitle: 'משימה חדשה',
+  editTitle: 'עריכת משימה',
+  titleLabel: 'כותרת',
+  titlePlaceholder: 'למשל: ליצור תוכן לקמפיין',
+  descriptionLabel: 'תיאור',
+  descriptionPlaceholder: 'פרטים נוספים...',
+  statusLabel: 'סטטוס',
+  priorityLabel: 'עדיפות',
+  dueDateLabel: 'תאריך יעד',
+  colorLabel: 'צבע תווית',
+  saveButton: 'שמור',
+  cancelButton: 'ביטול',
+  deleteButton: 'מחק משימה',
 } as const;
 
 // ============================================================================

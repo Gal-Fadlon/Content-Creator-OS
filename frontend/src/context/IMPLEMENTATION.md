@@ -12,7 +12,8 @@ Providers are composed in `AppProviders.tsx`:
 2. **QueryClientProvider** – React Query
 3. **SnackbarProvider** – Toast notifications
 4. **AuthProvider** – User session & role switching
-5. **SelectedClientProvider** – Currently selected client
+5. **SideMenuProvider** – Side menu collapsed/expanded state
+6. **SelectedClientProvider** – Currently selected client
 6. **CalendarNavProvider** – Month navigation
 7. **ViewModeProvider** – Calendar vs Grid toggle
 8. **FilterProvider** – Content filters
@@ -25,6 +26,7 @@ Providers are composed in `AppProviders.tsx`:
 |----------|-------|-------|
 | `SnackbarProvider` | Toast messages | `useToast` |
 | `AuthProvider` | User, role, Supabase session | `useAuth` |
+| `SideMenuProvider` | Collapsed state (localStorage) | `useSideMenu` |
 | `SelectedClientProvider` | Selected client ID | `useSelectedClientId`, `useSelectedClient` |
 | `CalendarNavProvider` | Current month | `useCalendarNav`, `useMonthKey` |
 | `ViewModeProvider` | Calendar/Grid view | `useViewMode` |

@@ -6,6 +6,7 @@
 hooks/
 ├── useImageCover.ts    # Image aspect ratio tracking for cover-style display
 └── queries/
+    ├── useAdminTasks.ts    # Admin task CRUD hooks (Kanban)
     ├── useClients.ts       # Client data hooks
     ├── useContent.ts       # Content CRUD hooks
     ├── useEvents.ts        # Events & event requests hooks
@@ -38,6 +39,11 @@ hooks/
 ### `useComments.ts`
 - `useContentComments(contentId)` - Fetch comments for content
 - `useCreateComment()` / `useDeleteComment()` - Mutations with cache invalidation
+
+### `useAdminTasks.ts`
+- `useAdminTasks(ownerId)` - Fetch admin's tasks (30s staleTime)
+- `useCreateAdminTask()` / `useUpdateAdminTask()` / `useDeleteAdminTask()`
+- Optimistic updates on `useUpdateAdminTask` for smooth drag-and-drop
 
 ## Patterns
 

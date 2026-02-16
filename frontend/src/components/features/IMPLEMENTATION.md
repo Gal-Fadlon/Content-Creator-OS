@@ -66,3 +66,15 @@ Decorative stickers overlay system.
 |-----------|---------|
 | `FilterBar` | Horizontal bar with filter pills (content types, pending, tasks) |
 | `FilterPill` | Toggle for filter options |
+
+## kanban/
+
+Admin-only Kanban task board with drag-and-drop via `@hello-pangea/dnd`.
+
+| Component | Purpose |
+|-----------|---------|
+| `KanbanBoard` | `DragDropContext` + horizontal columns container |
+| `KanbanColumn` | `Droppable` zone with header, card count, add button |
+| `TaskCard` | `Draggable` card with color strip, priority badge, due date |
+| `TaskModal` | Create/edit dialog with title, description, status, priority, due date, color label |
+| `TaskFilters` | Search input + priority filter pills |

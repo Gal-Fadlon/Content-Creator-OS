@@ -13,6 +13,7 @@ import type { ContentService, ContentMediaService } from './content/contentServi
 import type { EventsService } from './events/eventsService';
 import type { NotificationsService } from './notifications/notificationsService';
 import type { CommentsService } from './comments/commentsService';
+import type { AdminTasksService } from './adminTasks/adminTasksService';
 
 import { authService } from './auth/authService';
 import { clientsService } from './clients/clientsService';
@@ -20,6 +21,7 @@ import { contentService, contentMediaService } from './content/contentService';
 import { eventsService } from './events/eventsService';
 import { notificationsService } from './notifications/notificationsService';
 import { commentsService } from './comments/commentsService';
+import { adminTasksService } from './adminTasks/adminTasksService';
 
 export interface Services {
   auth: AuthService;
@@ -29,6 +31,7 @@ export interface Services {
   events: EventsService;
   notifications: NotificationsService;
   comments: CommentsService;
+  adminTasks: AdminTasksService;
 }
 
 export const services: Services = {
@@ -39,4 +42,5 @@ export const services: Services = {
   events: eventsService,
   notifications: notificationsService,
   comments: commentsService,
+  adminTasks: adminTasksService,
 };

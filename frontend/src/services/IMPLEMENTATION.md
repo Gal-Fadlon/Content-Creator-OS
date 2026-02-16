@@ -18,6 +18,8 @@ services/
 ├── clients/
 ├── content/
 ├── events/
+├── adminTasks/
+│   └── adminTasksService.ts # Admin task CRUD (Kanban)
 ├── notifications/
 └── comments/
     └── commentsService.ts   # Content comments CRUD

@@ -83,4 +83,7 @@ Route protection components for authentication.
 ```tsx
 <ProtectedRoute><Dashboard /></ProtectedRoute>
 <PublicRoute><Login /></PublicRoute>
+<AdminRoute><TaskManager /></AdminRoute>
 ```
+
+`AdminRoute` checks `isActualAdmin` and redirects to `/` if not admin.

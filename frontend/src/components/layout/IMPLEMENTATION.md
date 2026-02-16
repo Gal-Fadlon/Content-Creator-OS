@@ -13,6 +13,19 @@ ComponentName/
 
 ## Components Overview
 
+### AppLayout
+Flex layout wrapper using React Router `<Outlet />` for nested routing.
+- Renders `<SideMenu>` + `<Outlet />` in a flex row
+- RTL flow naturally places SideMenu on the right
+
+### SideMenu
+Collapsible right-side navigation (RTL start side).
+- Expanded: 240px with icon + label; Collapsed: 64px icon-only with tooltips
+- Menu items: Dashboard (always), Task Manager (admin only via `isActualAdmin`)
+- Active state via `useLocation()`, navigation via styled `Link`
+- Collapse toggle persisted via `SideMenuProvider`
+- CSS transition on width for smooth animation
+
 ### AppHeader
 Main application header bar containing:
 - Logo and title
@@ -76,6 +89,6 @@ Toggle between calendar and grid views.
 ## Dependencies
 
 - MUI components (`AppBar`, `Drawer`, `Popover`, `Dialog`, etc.)
-- Context providers: `AuthProvider`, `SelectedClientProvider`, `CalendarNavProvider`, `MonthlyStateProvider`
+- Context providers: `AuthProvider`, `SelectedClientProvider`, `CalendarNavProvider`, `MonthlyStateProvider`, `SideMenuProvider`
 - Query hooks: `useClients`, `useNotifications`
 - String constants from `@/constants/strings.constants`

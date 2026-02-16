@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppProviders } from '@/context/providers/AppProviders';
-import { ProtectedRoute, PublicRoute } from '@/components/common/AuthGuard/AuthGuard';
+import { ProtectedRoute, PublicRoute, AdminRoute } from '@/components/common/AuthGuard/AuthGuard';
+import AppLayout from '@/components/layout/AppLayout/AppLayout';
 import Dashboard from './pages/Dashboard/Dashboard';
+import TaskManager from './pages/TaskManager/TaskManager';
 import Login from './pages/Login/Login';
 import NotFound from './pages/NotFound/NotFound';
 
@@ -18,13 +20,22 @@ const App = () => (
           }
         />
         <Route
-          path="/"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AppLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Dashboard />} />
+          <Route
+            path="/tasks"
+            element={
+              <AdminRoute>
+                <TaskManager />
+              </AdminRoute>
+            }
+          />
+        </Route>
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

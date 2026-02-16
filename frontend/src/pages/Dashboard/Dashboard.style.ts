@@ -20,7 +20,7 @@ export const StyledBackdropOverlay = styled(Box, {
 
 export const StyledPageContainer = styled(Box)({
   direction: 'rtl',
-  minHeight: '100vh',
+  minHeight: '100%',
   position: 'relative',
 });
 

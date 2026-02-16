@@ -7,6 +7,7 @@
 - **React 18** + **TypeScript** + **Vite**
 - **MUI v5** (Material UI) with Emotion
 - **React Query** (@tanstack/react-query) for server state
+- **@hello-pangea/dnd** for drag-and-drop (Kanban board)
 - **Axios** for HTTP
 - **RTL Hebrew** application
 
@@ -22,13 +23,14 @@ frontend/src/
 │   │   ├── events/      # Event request components
 │   │   ├── filter/      # Filter controls
 │   │   ├── grid/        # Instagram-style grid
+│   │   ├── kanban/      # Kanban board (Board, Column, Card, Modal, Filters)
 │   │   └── stickers/    # Sticker overlay system
-│   └── layout/          # App-level layout
+│   └── layout/          # AppLayout, SideMenu, AppHeader
 ├── constants/           # Strings, calendar, stickers constants
 ├── context/providers/   # React Context providers
 ├── data/                # Mock data
 ├── hooks/queries/       # React Query hooks
-├── pages/               # Page components (Dashboard, NotFound)
+├── pages/               # Page components (Dashboard, TaskManager, NotFound)
 ├── services/            # API layer with mock toggle
 ├── theme/               # MUI theme (palette, typography, components)
 ├── types/               # TypeScript definitions
@@ -59,12 +61,12 @@ Use `@/` for absolute imports: `import { useAuth } from '@/context/providers/Aut
 | Path | Description |
 |------|-------------|
 | `frontend/src/components/common/IMPLEMENTATION.md` | DatePicker, Snackbar, LoadingSpinner, AuthGuard |
-| `frontend/src/components/features/IMPLEMENTATION.md` | Calendar, content, grid, stickers, events, filter |
-| `frontend/src/components/layout/IMPLEMENTATION.md` | AppHeader, ClientSelector, NotificationBell |
+| `frontend/src/components/features/IMPLEMENTATION.md` | Calendar, content, grid, stickers, events, filter, kanban |
+| `frontend/src/components/layout/IMPLEMENTATION.md` | AppLayout, SideMenu, AppHeader, ClientSelector, NotificationBell |
 | `frontend/src/constants/IMPLEMENTATION.md` | String constants, calendar, stickers |
 | `frontend/src/context/IMPLEMENTATION.md` | Context providers and hooks |
 | `frontend/src/hooks/IMPLEMENTATION.md` | React Query hooks |
-| `frontend/src/pages/IMPLEMENTATION.md` | Dashboard, Login, NotFound pages |
+| `frontend/src/pages/IMPLEMENTATION.md` | Dashboard, TaskManager, Login, NotFound pages |
 | `frontend/src/services/IMPLEMENTATION.md` | Services, Supabase, storage |
 | `frontend/src/theme/IMPLEMENTATION.md` | MUI theme configuration |
 | `supabase/IMPLEMENTATION.md` | Migrations and Edge Functions |
@@ -229,41 +231,55 @@ Use `@/` for absolute imports: `import { useAuth } from '@/context/providers/Aut
                         └──────────────────────►└─────────────────┘
 
                ┌─────────────────┐              ┌─────────────────┐
-               │content_comments │              │  event_requests │
+               │  admin_tasks    │              │  event_requests │
                ├─────────────────┤              ├─────────────────┤
                │ id (UUID) PK    │              │ id (UUID) PK    │
-               │ content_id FK   │              │ client_id FK    │
-               │ user_id FK      │              │ requested_by FK │
-               │ author_name     │              │ title           │
-               │ author_role     │              │ description     │
-               │ message         │              │ requested_date  │
-               │ created_at      │              │ status          │
-               └─────────────────┘              │ reviewed_by FK  │
-                                                │ reviewed_at     │
-               ┌─────────────────┐              │ created_at      │
-               │   stickers      │              └─────────────────┘
+               │ owner_id FK ────┼──► auth.users│ client_id FK    │
+               │ title           │              │ requested_by FK │
+               │ description     │              │ title           │
+               │ status          │              │ description     │
+               │ priority        │              │ requested_date  │
+               │ due_date        │              │ status          │
+               │ color_label     │              │ reviewed_by FK  │
+               │ sort_order      │              │ reviewed_at     │
+               │ created_at      │              │ created_at      │
+               │ updated_at      │              └─────────────────┘
+               └─────────────────┘
+
+               ┌─────────────────┐
+               │content_comments │
                ├─────────────────┤
-               │ id (UUID) PK    │              ┌─────────────────┐
-               │ client_id FK    │              │  notifications  │
-               │ month, year     │              ├─────────────────┤
-               │ sticker_type    │              │ id (UUID) PK    │
-               │ icon_type       │              │ user_id FK      │
-               │ lucide_icon     │              │ client_id FK    │
-               │ label, color    │              │ type            │
-               │ position_x/y    │              │ title, message  │
-               │ rotation, scale │              │ content_id FK   │
-               │ custom_image_url│              │ event_request_id│
-               │ created_at      │              │ comment_id FK   │
-               └─────────────────┘              │ is_read         │
-                                                │ created_at      │
-                                                └─────────────────┘
+               │ id (UUID) PK    │
+               │ content_id FK   │
+               │ user_id FK      │
+               │ author_name     │
+               │ author_role     │
+               │ message         │
+               │ created_at      │
+               └─────────────────┘
+
+               ┌─────────────────┐              ┌─────────────────┐
+               │   stickers      │              │  notifications  │
+               ├─────────────────┤              ├─────────────────┤
+               │ id (UUID) PK    │              │ id (UUID) PK    │
+               │ client_id FK    │              │ user_id FK      │
+               │ month, year     │              │ client_id FK    │
+               │ sticker_type    │              │ type            │
+               │ icon_type       │              │ title, message  │
+               │ lucide_icon     │              │ content_id FK   │
+               │ label, color    │              │ event_request_id│
+               │ position_x/y    │              │ comment_id FK   │
+               │ rotation, scale │              │ is_read         │
+               │ custom_image_url│              │ created_at      │
+               │ created_at      │              └─────────────────┘
+               └─────────────────┘
 ```
 
 ### Role-Based Access Control (RBAC)
 
 | Role | Capabilities |
 |------|-------------|
-| **Admin** | View **owned** clients only, manage their content, approve requests, manage events |
+| **Admin** | View **owned** clients only, manage their content, approve requests, manage events, personal task board (Kanban) |
 | **Client** | View own dashboard only, approve/reject content, request events, view own content |
 
 ### Multi-Admin Support
@@ -305,6 +321,11 @@ CREATE POLICY "Admin can view owned clients content"
 CREATE POLICY "Clients can view own content"
   ON content FOR SELECT
   USING (client_id = get_my_client_id());
+
+-- Admin tasks: per-admin isolation (not per-client)
+CREATE POLICY "Admins can view own tasks"
+  ON admin_tasks FOR SELECT
+  USING (is_admin() AND owner_id = auth.uid());
 ```
 
 ---

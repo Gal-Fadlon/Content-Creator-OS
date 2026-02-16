@@ -44,4 +44,10 @@ export const queryKeys = {
   comments: {
     byContent: (contentId: string) => ['comments', contentId] as const,
   },
+
+  // Admin Tasks
+  adminTasks: {
+    all: (ownerId: string) => ['adminTasks', ownerId] as const,
+    detail: (id: string) => ['adminTasks', 'detail', id] as const,
+  },
 } as const;

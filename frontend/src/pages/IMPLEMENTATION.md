@@ -11,6 +11,10 @@ pages/
 ├── Dashboard/
 │   ├── Dashboard.tsx        # Main dashboard page
 │   └── Dashboard.style.ts   # Page-level styles
+├── TaskManager/
+│   ├── TaskManager.tsx      # Kanban task board (admin only)
+│   ├── TaskManager.style.ts # Page-level styles
+│   └── useTaskBoard.ts      # Board logic hook
 ├── Login/
 │   ├── Login.tsx            # Authentication page
 │   └── Login.style.ts       # Login page styles
@@ -35,6 +39,13 @@ Key contexts used:
 - `useMonthlyState()` - Monthly backdrop/theme
 - `useViewMode()` - Calendar vs Grid toggle
 - `useContentModal()` / `useEventRequestModal()` - Modal management
+
+### `TaskManager`
+Admin-only Kanban task board (personal per-admin, not per-client):
+- **KanbanBoard**: Drag-and-drop columns (todo, in_progress, done)
+- **TaskFilters**: Search + priority filter
+- **TaskModal**: Create/edit tasks
+- **`useTaskBoard` hook**: Drag-end handler, sort order logic, filtered tasks per column
 
 ### `Login`
 Authentication page (entry point for unauthenticated users):

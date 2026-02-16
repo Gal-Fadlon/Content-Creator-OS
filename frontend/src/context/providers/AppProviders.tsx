@@ -7,12 +7,13 @@
  * 2. QueryClientProvider - React Query
  * 3. SnackbarProvider - Toast notifications
  * 4. AuthProvider - User session & role
- * 5. SelectedClientProvider - Selected client state
- * 6. CalendarNavProvider - Month navigation
- * 7. ViewModeProvider - Calendar vs Grid toggle
- * 8. FilterProvider - Content filters
- * 9. ModalProvider - Modal open/close state
- * 10. MonthlyStateProvider - Backdrops, stickers, themes (depends on CalendarNav)
+ * 5. SideMenuProvider - Side navigation collapse state
+ * 6. SelectedClientProvider - Selected client state
+ * 7. CalendarNavProvider - Month navigation
+ * 8. ViewModeProvider - Calendar vs Grid toggle
+ * 9. FilterProvider - Content filters
+ * 10. ModalProvider - Modal open/close state
+ * 11. MonthlyStateProvider - Backdrops, stickers, themes (depends on CalendarNav)
  *
  * Note: Server state (content, events, clients, notifications) is handled
  * by React Query hooks, not contexts!
@@ -30,6 +31,7 @@ import { CalendarNavProvider } from './CalendarNavProvider';
 import { FilterProvider } from './FilterProvider';
 import { ModalProvider } from './ModalProvider';
 import { MonthlyStateProvider } from './MonthlyStateProvider';
+import { SideMenuProvider } from './SideMenuProvider';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -41,19 +43,21 @@ export function AppProviders({ children }: AppProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <SnackbarProvider>
           <AuthProvider>
-            <SelectedClientProvider>
-              <CalendarNavProvider>
-                <ViewModeProvider>
-                  <FilterProvider>
-                    <ModalProvider>
-                      <MonthlyStateProvider>
-                        {children}
-                      </MonthlyStateProvider>
-                    </ModalProvider>
-                  </FilterProvider>
-                </ViewModeProvider>
-              </CalendarNavProvider>
-            </SelectedClientProvider>
+            <SideMenuProvider>
+              <SelectedClientProvider>
+                <CalendarNavProvider>
+                  <ViewModeProvider>
+                    <FilterProvider>
+                      <ModalProvider>
+                        <MonthlyStateProvider>
+                          {children}
+                        </MonthlyStateProvider>
+                      </ModalProvider>
+                    </FilterProvider>
+                  </ViewModeProvider>
+                </CalendarNavProvider>
+              </SelectedClientProvider>
+            </SideMenuProvider>
           </AuthProvider>
         </SnackbarProvider>
       </QueryClientProvider>

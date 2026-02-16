@@ -14,7 +14,8 @@ supabase/
 │   ├── 007_comment_notification_link.sql # Links comments to notifications
 │   ├── 008_separate_grid_calendar.sql # Separates grid and calendar content
 │   ├── 009_content_media.sql          # Multi-image support table
-│   └── 010_remove_legacy_media_columns.sql # Removes deprecated media_url/media_type
+│   ├── 010_remove_legacy_media_columns.sql # Removes deprecated media_url/media_type
+│   └── 011_admin_tasks.sql                # Admin tasks table (Kanban board)
 ├── functions/
 │   ├── generate-upload-url/        # Edge Function for R2 signed URLs
 │   └── delete-file/                # Edge Function for R2 file deletion
@@ -43,6 +44,10 @@ Migration 008 adds `source` column to content table with values 'calendar' or 'g
 ## Multi-Image Support (009, 010)
 
 Migration 009 adds `content_media` table for multi-image support per content item. Migration 010 removes legacy `media_url`/`media_type` columns from content table.
+
+## Admin Tasks (011)
+
+Migration 011 adds `admin_tasks` table for personal task management (Kanban board). Each admin manages their own tasks independently. RLS ensures admins can only access their own tasks via `is_admin() AND owner_id = auth.uid()`.
 
 ## Multi-Admin Support
 

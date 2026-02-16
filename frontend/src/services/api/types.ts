@@ -68,3 +68,25 @@ export interface CreateEventRequestDTO {
   description?: string;
 }
 
+// Admin Tasks
+export interface CreateAdminTaskDTO {
+  ownerId: string;
+  title: string;
+  description?: string;
+  status?: 'todo' | 'in_progress' | 'on_hold' | 'done';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  dueDate?: string;
+  colorLabel?: string;
+  sortOrder?: number;
+}
+
+export interface UpdateAdminTaskDTO {
+  title?: string;
+  description?: string | null;
+  status?: 'todo' | 'in_progress' | 'on_hold' | 'done';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  dueDate?: string | null;
+  colorLabel?: string | null;
+  sortOrder?: number;
+}
+

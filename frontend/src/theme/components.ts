@@ -44,6 +44,10 @@ export const components: Components<Theme> = {
           '&:hover': {
             background: `linear-gradient(135deg, #5c2a17 0%, ${colors.earthBrown} 100%)`,
           },
+          '&.Mui-disabled': {
+            background: 'rgba(61, 46, 36, 0.12)',
+            color: 'rgba(61, 46, 36, 0.26)',
+          },
         },
         '&.MuiButton-containedSecondary': {
           background: `linear-gradient(135deg, ${colors.sandGold} 0%, #dcc9a3 100%)`,

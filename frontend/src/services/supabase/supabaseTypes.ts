@@ -377,6 +377,44 @@ export interface Database {
           updated_at?: string;
         };
       };
+      admin_tasks: {
+        Row: {
+          id: string;
+          owner_id: string;
+          title: string;
+          description: string | null;
+          status: 'todo' | 'in_progress' | 'on_hold' | 'done';
+          priority: 'low' | 'medium' | 'high' | 'urgent';
+          due_date: string | null;
+          color_label: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          title: string;
+          description?: string | null;
+          status?: 'todo' | 'in_progress' | 'on_hold' | 'done';
+          priority?: 'low' | 'medium' | 'high' | 'urgent';
+          due_date?: string | null;
+          color_label?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string;
+          description?: string | null;
+          status?: 'todo' | 'in_progress' | 'on_hold' | 'done';
+          priority?: 'low' | 'medium' | 'high' | 'urgent';
+          due_date?: string | null;
+          color_label?: string | null;
+          sort_order?: number;
+          updated_at?: string;
+        };
+      };
       content_media: {
         Row: {
           id: string;
@@ -455,3 +493,4 @@ export type EventRow = Tables<'events'>;
 export type EventRequestRow = Tables<'event_requests'>;
 export type NotificationRow = Tables<'notifications'>;
 export type ContentCommentRow = Tables<'content_comments'>;
+export type AdminTaskRow = Tables<'admin_tasks'>;
