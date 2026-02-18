@@ -57,7 +57,7 @@ export default function TaskModal({
   onSave,
   onDelete,
 }: TaskModalProps) {
-  const { form, updateField, isValid } = useTaskModal(editingTask, defaultStatus);
+  const { form, updateField, isValid } = useTaskModal(editingTask, defaultStatus, open);
 
   const handleSave = () => {
     if (!isValid) return;

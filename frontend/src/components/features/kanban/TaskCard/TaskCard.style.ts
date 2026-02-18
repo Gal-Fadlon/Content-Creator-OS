@@ -10,6 +10,7 @@ interface StyledTaskCardRootProps {
 export const StyledTaskCardRoot = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'colorLabel' && prop !== 'isDragging',
 })<StyledTaskCardRootProps>(({ theme, colorLabel, isDragging }) => ({
+  position: 'relative',
   backgroundColor: isDragging ? '#fff' : 'rgba(255, 255, 255, 0.9)',
   borderRadius: 12,
   padding: theme.spacing(1.5),
@@ -22,6 +23,31 @@ export const StyledTaskCardRoot = styled(Box, {
   transition: 'box-shadow 0.15s ease, border-color 0.15s ease',
   '&:hover': {
     boxShadow: '0 2px 8px rgba(130, 61, 34, 0.1)',
+    '& .task-card-delete': {
+      opacity: 1,
+    },
+  },
+}));
+
+export const StyledDeleteButton = styled('button')(({ theme }) => ({
+  position: 'absolute',
+  top: 8,
+  left: 8,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 24,
+  height: 24,
+  borderRadius: '50%',
+  border: 'none',
+  backgroundColor: 'rgba(0, 0, 0, 0.04)',
+  color: theme.palette.text.secondary,
+  cursor: 'pointer',
+  opacity: 0,
+  transition: 'opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.error.main,
+    color: '#fff',
   },
 }));
 

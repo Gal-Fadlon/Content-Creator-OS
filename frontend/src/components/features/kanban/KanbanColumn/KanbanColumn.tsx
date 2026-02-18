@@ -30,9 +30,10 @@ interface KanbanColumnProps {
   tasks: AdminTask[];
   onAddTask: (status: AdminTaskStatus) => void;
   onEditTask: (task: AdminTask) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
-export default function KanbanColumn({ status, tasks, onAddTask, onEditTask }: KanbanColumnProps) {
+export default function KanbanColumn({ status, tasks, onAddTask, onEditTask, onDeleteTask }: KanbanColumnProps) {
   return (
     <StyledColumnRoot columnColor={COLUMN_COLORS[status]}>
       <StyledColumnHeader>
@@ -53,7 +54,7 @@ export default function KanbanColumn({ status, tasks, onAddTask, onEditTask }: K
               <StyledEmptyState>{TASK_MANAGER.emptyColumn}</StyledEmptyState>
             )}
             {tasks.map((task, index) => (
-              <TaskCard key={task.id} task={task} index={index} onClick={onEditTask} />
+              <TaskCard key={task.id} task={task} index={index} onClick={onEditTask} onDelete={onDeleteTask} />
             ))}
             {provided.placeholder}
           </StyledDropZone>

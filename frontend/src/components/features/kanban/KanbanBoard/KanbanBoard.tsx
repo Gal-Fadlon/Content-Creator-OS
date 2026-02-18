@@ -14,6 +14,7 @@ interface KanbanBoardProps {
   onDragEnd: (result: DropResult) => void;
   onAddTask: (status: AdminTaskStatus) => void;
   onEditTask: (task: AdminTask) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
 export default function KanbanBoard({
@@ -21,6 +22,7 @@ export default function KanbanBoard({
   onDragEnd,
   onAddTask,
   onEditTask,
+  onDeleteTask,
 }: KanbanBoardProps) {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -32,6 +34,7 @@ export default function KanbanBoard({
             tasks={tasksByStatus[status]}
             onAddTask={onAddTask}
             onEditTask={onEditTask}
+            onDeleteTask={onDeleteTask}
           />
         ))}
       </StyledBoardRoot>

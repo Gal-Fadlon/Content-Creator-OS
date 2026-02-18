@@ -158,6 +158,7 @@ export default function TaskManager() {
           onDragEnd={handleDragEnd}
           onAddTask={handleAddTask}
           onEditTask={handleEditTask}
+          onDeleteTask={handleDelete}
         />
       </StyledBoardSection>
 

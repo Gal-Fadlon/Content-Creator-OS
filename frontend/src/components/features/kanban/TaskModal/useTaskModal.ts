@@ -23,10 +23,11 @@ const INITIAL_STATE: TaskFormState = {
   colorLabel: '',
 };
 
-export function useTaskModal(editingTask: AdminTask | null, defaultStatus: AdminTaskStatus) {
+export function useTaskModal(editingTask: AdminTask | null, defaultStatus: AdminTaskStatus, open: boolean) {
   const [form, setForm] = useState<TaskFormState>(INITIAL_STATE);
 
   useEffect(() => {
+    if (!open) return;
     if (editingTask) {
       setForm({
         title: editingTask.title,
@@ -39,7 +40,7 @@ export function useTaskModal(editingTask: AdminTask | null, defaultStatus: Admin
     } else {
       setForm({ ...INITIAL_STATE, status: defaultStatus });
     }
-  }, [editingTask, defaultStatus]);
+  }, [editingTask, defaultStatus, open]);
 
   const updateField = useCallback(<K extends keyof TaskFormState>(
     field: K,
